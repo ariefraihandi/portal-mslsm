@@ -4,9 +4,9 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Under Maintenance - Pages | Sneat - Bootstrap 5 HTML Admin Template - Pro</title>
-
-    <meta name="description" content="" />
+      <title>{{ $title }} - {{ $subtitle }}</title>
+      <meta name="description" content="{{ $meta_description }}">
+      <meta name="keywords" content="{{ $meta_keywords }}">      
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('assets') }}/img/favicon/favicon.ico" />
