@@ -97,8 +97,9 @@
                         <button type="button" class="btn btn-secondary" onclick="resetSignature()">Reset Tanda Tangan</button>
                       </div>
                       <div class="col-12 d-flex justify-content-center">
-                        <button type="submit" class="btn btn-primary" id="submitBtn">Simpan</button>
-                    </div>
+                        
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                      </div>
                     </div>
                   </form>
                 </div>
@@ -131,39 +132,47 @@
         canvas.addEventListener('touchmove', draw);
         canvas.addEventListener('touchend', stopDrawing);
     
-        function getPos(e) {
+        function getTouchPos(canvas, touchEvent) {
             var rect = canvas.getBoundingClientRect();
-            var scaleX = canvas.width / rect.width;
-            var scaleY = canvas.height / rect.height;
-            if (e.touches) {
-                return {
-                    x: (e.touches[0].clientX - rect.left) * scaleX,
-                    y: (e.touches[0].clientY - rect.top) * scaleY
-                };
-            } else {
-                return {
-                    x: (e.clientX - rect.left) * scaleX,
-                    y: (e.clientY - rect.top) * scaleY
-                };
-            }
+            return {
+                x: touchEvent.touches[0].clientX - rect.left,
+                y: touchEvent.touches[0].clientY - rect.top
+            };
         }
     
         function startDrawing(e) {
             e.preventDefault();
-            var pos = getPos(e);
-            [lastX, lastY] = [pos.x, pos.y];
+    
+            if (e.touches) {
+                var touchPos = getTouchPos(canvas, e);
+                [lastX, lastY] = [touchPos.x, touchPos.y];
+            } else {
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            }
+    
             isDrawing = true;
         }
     
         function draw(e) {
             e.preventDefault();
+    
             if (!isDrawing) return;
-            var pos = getPos(e);
+    
+            if (e.touches) {
+                var touchPos = getTouchPos(canvas, e);
+                var touchX = touchPos.x;
+                var touchY = touchPos.y;
+            } else {
+                var touchX = e.offsetX;
+                var touchY = e.offsetY;
+            }
+    
             context.beginPath();
             context.moveTo(lastX, lastY);
-            context.lineTo(pos.x, pos.y);
+            context.lineTo(touchX, touchY);
             context.stroke();
-            [lastX, lastY] = [pos.x, pos.y];
+    
+            [lastX, lastY] = [touchX, touchY];
         }
     
         function stopDrawing() {
@@ -176,63 +185,34 @@
             signatureInput.value = '';
         }
     
+        // Adjust canvas size based on media screen width
         function adjustCanvasSize() {
             var screenWidth = window.innerWidth;
-            var canvasWidth = Math.min(screenWidth * 0.9, 400);
-            var canvasHeight = canvasWidth * 0.5;
+            var canvasWidth = Math.min(screenWidth * 0.9, 400); // Set maximum width of 400px or 90% of screen width
+            var canvasHeight = canvasWidth * 0.5; // Set height to 50% of width
+    
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
         }
     
+        // Call adjustCanvasSize on page load and window resize
         window.addEventListener('load', adjustCanvasSize);
         window.addEventListener('resize', adjustCanvasSize);
-    
-        document.getElementById('image').addEventListener('change', function (event) {
-            var imagePreview = document.getElementById('imagePreview');
-            var file = event.target.files[0];
-            if (file) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            } else {
-                imagePreview.style.display = 'none';
-                imagePreview.src = '#';
-            }
-        });
-    
-        document.getElementById('guestbookForm').addEventListener('submit', function(event) {
-            var form = this;
-            var submitBtn = document.getElementById('submitBtn');
-    
-            // Disable all form inputs except canvas
-            var inputs = form.querySelectorAll('input, select, button');
-            inputs.forEach(function(input) {
-                if (input !== submitBtn) {
-                    input.disabled = true;
-                }
-            });
-    
-            // Disable the submit button to prevent multiple submissions
-            submitBtn.disabled = true;
-        });
     </script>
     <script>
-        function showSweetAlert(response) {
-            Swal.fire({
-                icon: response.success ? 'success' : 'error',
-                title: response.title,
-                text: response.message,
-            });
-        }
-    
-        document.addEventListener('DOMContentLoaded', function() {
-            @if(session('response'))
-                var response = @json(session('response'));
-                showSweetAlert(response);
-            @endif
+    function showSweetAlert(response) {
+        Swal.fire({
+            icon: response.success ? 'success' : 'error',
+            title: response.title,
+            text: response.message,
         });
-    </script>
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('response'))
+            var response = @json(session('response'));
+            showSweetAlert(response);
+        @endif
+    });
+</script>
 @endpush

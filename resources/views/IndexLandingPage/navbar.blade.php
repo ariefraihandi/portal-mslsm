@@ -65,7 +65,7 @@
                 </g>
               </svg>
             </span>
-            <span class="app-brand-text demo menu-text fw-bold ms-2 ps-1">Portal</span>
+            <span class="app-brand-text demo menu-text fw-bold ms-2 ps-1">MS LSM</span>
           </a>
         </div>
         <!-- Menu logo wrapper: End -->
@@ -362,11 +362,12 @@
 
           <!-- navbar button: Start -->
           <li>
-            <a href="../vertical-menu-template/auth-login-cover.html" class="btn btn-primary" target="_blank"
-              ><span class="tf-icons bx bx-user me-md-1"></span
-              ><span class="d-none d-md-block">Login/Register</span></a
-            >
-          </li>
+            <a href="{{ route('login.view') }}" class="btn btn-primary" target="_blank">
+                <span class="tf-icons bx bx-user me-md-1"></span>
+                <span class="d-none d-md-block">Login/Register</span>
+            </a>
+        </li>
+        
           <!-- navbar button: End -->
         </ul>
         <!-- Toolbar: End -->
