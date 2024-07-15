@@ -53,54 +53,43 @@
                   </g>
                 </svg>
               </span>
-              <span class="app-brand-text demo footer-link fw-bold ms-2 ps-1">Sneat</span>
+              <span class="app-brand-text demo footer-link fw-bold ms-2 ps-1">Portal MS LSM</span>
             </a>
             <p class="footer-text footer-logo-description mb-4">
-              Most developer friendly & highly customisable Admin Dashboard Template.
+              Jln. Banda Aceh-Medan, Desa Alue Awe, Kec. Muara Dua, Kota Lhokseumawe, Aceh.
             </p>
-            <form class="footer-form">
-              <label for="footer-email" class="small">Subscribe to newsletter</label>
-              <div class="d-flex mt-1">
-                <input
-                  type="email"
-                  class="form-control rounded-0 rounded-start-bottom rounded-start-top"
-                  id="footer-email"
-                  placeholder="Your email" />
-                <button
-                  type="submit"
-                  class="btn btn-primary shadow-none rounded-0 rounded-end-bottom rounded-end-top">
-                  Subscribe
-                </button>
-              </div>
-            </form>
+            
           </div>
-          <div class="col-lg-2 col-md-4 col-sm-6">
-            <h6 class="footer-title mb-4">Demos</h6>
+          <div class="col-lg-4 col-md-4 col-sm-6">
+            <h6 class="footer-title mb-4">Tautan Terkait</h6>
             <ul class="list-unstyled">
               <li class="mb-3">
-                <a href="../vertical-menu-template/" target="_blank" class="footer-link">Vertical Layout</a>
+                <a href="https://mahkamahagung.go.id/id" target="_blank" class="footer-link">Mahkamah Agung Republik Indonesia</a>
               </li>
               <li class="mb-3">
-                <a href="../horizontal-menu-template/" target="_blank" class="footer-link">Horizontal Layout</a>
+                <a href="http://bawas.mahkamahagung.go.id/" target="_blank" class="footer-link">Badan Pengawasan MA-RI</a>
               </li>
               <li class="mb-3">
-                <a href="../vertical-menu-template-bordered/" target="_blank" class="footer-link">Bordered Layout</a>
+                <a href="http://bua.mahkamahagung.go.id/" target="_blank" class="footer-link">Badan Urusan Administrasi MA-RI</a>
               </li>
               <li class="mb-3">
-                <a href="../vertical-menu-template-semi-dark/" target="_blank" class="footer-link"
-                  >Semi Dark Layout</a
+                <a href="http://kepaniteraan.mahkamahagung.go.id/" target="_blank" class="footer-link"
+                  >Kepaniteraan MA-RI</a
                 >
               </li>
               <li class="mb-3">
-                <a href="../vertical-menu-template-dark/" target="_blank" class="footer-link">Dark Layout</a>
+                <a href="https://badilag.mahkamahagung.go.id/" target="_blank" class="footer-link">Badan Peradilan Agama MA-RI</a>
               </li>
+              <li class="mb-3">
+                <a href="https://ms-aceh.go.id/" target="_blank" class="footer-link">Mahkamah Syar'iyah Aceh</a>
+              </li>              
             </ul>
           </div>
-          <div class="col-lg-2 col-md-4 col-sm-6">
+          {{-- <div class="col-lg-3 col-md-4 col-sm-6">
             <h6 class="footer-title mb-4">Pages</h6>
             <ul class="list-unstyled">
               <li class="mb-3">
-                <a href="pricing-page.html" class="footer-link">Pricing</a>
+                <a href="pricing-page.html" class="footer-link">Mahkamah Syar'iyah Aceh</a>
               </li>
               <li class="mb-3">
                 <a href="payment-page.html" class="footer-link"
@@ -119,8 +108,8 @@
                 >
               </li>
             </ul>
-          </div>
-          <div class="col-lg-3 col-md-4">
+          </div> --}}
+          {{-- <div class="col-lg-3 col-md-4">
             <h6 class="footer-title mb-4">Download our app</h6>
             <a href="javascript:void(0);" class="d-block footer-link mb-3 pb-2"
               ><img src="{{ asset('assets') }}/img/front-pages/landing-page/apple-icon.png" alt="apple icon"
@@ -128,7 +117,7 @@
             <a href="javascript:void(0);" class="d-block footer-link"
               ><img src="{{ asset('assets') }}/img/front-pages/landing-page/google-play-icon.png" alt="google play icon"
             /></a>
-          </div>
+          </div> --}}
         </div>
       </div>
     </div>
@@ -142,34 +131,28 @@
               document.write(new Date().getFullYear());
             </script>
           </span>
-          <a href="https://themeselection.com" target="_blank" class="fw-medium text-white footer-link"
-            >ThemeSelection,</a
+          <a href="https://www.instagram.com/ariefraihandi/" target="_blank" class="fw-medium text-white footer-link"
+            >Mr. Azmir's Son,</a
           >
           <span class="footer-text"> Made with ❤️ for a better web.</span>
         </div>
         <div>
-          <a href="https://github.com/themeselection" class="footer-link me-3" target="_blank">
-            <img
-              src="{{ asset('assets') }}/img/front-pages/icons/github-light.png"
-              alt="github icon"
-              data-app-light-img="front-pages/icons/github-light.png"
-              data-app-dark-img="front-pages/icons/github-dark.png" />
-          </a>
-          <a href="https://www.facebook.com/ThemeSelections/" class="footer-link me-3" target="_blank">
+         
+          <a href="https://www.facebook.com/profile.php?id=61558597477236" class="footer-link me-3" target="_blank">
             <img
               src="{{ asset('assets') }}/img/front-pages/icons/facebook-light.png"
               alt="facebook icon"
               data-app-light-img="front-pages/icons/facebook-light.png"
               data-app-dark-img="front-pages/icons/facebook-dark.png" />
           </a>
-          <a href="https://twitter.com/Theme_Selection" class="footer-link me-3" target="_blank">
+          <a href="https://x.com/bilikhukum" class="footer-link me-3" target="_blank">
             <img
               src="{{ asset('assets') }}/img/front-pages/icons/twitter-light.png"
               alt="twitter icon"
               data-app-light-img="front-pages/icons/twitter-light.png"
               data-app-dark-img="front-pages/icons/twitter-dark.png" />
           </a>
-          <a href="https://www.instagram.com/themeselection/" class="footer-link" target="_blank">
+          <a href="https://www.instagram.com/bilik.hukum/" class="footer-link" target="_blank">
             <img
               src="{{ asset('assets') }}/img/front-pages/icons/instagram-light.png"
               alt="google icon"
