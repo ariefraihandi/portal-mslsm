@@ -9,11 +9,9 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\RoleController;
 
 
-Route::get('/', [MaintenanceController::class, 'index'])->name('index');
+Route::get('/',                                 [MaintenanceController::class, 'index'])->name('index');
 Route::get('/buku-tamu',                        [GuestBookController::class, 'showBukuTamu'])->name('show.bukutamu');
 Route::post('/submit-guestbook',                [GuestbookController::class, 'submit'])->name('submit-guestbook');
-
-
 
 Route::get('/login',                            [AuthController::class, 'showLoginForm'])->name('login.view');
 Route::get('/register',                         [AuthController::class, 'showRegisterForm'])->name('register.view');
