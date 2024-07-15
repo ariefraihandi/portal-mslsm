@@ -28,18 +28,9 @@
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/css/rtl/theme-default.css" class="template-customizer-theme-css" />
     <link rel="stylesheet" href="{{ asset('assets') }}/css/demo.css" />
 
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/typeahead-js/typeahead.css" />
+    @stack('head-script')
 
-    <!-- Page CSS -->
-    <!-- Page -->
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/css/pages/page-misc.css" />
-
-    <!-- Helpers -->
     <script src="{{ asset('assets') }}/vendor/js/helpers.js"></script>
- 
-    <script src="{{ asset('assets') }}/vendor/js/template-customizer.js"></script>
- 
+    <script src="{{ asset('assets') }}/vendor/js/template-customizer.js"></script>    
     <script src="{{ asset('assets') }}/js/config.js"></script>
   </head>

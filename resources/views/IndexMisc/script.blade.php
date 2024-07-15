@@ -8,5 +8,11 @@
     <script src="{{ asset('assets') }}/vendor/libs/typeahead-js/typeahead.js"></script>
     <script src="{{ asset('assets') }}/vendor/js/menu.js"></script>
 
+   <!-- Vendors JS -->
+    @stack('footer-script')
+
     <!-- Main JS -->
     <script src="{{ asset('assets') }}/js/main.js"></script>
+
+    <!-- Page JS -->
+    @stack('footer-Sec-script')

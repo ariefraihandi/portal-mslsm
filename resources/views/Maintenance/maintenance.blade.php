@@ -1,6 +1,12 @@
 
 @extends('IndexMisc.app')
 
+@push('head-script')
+  <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+  <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/typeahead-js/typeahead.css" />
+  <link rel="stylesheet" href="{{ asset('assets') }}/vendor/css/pages/page-misc.css" />
+@endpush
+
 @section('content')
     <div class="container-xxl container-p-y">
       <div class="misc-wrapper">
@@ -20,3 +26,26 @@
       </div>
     </div>
 @endsection
+
+@push('footer-script')  
+  <script src="{{ asset('assets') }}/vendor/libs/sweetalert2/sweetalert2.js"></script>
+@endpush
+
+@push('footer-Sec-script')
+  <script>
+    function showSweetAlert(response) {
+        Swal.fire({
+            icon: response.success ? 'success' : 'error',
+            title: response.title,
+            text: response.message,
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('response'))
+            var response = @json(session('response'));
+            showSweetAlert(response);
+        @endif
+    });
+  </script> 
+@endpush
