@@ -25,89 +25,87 @@
       <!-- Hero: End -->
 
       <!-- Contact Us: Start -->
-      <section id="landingContact" class="section-py landing-contact">
+    <section id="landingContact" class="section-py landing-contact">
         <div class="container">
-          
-          <div class="row gy-4">
-            <div class="col-lg-12">
-              <div class="card">
-                <div class="card-body">                
-                  <form id="guestbookForm" action="{{ route('submit-guestbook') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="row g-4">
-                      <div class="col-md-12">
-                        <label class="form-label" for="name">Nama Lengkap</label>
-                        <input type="text" class="form-control" id="name" name="name" placeholder="Nama Lengkap" required>
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label" for="pekerjaan">Jenis Pekerjaan</label>
-                        <select class="form-select" name="pekerjaan" id="pekerjaan" required>
-                          <option value="">Pilih Jenis Pekerjaan</option>
-                          <option value="1">PNS/TNI/POLRI</option>
-                          <option value="2">Pegawai Swasta</option>
-                          <option value="3">Wiraswasta/Usahawan</option>
-                          <option value="4">Advokat</option>
-                          <option value="5">Petani/Nelayan</option>
-                          <option value="6">Mengurus Rumah Tangga</option>
-                          <option value="7">Mahasiswa</option>
-                          <option value="8">Lainnya</option>
-                        </select>
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label" for="satker">Satuan Kerja</label>
-                        <input type="text" class="form-control" id="satker" name="satker" placeholder="Satuan Kerja" required>
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label" for="tujuan">Tujuan</label>
-                        <select class="form-select" name="tujuan" id="tujuan" required>
-                          <option value="">Pilih Tujuan</option>
-                          <option value="Silaturrahmi">Silaturrahmi</option>
-                          <option value="Konsultasi">Konsultasi</option>
-                          <option value="Koordinasi">Koordinasi</option>
-                          <option value="Pengawasan">Pengawasan</option>
-                          <option value="Pemeriksaan">Pemeriksaan</option>
-                          <option value="Sosialisasi">Sosialisasi</option>
-                          <option value="Konfirmasi">Konfirmasi</option>
-                          <option value="Keluarga">Keluarga</option>
-                          <option value="Informasi">Informasi</option>
-                          <option value="Pendaftaran">Pendaftaran</option>
-                          <option value="Pengambilan Produk">Pengambilan Produk</option>
-                          <option value="Pengambilan Sisa Panjar">Pengambilan Sisa Panjar</option>
-                          <option value="Lain-Lain">Lain-Lain</option>
-                        </select>
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label" for="ditemui">Yang Ingin Ditemui</label>
-                        <input type="text" class="form-control" id="ditemui" name="ditemui" placeholder="Yang Ingin Ditemui" required>
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label" for="image">Foto Pengunjung</label>
-                        <input type="file" class="form-control" id="image" name="image" required>
-                        <img id="imagePreview" src="#" alt="Preview Gambar" style="display:none; margin-top: 10px; max-width: 100%;">
-                      </div>            
-                      <div class="col-md-12">
-                        <label class="form-label" for="signature">Tanda Tangan</label>  
-                      </div>      
-                      <div class="col-12">
-                        <canvas id="signatureCanvas"  style="border: 1px solid #ced4da;"></canvas>
-                        <input type="hidden" name="signature" id="signatureInput">
-                      </div>
-                      
-                      <div class="col-12 d-flex justify-content-left">
-                        <button type="button" class="btn btn-secondary" onclick="resetSignature()">Reset Tanda Tangan</button>
-                      </div>
-                      <div class="col-12 d-flex justify-content-center">
-                        
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                      </div>
+            <div class="row gy-4">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="guestbookForm" action="{{ route('submit-guestbook') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <div class="row g-4">
+                                    <div class="col-md-12">
+                                        <label class="form-label" for="name">Nama Lengkap</label>
+                                        <input type="text" class="form-control" id="name" name="name" placeholder="Nama Lengkap" required>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label" for="pekerjaan">Jenis Pekerjaan</label>
+                                        <select class="form-select" name="pekerjaan" id="pekerjaan" required>
+                                            <option value="">Pilih Jenis Pekerjaan</option>
+                                            <option value="1">PNS/TNI/POLRI</option>
+                                            <option value="2">Pegawai Swasta</option>
+                                            <option value="3">Wiraswasta/Usahawan</option>
+                                            <option value="4">Advokat</option>
+                                            <option value="5">Petani/Nelayan</option>
+                                            <option value="6">Mengurus Rumah Tangga</option>
+                                            <option value="7">Mahasiswa</option>
+                                            <option value="8">Lainnya</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label" for="satker">Satuan Kerja</label>
+                                        <input type="text" class="form-control" id="satker" name="satker" placeholder="Satuan Kerja" required>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label" for="tujuan">Tujuan</label>
+                                        <select class="form-select" name="tujuan" id="tujuan" required>
+                                            <option value="">Pilih Tujuan</option>
+                                            <option value="Silaturrahmi">Silaturrahmi</option>
+                                            <option value="Konsultasi">Konsultasi</option>
+                                            <option value="Koordinasi">Koordinasi</option>
+                                            <option value="Pengawasan">Pengawasan</option>
+                                            <option value="Pemeriksaan">Pemeriksaan</option>
+                                            <option value="Sosialisasi">Sosialisasi</option>
+                                            <option value="Konfirmasi">Konfirmasi</option>
+                                            <option value="Keluarga">Keluarga</option>
+                                            <option value="Informasi">Informasi</option>
+                                            <option value="Pendaftaran">Pendaftaran</option>
+                                            <option value="Pengambilan Produk">Pengambilan Produk</option>
+                                            <option value="Pengambilan Sisa Panjar">Pengambilan Sisa Panjar</option>
+                                            <option value="Lain-Lain">Lain-Lain</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label" for="ditemui">Yang Ingin Ditemui</label>
+                                        <input type="text" class="form-control" id="ditemui" name="ditemui" placeholder="Yang Ingin Ditemui" required>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label" for="image">Foto Pengunjung</label>
+                                        <input type="file" class="form-control" id="image" name="image" required>
+                                        <img id="imagePreview" src="#" alt="Preview Gambar" style="display:none; margin-top: 10px; max-width: 100%;">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label" for="signature">Tanda Tangan</label>
+                                    </div>
+                                    <div class="col-12">
+                                        <canvas id="signatureCanvas" style="border: 1px solid #ced4da;"></canvas>
+                                        <input type="hidden" name="signature" id="signatureInput">
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-left">
+                                        <button type="button" class="btn btn-secondary" onclick="resetSignature()">Reset Tanda Tangan</button>
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-center">
+                                        <button type="submit" class="btn btn-primary" id="submitBtn">Simpan</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                  </form>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </section>
+    </section>
+    
       <!-- Contact Us: End -->
     </div>
 @endsection
@@ -142,37 +140,20 @@
     
         function startDrawing(e) {
             e.preventDefault();
-    
-            if (e.touches) {
-                var touchPos = getTouchPos(canvas, e);
-                [lastX, lastY] = [touchPos.x, touchPos.y];
-            } else {
-                [lastX, lastY] = [e.offsetX, e.offsetY];
-            }
-    
+            var pos = getPos(e);
+            [lastX, lastY] = [pos.x, pos.y];
             isDrawing = true;
         }
     
         function draw(e) {
             e.preventDefault();
-    
             if (!isDrawing) return;
-    
-            if (e.touches) {
-                var touchPos = getTouchPos(canvas, e);
-                var touchX = touchPos.x;
-                var touchY = touchPos.y;
-            } else {
-                var touchX = e.offsetX;
-                var touchY = e.offsetY;
-            }
-    
+            var pos = getPos(e);
             context.beginPath();
             context.moveTo(lastX, lastY);
-            context.lineTo(touchX, touchY);
+            context.lineTo(pos.x, pos.y);
             context.stroke();
-    
-            [lastX, lastY] = [touchX, touchY];
+            [lastX, lastY] = [pos.x, pos.y];
         }
     
         function stopDrawing() {
@@ -185,20 +166,47 @@
             signatureInput.value = '';
         }
     
-        // Adjust canvas size based on media screen width
         function adjustCanvasSize() {
             var screenWidth = window.innerWidth;
-            var canvasWidth = Math.min(screenWidth * 0.9, 400); // Set maximum width of 400px or 90% of screen width
-            var canvasHeight = canvasWidth * 0.5; // Set height to 50% of width
-    
+            var canvasWidth = Math.min(screenWidth * 0.9, 400);
+            var canvasHeight = canvasWidth * 0.5;
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
         }
     
-        // Call adjustCanvasSize on page load and window resize
         window.addEventListener('load', adjustCanvasSize);
         window.addEventListener('resize', adjustCanvasSize);
+    
+        document.getElementById('image').addEventListener('change', function (event) {
+            var imagePreview = document.getElementById('imagePreview');
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.style.display = 'none';
+                imagePreview.src = '#';
+            }
+        });
+    
+        document.getElementById('guestbookForm').addEventListener('submit', function() {
+            var form = this;
+            var submitBtn = document.getElementById('submitBtn');
+    
+            // Disable all form inputs
+            var inputs = form.querySelectorAll('input, select, button');
+            inputs.forEach(function(input) {
+                input.disabled = true;
+            });
+    
+            // Optionally, you can show a loading spinner or message here
+        });
     </script>
+    
     <script>
         function showSweetAlert(response) {
             Swal.fire({
@@ -215,4 +223,5 @@
             @endif
         });
     </script>
+    
 @endpush
