@@ -25,87 +25,88 @@
       <!-- Hero: End -->
 
       <!-- Contact Us: Start -->
-    <section id="landingContact" class="section-py landing-contact">
+      <section id="landingContact" class="section-py landing-contact">
         <div class="container">
-            <div class="row gy-4">
-                <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <form id="guestbookForm" action="{{ route('submit-guestbook') }}" method="POST" enctype="multipart/form-data">
-                                @csrf
-                                <div class="row g-4">
-                                    <div class="col-md-12">
-                                        <label class="form-label" for="name">Nama Lengkap</label>
-                                        <input type="text" class="form-control" id="name" name="name" placeholder="Nama Lengkap" required>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label" for="pekerjaan">Jenis Pekerjaan</label>
-                                        <select class="form-select" name="pekerjaan" id="pekerjaan" required>
-                                            <option value="">Pilih Jenis Pekerjaan</option>
-                                            <option value="1">PNS/TNI/POLRI</option>
-                                            <option value="2">Pegawai Swasta</option>
-                                            <option value="3">Wiraswasta/Usahawan</option>
-                                            <option value="4">Advokat</option>
-                                            <option value="5">Petani/Nelayan</option>
-                                            <option value="6">Mengurus Rumah Tangga</option>
-                                            <option value="7">Mahasiswa</option>
-                                            <option value="8">Lainnya</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label" for="satker">Satuan Kerja</label>
-                                        <input type="text" class="form-control" id="satker" name="satker" placeholder="Satuan Kerja" required>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label" for="tujuan">Tujuan</label>
-                                        <select class="form-select" name="tujuan" id="tujuan" required>
-                                            <option value="">Pilih Tujuan</option>
-                                            <option value="Silaturrahmi">Silaturrahmi</option>
-                                            <option value="Konsultasi">Konsultasi</option>
-                                            <option value="Koordinasi">Koordinasi</option>
-                                            <option value="Pengawasan">Pengawasan</option>
-                                            <option value="Pemeriksaan">Pemeriksaan</option>
-                                            <option value="Sosialisasi">Sosialisasi</option>
-                                            <option value="Konfirmasi">Konfirmasi</option>
-                                            <option value="Keluarga">Keluarga</option>
-                                            <option value="Informasi">Informasi</option>
-                                            <option value="Pendaftaran">Pendaftaran</option>
-                                            <option value="Pengambilan Produk">Pengambilan Produk</option>
-                                            <option value="Pengambilan Sisa Panjar">Pengambilan Sisa Panjar</option>
-                                            <option value="Lain-Lain">Lain-Lain</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label" for="ditemui">Yang Ingin Ditemui</label>
-                                        <input type="text" class="form-control" id="ditemui" name="ditemui" placeholder="Yang Ingin Ditemui" required>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label" for="image">Foto Pengunjung</label>
-                                        <input type="file" class="form-control" id="image" name="image" required>
-                                        <img id="imagePreview" src="#" alt="Preview Gambar" style="display:none; margin-top: 10px; max-width: 100%;">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label" for="signature">Tanda Tangan</label>
-                                    </div>
-                                    <div class="col-12">
-                                        <canvas id="signatureCanvas" style="border: 1px solid #ced4da;"></canvas>
-                                        <input type="hidden" name="signature" id="signatureInput">
-                                    </div>
-                                    <div class="col-12 d-flex justify-content-left">
-                                        <button type="button" class="btn btn-secondary" onclick="resetSignature()">Reset Tanda Tangan</button>
-                                    </div>
-                                    <div class="col-12 d-flex justify-content-center">
-                                        <button type="submit" class="btn btn-primary" id="submitBtn">Simpan</button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
+          
+          <div class="row gy-4">
+            <div class="col-lg-12">
+              <div class="card">
+                <div class="card-body">                
+                  <form id="guestbookForm" action="{{ route('submit-guestbook') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="row g-4">
+                      <div class="col-md-12">
+                        <label class="form-label" for="name">Nama Lengkap</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Nama Lengkap" required>
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label" for="pekerjaan">Jenis Pekerjaan</label>
+                        <select class="form-select" name="pekerjaan" id="pekerjaan" required>
+                          <option value="">Pilih Jenis Pekerjaan</option>
+                          <option value="1">PNS/TNI/POLRI</option>
+                          <option value="2">Pegawai Swasta</option>
+                          <option value="3">Wiraswasta/Usahawan</option>
+                          <option value="4">Advokat</option>
+                          <option value="5">Petani/Nelayan</option>
+                          <option value="6">Mengurus Rumah Tangga</option>
+                          <option value="7">Mahasiswa</option>
+                          <option value="8">Lainnya</option>
+                        </select>
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label" for="satker">Satuan Kerja</label>
+                        <input type="text" class="form-control" id="satker" name="satker" placeholder="Satuan Kerja" required>
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label" for="tujuan">Tujuan</label>
+                        <select class="form-select" name="tujuan" id="tujuan" required>
+                          <option value="">Pilih Tujuan</option>
+                          <option value="Silaturrahmi">Silaturrahmi</option>
+                          <option value="Konsultasi">Konsultasi</option>
+                          <option value="Koordinasi">Koordinasi</option>
+                          <option value="Pengawasan">Pengawasan</option>
+                          <option value="Pemeriksaan">Pemeriksaan</option>
+                          <option value="Sosialisasi">Sosialisasi</option>
+                          <option value="Konfirmasi">Konfirmasi</option>
+                          <option value="Keluarga">Keluarga</option>
+                          <option value="Informasi">Informasi</option>
+                          <option value="Pendaftaran">Pendaftaran</option>
+                          <option value="Pengambilan Produk">Pengambilan Produk</option>
+                          <option value="Pengambilan Sisa Panjar">Pengambilan Sisa Panjar</option>
+                          <option value="Lain-Lain">Lain-Lain</option>
+                        </select>
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label" for="ditemui">Yang Ingin Ditemui</label>
+                        <input type="text" class="form-control" id="ditemui" name="ditemui" placeholder="Yang Ingin Ditemui" required>
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label" for="image">Foto Pengunjung</label>
+                        <input type="file" class="form-control" id="image" name="image" required>
+                        <img id="imagePreview" src="#" alt="Preview Gambar" style="display:none; margin-top: 10px; max-width: 100%;">
+                      </div>            
+                      <div class="col-md-12">
+                        <label class="form-label" for="signature">Tanda Tangan</label>  
+                      </div>      
+                      <div class="col-12">
+                        <canvas id="signatureCanvas"  style="border: 1px solid #ced4da;"></canvas>
+                        <input type="hidden" name="signature" id="signatureInput">
+                      </div>
+                      
+                      <div class="col-12 d-flex justify-content-left">
+                        <button type="button" class="btn btn-secondary" onclick="resetSignature()">Reset Tanda Tangan</button>
+                      </div>
+                      <div class="col-12 d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Simpan</button>
                     </div>
+                    </div>
+                  </form>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
-    </section>
-    
+      </section>
       <!-- Contact Us: End -->
     </div>
 @endsection
@@ -130,12 +131,21 @@
         canvas.addEventListener('touchmove', draw);
         canvas.addEventListener('touchend', stopDrawing);
     
-        function getTouchPos(canvas, touchEvent) {
+        function getPos(e) {
             var rect = canvas.getBoundingClientRect();
-            return {
-                x: touchEvent.touches[0].clientX - rect.left,
-                y: touchEvent.touches[0].clientY - rect.top
-            };
+            var scaleX = canvas.width / rect.width;
+            var scaleY = canvas.height / rect.height;
+            if (e.touches) {
+                return {
+                    x: (e.touches[0].clientX - rect.left) * scaleX,
+                    y: (e.touches[0].clientY - rect.top) * scaleY
+                };
+            } else {
+                return {
+                    x: (e.clientX - rect.left) * scaleX,
+                    y: (e.clientY - rect.top) * scaleY
+                };
+            }
         }
     
         function startDrawing(e) {
@@ -193,20 +203,22 @@
             }
         });
     
-        document.getElementById('guestbookForm').addEventListener('submit', function() {
+        document.getElementById('guestbookForm').addEventListener('submit', function(event) {
             var form = this;
             var submitBtn = document.getElementById('submitBtn');
     
-            // Disable all form inputs
+            // Disable all form inputs except canvas
             var inputs = form.querySelectorAll('input, select, button');
             inputs.forEach(function(input) {
-                input.disabled = true;
+                if (input !== submitBtn) {
+                    input.disabled = true;
+                }
             });
     
-            // Optionally, you can show a loading spinner or message here
+            // Disable the submit button to prevent multiple submissions
+            submitBtn.disabled = true;
         });
     </script>
-    
     <script>
         function showSweetAlert(response) {
             Swal.fire({
@@ -223,5 +235,4 @@
             @endif
         });
     </script>
-    
 @endpush
