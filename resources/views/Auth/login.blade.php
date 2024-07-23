@@ -26,7 +26,8 @@
                 <h4 class="mb-2">Welcome! 👋</h4>
                 <p class="mb-4">Silahkam Maksud Untuk Mengakses Portal</p>
 
-                <form id="formAuthentication" class="mb-3" action="index.html" method="POST">
+                <form id="formAuthentication" class="mb-3" action="{{ route('submitLogin') }}" method="POST">
+                    @csrf
                     <div class="mb-3">
                     <label for="email" class="form-label">Email or Username</label>
                     <input
@@ -67,10 +68,10 @@
                 </form>
 
                 <p class="text-center">
-                    <span>New on our platform?</span>
-                    <a href="auth-register-basic.html">
-                    <span>Create an account</span>
-                    </a>
+                    <span>New on our platform?</span>                 
+                    <a href="{{ route('register.view') }}">
+                        <span>Create an account</span>
+                      </a>
                 </p>
 
                 

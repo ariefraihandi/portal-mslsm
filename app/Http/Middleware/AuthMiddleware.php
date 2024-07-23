@@ -56,7 +56,7 @@ class AuthMiddleware
             
             // Jika pengguna mengakses /login, arahkan ke profil akun
             if ($request->is('login')) {
-                return redirect()->route('account.profile');
+                return redirect()->route('user.account.detil');
             }
             
             // Lanjutkan ke rute yang diminta
@@ -76,6 +76,6 @@ class AuthMiddleware
             return response()->json($response, 401);
         }
 
-        return redirect()->route('login')->with('response', $response);
+        return redirect()->route('login.view')->with('response', $response);
     }
 }

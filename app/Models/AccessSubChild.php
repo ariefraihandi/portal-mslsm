@@ -14,7 +14,7 @@ class AccessSubChild extends Model
         'childsubmenu_id',
     ];
 
-    protected $table = 'access_sub_children';
+    protected $table = 'access_sub_childs';
 
     public function role()
     {

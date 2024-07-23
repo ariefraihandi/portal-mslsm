@@ -52,8 +52,7 @@ class GuestBookController extends Controller
             $encodedImage->save(public_path('storage/guestbook_images/'. $newName));     
 
             unlink('temp/' . $imageName);
-
-            // Simpan data ke database
+          
             Guestbook::create([
                 'name'          => $request->name,
                 'pekerjaan'     => $request->pekerjaan,

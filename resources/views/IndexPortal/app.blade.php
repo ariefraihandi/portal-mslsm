@@ -8,18 +8,18 @@
   data-assets-path="{{ asset('assets') }}/"
   data-template="vertical-menu-template">
  
-@include('Portal.Index.head')
+@include('IndexPortal.head')
 
 <body>
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
-            {{-- @include('Portal.Index.sidebar') --}}
+            @include('IndexPortal.sidebar')
             <div class="layout-page">
-                @include('Portal.Index.navbar')
+                @include('IndexPortal.navbar')
                 <div class="content-wrapper">
                     @yield('content')
-                    @include('Portal.Index.footer')
+                    @include('IndexPortal.footer')
                     <div class="content-backdrop fade"></div>
                 </div>
             </div>
@@ -29,7 +29,7 @@
 
         <div class="drag-target"></div>
     </div>
-    @include('Portal.Index.script')
+    @include('IndexPortal.script')
 </body>
 
 </html>

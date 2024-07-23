@@ -23,4 +23,9 @@ class AccessMenu extends Model
     {
         return $this->belongsTo(Menu::class, 'menu_id');
     }
+    
+    public function accessSubs()
+    {
+        return $this->hasMany(AccessSub::class, 'role_id', 'role_id');
+    }
 }

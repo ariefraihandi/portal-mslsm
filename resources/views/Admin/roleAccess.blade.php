@@ -11,40 +11,40 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-  <h4 class="py-3 mb-4"><span class="text-muted fw-light">Admin /</span> Role / {{$title}}</h4>       
+  <h4 class="py-3 mb-4"><span class="text-muted fw-light">Admin /</span> User / {{$title}}</h4>       
   <!-- Role cards -->
   <div class="row g-4">
-    @foreach($roles as $role)
+    {{-- @foreach($roles as $role)
     <div class="col-xl-4 col-lg-6 col-md-6">
-    <div class="card">
-        <div class="card-body">
-        <div class="d-flex justify-content-between mb-2">
-            <h6 class="fw-normal">Total {{ $role->users->count() }} users</h6>
-            <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                @foreach($role->users->sortByDesc('created_at')->take(10) as $user)
-                    <li data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top" title="{{ $user->name }}" class="avatar avatar-sm pull-up">
-                        <img class="rounded-circle" src="{{ asset('assets/img/member/' . $user->image) }}" alt="Avatar" />
-                    </li>
-                @endforeach
-            
-            </ul>
-        </div>
-        <div class="d-flex justify-content-between align-items-end">
-            <div class="role-heading">
-            <h4 class="mb-1">{{ $role->name }}</h4>
-            <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#addRoleModal" class="role-edit-modal">
-                <small>Edit Role</small>
-            </a>
+        <div class="card">
+            <div class="card-body">
+            <div class="d-flex justify-content-between mb-2">
+                <h6 class="fw-normal">Total {{ $role->users->count() }} users</h6>
+                <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
+                    @foreach($role->users->sortByDesc('created_at')->take(10) as $user)
+                        <li data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top" title="{{ $user->name }}" class="avatar avatar-sm pull-up">
+                            <img class="rounded-circle" src="{{ asset('assets/img/member/' . $user->image) }}" alt="Avatar" />
+                        </li>
+                    @endforeach
+                
+                </ul>
             </div>
-            <div>
-            <i class="bx bx-trash" style="cursor: pointer;" onclick="showDeleteConfirmation('{{ route('roles.destroy', ['id' => $role->id]) }}', 'Are you sure you want to delete this role?')"></i>
+            <div class="d-flex justify-content-between align-items-end">
+                <div class="role-heading">
+                <h4 class="mb-1">{{ $role->name }}</h4>
+                <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#addRoleModal" class="role-edit-modal">
+                    <small>Edit Role</small>
+                </a>
+                </div>
+                <div>
+                <i class="bx bx-trash" style="cursor: pointer;" onclick="showDeleteConfirmation('{{ route('roles.destroy', ['id' => $role->id]) }}', 'Are you sure you want to delete this role?')"></i>
+                </div>
             </div>
-        </div>
+            </div>
         </div>
     </div>
-    </div>
-    @endforeach
-    <div class="col-xl-4 col-lg-6 col-md-6">
+    @endforeach --}}
+    {{-- <div class="col-xl-4 col-lg-6 col-md-6">
       <div class="card h-100">
         <div class="row h-100">
           <div class="col-sm-5">
@@ -62,7 +62,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> --}}
     <div class="col-12">
         <div class="card">
             <h5 class="card-header">Table Role Access Menus</h5>
@@ -193,7 +193,7 @@
 </div>
      
 <!-- Add Role Modal -->
-  <div class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true">
+  {{-- <div class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-simple modal-dialog-centered">
     <div class="modal-content p-3 p-md-5">
       <div class="modal-body">
@@ -232,7 +232,7 @@
       </div>
     </div>
   </div>
-  </div>
+  </div> --}}
 <!-- Add Role Modal -->
    
 @endsection
@@ -253,7 +253,7 @@
             var menuId      = checkbox.getAttribute('value');
 
             // Kirim data ke controller
-            fetch('/role/change/access', {
+            fetch('/admin/user/changeaccess', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

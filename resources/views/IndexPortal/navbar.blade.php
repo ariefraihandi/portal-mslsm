@@ -21,7 +21,7 @@ id="layout-navbar">
     <div class="nav-item navbar-search-wrapper mb-0">
       <a class="nav-item nav-link px-0" href="https://bilikhukum.com/">
         <i class="bx bx-search bx-sm"></i>
-        <span class="d-none d-md-inline-block text-muted">Bilik Hukum</span>
+        <span class="d-none d-md-inline-block text-muted">Portal MS Lhokseumawe</span>
       </a>
     </div>
   </div>
@@ -301,7 +301,7 @@ id="layout-navbar">
     <li class="nav-item navbar-dropdown dropdown-user dropdown">
       @php
         $userId = session('user_id');
-        $user = App\Models\User::find($userId);
+        $user = App\Models\UserDetail::find($userId);
         $userImage = $user->image ?? 'default.jpg'; // Use default image if no image is found
 
         // Find the user's role
@@ -310,18 +310,18 @@ id="layout-navbar">
         // Get the role name
         $roleName = $role ? $role->name : 'Unknown Role';
       @endphp
-      <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-        <div class="avatar avatar-online">
-          <img src="{{ asset('assets/img/member/' . $userImage) }}" alt="{{ $user->name }}" class="w-px-40 h-auto rounded-circle" />
-        </div>
-      </a>
+    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+      <div class="avatar avatar-online">
+          <img src="{{ asset('assets/img/avatars/' . $userImage) }}" alt="{{ $user->name }}" class="avatar-img w-px-40 h-200 rounded-circle" />
+      </div>
+  </a>
       <ul class="dropdown-menu dropdown-menu-end">
         <li>
           <a class="dropdown-item" href="pages-account-settings-account.html">
             <div class="d-flex">
               <div class="flex-shrink-0 me-3">
                 <div class="avatar avatar-online">
-                  <img src="{{ asset('assets/img/member/' . $userImage) }}" alt="{{ $user->name }}" class="w-px-40 h-auto rounded-circle" />
+                  <img src="{{ asset('assets/img/avatars/' . $userImage) }}" alt="{{ $user->name }}" class="w-px-40 h-200 rounded-circle" />
                 </div>
               </div>
               <div class="flex-grow-1">
@@ -335,16 +335,16 @@ id="layout-navbar">
           <div class="dropdown-divider"></div>
         </li>
         <li>
-          <a class="dropdown-item" href="{{route('account.profile')}}">
+          {{-- <a class="dropdown-item" href="{{route('account.profile')}}">
             <i class="bx bx-user me-2"></i>
             <span class="align-middle">My Profile</span>
-          </a>
+          </a> --}}
         </li>
         <li>
-          <a class="dropdown-item" href="{{route('account.detil')}}">
+          {{-- <a class="dropdown-item" href="{{route('account.detil')}}">
             <i class="bx bx-cog me-2"></i>
             <span class="align-middle">Settings</span>
-          </a>
+          </a> --}}
         </li>
         {{-- <li>
           <a class="dropdown-item" href="pages-account-settings-billing.html">
@@ -374,10 +374,10 @@ id="layout-navbar">
           <div class="dropdown-divider"></div>
         </li> --}}
         <li>
-          <a class="dropdown-item" href="{{ route('logout') }}">
+          {{-- <a class="dropdown-item" href="{{ route('logout') }}">
             <i class="bx bx-power-off me-2"></i>
             <span class="align-middle">Log Out</span>
-          </a>
+          </a> --}}
         </li>
       </ul>
     </li>
