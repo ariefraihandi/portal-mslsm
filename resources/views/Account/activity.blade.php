@@ -261,7 +261,7 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
+          appId: "{{ env('APP_ID') }}",
         });
     
         let deviceToken = OneSignal.User.PushSubscription.id;

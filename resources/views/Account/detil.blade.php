@@ -156,7 +156,7 @@
             <a class="nav-link active" href="{{ route('user.account.detil') }}"><i class="bx bx-user me-1"></i>Details</a>          
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="app-user-view-security.html"
+            <a class="nav-link" href="{{ route('user.account.activity') }}"
               ><i class="bx bxs-timer me-1"></i>Aktifitas</a
             >
           </li>
@@ -247,11 +247,13 @@
                             @endif
                         </small>
                     </div>                   
-                    <div class="col-sm-6">
-                      <label class="form-label" for="nip">NIP</label>
-                      <input type="text" readonly name="nip" id="nip" class="form-control" value="{{$users->detail->nip}}" readonly/>
-                      <small class="error-message text-danger"></small>
-                    </div>
+                    @if ($users->detail->posisi !== 'PPNPN')
+                      <div class="col-sm-6">
+                        <label class="form-label" for="nip">NIP</label>
+                        <input type="text" readonly name="nip" id="nip" class="form-control" value="{{ $users->detail->nip }}" readonly/>
+                        <small class="error-message text-danger"></small>
+                       </div>
+                    @endif
                     <div class="col-sm-6">
                         <label for="dob" class="form-label">Tanggal Lahir</label>
                         @php
@@ -277,7 +279,7 @@
                     </div>
                     <div class="col-sm-6">
                       <label class="form-label" for="instansi">Intansi</label>
-                      <input type="text" name="instansi" id="instansi" class="form-control" value="{{$users->detail->instansi}}" readonly/>
+                      <input type="text" name="instansi" id="instansi" class="form-control" value="MS Lhokseumawe" readonly/>
                       <small class="error-message text-danger"></small>
                     </div>
                     <div class="col-sm-6">
@@ -330,7 +332,7 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
+          appId: "{{ env('APP_ID') }}",
         });
     
         let deviceToken = OneSignal.User.PushSubscription.id;

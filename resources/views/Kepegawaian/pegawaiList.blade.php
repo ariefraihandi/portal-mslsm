@@ -32,7 +32,7 @@
                     </svg>
                 </span>  
               </div>
-              <h2 class="ms-1 mb-0">42</h2>
+              <h2 class="ms-1 mb-0">{{$hakimCount+$cakimCount}}</h2>
             </div>
             <h4 class="mb-1">Hakim / Cakim</h4>           
           </div>
@@ -49,7 +49,7 @@
                         </svg>
                     </span> 
                 </div>
-              <h2 class="ms-1 mb-0">8</h2>
+              <h2 class="ms-1 mb-0">{{$pegawaiCount+$cpnsCount}}</h2>
             </div>
             <h4 class="mb-1">Pegawai / CPNS</h4>
           </div>
@@ -90,7 +90,7 @@
                     </svg>
                 </span> 
               </div>
-              <h2 class="ms-1 mb-0">27</h2>
+              <h2 class="ms-1 mb-0">{{$ppnpnCount}}</h2>
             </div>
             <h4 class="mb-1">PPNPN</h4>
           </div>
@@ -108,7 +108,7 @@
                     </svg>
                 </span> 
               </div>
-              <h2 class="ms-1 mb-0">13</h2>
+              <h2 class="ms-1 mb-0">{{$magangCount}}</h2>
             </div>
             <h4 class="mb-1">Magang</h4>
           </div>
@@ -133,49 +133,44 @@
           </div>
           <div class="card-body">
             <div class="d-none d-lg-flex vehicles-progress-labels mb-3">
-              <div class="vehicles-progress-label on-the-way-text" style="width: 39.7%">Hakim</div>
-              <div class="vehicles-progress-label unloading-text" style="width: 28.3%">Pegawai</div>
-              <div class="vehicles-progress-label loading-text" style="width: 17.4%">PPNPN</div>
-              <div class="vehicles-progress-label waiting-text" style="width: 14.6%">Magang</div>
-            </div>
-            <div class="vehicles-overview-progress progress rounded-2 mb-3" style="height: 46px">
+              <div class="vehicles-progress-label on-the-way-text" style="width: {{ $hakimCakimPercentage }}%">Hakim & CAKIM</div>
+              <div class="vehicles-progress-label unloading-text" style="width: {{ $pegawaiCpnsPercentage }}%">Pegawai & CPNS</div>
+              <div class="vehicles-progress-label loading-text" style="width: {{ $ppnpnPercentage }}%">PPNPN</div>
+              <div class="vehicles-progress-label waiting-text" style="width: {{ $magangPercentage }}%">Magang</div>
+          </div>
+          <div class="vehicles-overview-progress progress rounded-2 mb-3" style="height: 46px">
               <div
-                class="progress-bar fs-big fw-medium text-start bg-primary px-1 px-lg-3 rounded-start shadow-none"
-                role="progressbar"
-                style="width: 39.7%"
-                aria-valuenow="39.7"
-                aria-valuemin="0"
-                aria-valuemax="100">
-                39.7%
+                  class="progress-bar fs-big fw-medium text-start bg-primary px-1 px-lg-3 rounded-start shadow-none"
+                  role="progressbar" style="width: {{ $hakimCakimPercentage }}%" aria-valuenow="{{ $hakimCakimPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ $hakimCakimPercentage }}% | {{ $hakimCakimCount }} Orang
               </div>
               <div
-                class="progress-bar fs-big fw-medium text-start bg-warning px-1 px-lg-3 shadow-none"
-                role="progressbar"
-                style="width: 28.3%"
-                aria-valuenow="28.3"
-                aria-valuemin="0"
-                aria-valuemax="100">
-                28.3%
+                  class="progress-bar fs-big fw-medium text-start bg-warning px-1 px-lg-3 shadow-none"
+                  role="progressbar"
+                  style="width: {{ $pegawaiCpnsPercentage }}%"
+                  aria-valuenow="{{ $pegawaiCpnsPercentage }}"
+                  aria-valuemin="0"
+                  aria-valuemax="100">
+                  {{ $pegawaiCpnsPercentage }}% | {{ $pegawaiCpnsCount }} Orang
               </div>
               <div
-                class="progress-bar fs-big fw-medium text-start text-bg-dark px-1 px-lg-3 shadow-none"
-                role="progressbar"
-                style="width: 17.4%"
-                aria-valuenow="17.4"
-                aria-valuemin="0"
-                aria-valuemax="100">
-                17.4%
+                  class="progress-bar fs-big fw-medium text-start text-bg-dark px-1 px-lg-3 shadow-none"
+                  role="progressbar"
+                  style="width: {{ $ppnpnPercentage }}%"
+                  aria-valuenow="{{ $ppnpnPercentage }}"
+                  aria-valuemin="0"
+                  aria-valuemax="100">
+                  {{ $ppnpnPercentage }}% | {{ $ppnpnCount }} Orang
               </div>
               <div
-                class="progress-bar fs-big fw-medium text-start bg-info px-1 px-lg-3 rounded-end shadow-none"
-                role="progressbar"
-                style="width: 14.6%"
-                aria-valuenow="14.6"
-                aria-valuemin="0"
-                aria-valuemax="100">
-                14.6%
+                  class="progress-bar fs-big fw-medium text-start text-bg-info px-1 px-lg-3 rounded-end shadow-none"
+                  role="progressbar"
+                  style="width: {{ $magangPercentage }}%"
+                  aria-valuenow="{{ $magangPercentage }}"
+                  aria-valuemin="0"
+                  aria-valuemax="100">
+                  {{ $magangPercentage }}% | {{ $magangCount }} Orang
               </div>
-            </div>
+          </div>
             <div class="card-datatable table-responsive">
                 <table id="pegawai-table" class="datatables-users table border-top">              
                     <thead>

@@ -23,16 +23,47 @@ class KepegawaianController extends Controller
 {
     public function showPegawaiList(Request $request)
     {
-        $accessMenus = $request->get('accessMenus');
-        $id = $request->session()->get('user_id');
-        $roles = Role::all();
+        $accessMenus        = $request->get('accessMenus');
+        $id                 = $request->session()->get('user_id');
+        $roles              = Role::all();
+        $userDetails        = UserDetail::all();
+        $totalData          = $userDetails->count();      
+
+        // Menghitung jumlah data dengan posisi tertentu
+        $hakimCount = $userDetails->where('posisi', 'HAKIM')->count();
+        $pegawaiCount = $userDetails->where('posisi', 'PEGAWAI')->count();
+        $cakimCount = $userDetails->where('posisi', 'CAKIM')->count();
+        $cpnsCount = $userDetails->where('posisi', 'CPNS')->count();
+        $ppnpnCount = $userDetails->where('posisi', 'PPNPN')->count();
+        $magangCount = $userDetails->where('posisi', 'MAGANG')->count();
+
+        $hakimCakimCount = $hakimCount + $cakimCount;
+        $pegawaiCpnsCount = $pegawaiCount + $cpnsCount;
+    
+        // Menghitung persentase
+        $hakimCakimPercentage = $totalData > 0 ? ($hakimCakimCount / $totalData) * 100 : 0;
+        $pegawaiCpnsPercentage = $totalData > 0 ? ($pegawaiCpnsCount / $totalData) * 100 : 0;
+        $ppnpnPercentage = $totalData > 0 ? ($ppnpnCount / $totalData) * 100 : 0;
+        $magangPercentage = $totalData > 0 ? ($magangCount / $totalData) * 100 : 0;
 
         $data = [
             'title' => 'Pegawai',
             'subtitle' => 'Portal MS Lhokseumawe',
             'sidebar' => $accessMenus,
             'roles' => $roles, 
-          
+            'totalData' => $totalData,        
+            'hakimCount' => $hakimCount,
+            'pegawaiCount' => $pegawaiCount,
+            'cakimCount' => $cakimCount,
+            'cpnsCount' => $cpnsCount,
+            'ppnpnCount' => $ppnpnCount,
+            'magangCount' => $magangCount,
+            'hakimCakimPercentage' => $hakimCakimPercentage,
+            'pegawaiCpnsPercentage' => $pegawaiCpnsPercentage,
+            'ppnpnPercentage' => $ppnpnPercentage,
+            'magangPercentage' => $magangPercentage,
+            'hakimCakimCount' => $hakimCakimCount,
+            'pegawaiCpnsCount' => $pegawaiCpnsCount,
         ];
 
         return view('Kepegawaian.pegawaiList', $data);
