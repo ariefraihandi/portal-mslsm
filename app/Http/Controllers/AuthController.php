@@ -156,10 +156,10 @@ class AuthController extends Controller
             $userDetail->nip = $request->input('nip', 'default_nip');
             $userDetail->whatsapp = $request->input('whatsapp', 'default_whatsapp');
             $userDetail->tlahir = $request->input('tlahir', 'default_tlahir');
-            $userDetail->tglahir = $request->input('tglahir', 'default_value');
+            $userDetail->tglahir = $request->input('tglahir', '2000-01-01');
             $userDetail->kelamin = $request->input('kelamin', 'L');
             $userDetail->alamat = $request->input('alamat', 'default_alamat');
-            $userDetail->instansi = $request->input('instansi', "Mahkamah Suar'iyah Lhokseumawe");
+            $userDetail->instansi = $request->input('instansi', "1");
             $userDetail->iguser = $request->input('iguser', 'default_iguser');
             $userDetail->fbuser = $request->input('fbuser', 'default_fbuser');
             $userDetail->twuser = $request->input('twuser', 'default_twuser');
