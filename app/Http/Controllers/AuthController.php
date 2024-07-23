@@ -143,7 +143,7 @@ class AuthController extends Controller
             $user->username = $request->input('username');
             $user->email = $request->input('email');
             $user->whatsapp = $request->input('whatsapp', 'default_whatsapp'); // default value
-            $user->role = 8;
+            $user->role = 1;
             $user->password = Hash::make($request->input('password'));
             $user->save();
 
