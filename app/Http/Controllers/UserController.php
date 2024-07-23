@@ -91,12 +91,15 @@ class UserController extends Controller
                 $user = Auth::user();
                 $oldImage = $user->detail->image; // Ambil nama gambar lama dari kolom image di UserDetail
         
-                if ($oldImage !== 'default.webp') {
+                if ($oldImage !== 'default.jpeg') {
                     // Hapus gambar lama jika bukan default.webp
-                    if (file_exists(public_path('assets/img/avatars/' . $oldImage))) {
-                        unlink(public_path('assets/img/avatars/' . $oldImage));
+                    $filePath = public_path('assets/img/avatars/' . $oldImage);
+                
+                    if (File::exists($filePath)) {
+                        File::delete($filePath);
                     }
                 }
+                
         
                 $file = $request->file('avatar');
                 $imageName = time() . '.' . $file->getClientOriginalExtension();
