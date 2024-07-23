@@ -20,7 +20,7 @@ class AdminController extends Controller
 
     public function showMenu(Request $request)
     {
-        $accessMenus            = $request->get('accessMenus');
+        // $accessMenus            = $request->get('accessMenus');
         $menus                  = Menu::all();
         $menuSubs               = MenuSub::all();
         $menuSubChildren        = MenuSubChild::all();
@@ -29,7 +29,7 @@ class AdminController extends Controller
         $data = [
             'title'             => 'Menu List',
             'subtitle'          => 'Portal MS Lhokseumawe',
-            'sidebar'           => $accessMenus,
+            // 'sidebar'           => $accessMenus,
             'menus'             => $menus,
             'menuSubs'          => $menuSubs,
             'menuSubChildren'   => $menuSubChildren,
@@ -41,7 +41,7 @@ class AdminController extends Controller
 
     public function showsubMenu(Request $request)
     {
-        $accessMenus            = $request->get('accessMenus');
+        // $accessMenus            = $request->get('accessMenus');
         $menus                  = Menu::all();
         $menuSubs               = MenuSub::all();
         $menuSubChildren        = MenuSubChild::all();
@@ -50,7 +50,7 @@ class AdminController extends Controller
         $data = [
             'title'             => 'Submenu List',
             'subtitle'          => 'Bilik Hukum',
-            'sidebar'           => $accessMenus,
+            // 'sidebar'           => $accessMenus,
             'menus'             => $menus,
             'menuSubs'          => $menuSubs,
             'menuSubChildren'   => $menuSubChildren,
@@ -62,7 +62,7 @@ class AdminController extends Controller
     
     public function showchildMenu(Request $request)
     {
-        $accessMenus            = $request->get('accessMenus');
+        // $accessMenus            = $request->get('accessMenus');
         $menus                  = Menu::all();
         $menuSubs               = MenuSub::all();
         $menuSubChildren        = MenuSubChild::all();
@@ -71,7 +71,7 @@ class AdminController extends Controller
         $data = [
             'title'             => 'Child Menu List',
             'subtitle'          => 'Portal MS Lhokseumawe',
-            'sidebar'           => $accessMenus,
+            // 'sidebar'           => $accessMenus,
             'menus'             => $menus,
             'menuSubs'          => $menuSubs,
             'menuSubChildren'   => $menuSubChildren,
@@ -83,7 +83,7 @@ class AdminController extends Controller
     
     public function showRoleList(Request $request)
     {
-        $accessMenus            = $request->get('accessMenus');
+        // $accessMenus            = $request->get('accessMenus');
         $menus                  = Menu::all();
         $menuSubs               = MenuSub::all();
         $menuSubChildren        = MenuSubChild::all();
@@ -92,7 +92,7 @@ class AdminController extends Controller
         $data = [
             'title'             => 'Role List',
             'subtitle'          => 'Portal MS Lhokseumawe',
-            'sidebar'           => $accessMenus,
+            // 'sidebar'           => $accessMenus,
             'menus'             => $menus,
             'menuSubs'          => $menuSubs,
             'menuSubChildren'   => $menuSubChildren,
