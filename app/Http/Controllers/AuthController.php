@@ -30,7 +30,7 @@ class AuthController extends Controller
             'meta_keywords' => 'login, portal, MS Lhokseumawe'
         ];
 
-        return view('auth.login', $data);
+        return view('Auth.login', $data);
     }
 
     public function login(Request $request)
