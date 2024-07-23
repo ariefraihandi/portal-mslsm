@@ -30,7 +30,9 @@
                   alt="User avatar" />
                 <div class="user-info text-center">
                   <h4 class="mb-2">{{$users->detail->name}}</h4>
-                  <span class="badge bg-label-secondary">{{$users->detail->instansi}}</span>
+                  <span class="badge bg-label-secondary">
+                    MS Lhokseumawe
+                </span>
                 </div>
               </div>
             </div>
@@ -53,7 +55,7 @@
                 <span class="badge bg-label-primary p-2 rounded"><i class="bx bx-user-pin bx-sm"></i></span>
                 <div>
                   <h5 class="mb-0">{{$users->detail->jabatan}}</h5>
-                  <span>Status</span>
+                  <span>Jabatan</span>
                 </div>
               </div>
             </div>

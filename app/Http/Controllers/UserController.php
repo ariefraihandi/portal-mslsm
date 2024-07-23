@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
@@ -101,16 +102,18 @@ class UserController extends Controller
                 $imageName = time() . '.' . $file->getClientOriginalExtension();
                 $newName = Str::random(12) . '.webp';
         
-                $file->move('temp', $imageName);
-        
+                $file->move(public_path('temp'), $imageName);
+                
                 $imgManager = new ImageManager(new Driver());
                 $profile = $imgManager->read('temp/' . $imageName);
                 $encodedImage = $profile->encode(new WebpEncoder(quality: 65));             
                 $encodedImage->save(public_path('assets/img/avatars/'. $newName));     
         
                 // Hapus gambar sementara
-                unlink('temp/' . $imageName);
-        
+                File::delete(public_path('temp/' . $imageName));
+                
+             
+
                 // Update kolom image di tabel user_detail
                 $user->detail->update(['image' => $newName]);
 
