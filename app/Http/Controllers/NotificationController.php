@@ -99,6 +99,25 @@ class NotificationController extends Controller
 
         Log::info('Device token stored successfully', ['userDevice' => $userDevice]);
 
+        // Mengirim pesan dengan OneSignal
+        try {
+            $fields = [
+                'app_id' => config('services.onesignal.app_id'),
+                'include_player_ids' => [$request->device_token],
+                'headings' => ['en' => 'Selamat datang!'],
+                'contents' => ['en' => 'Terima kasih telah mendaftar.'],
+                'url' => 'https://portal.ms-lhokseumawe.go.id/auth',
+                'chrome_web_icon' => 'https://portal.ms-lhokseumawe.go.id/assets/img/logo/logo.png',
+                'small_icon' => 'https://portal.ms-lhokseumawe.go.id/assets/img/logo/logo.png',
+                'large_icon' => 'https://portal.ms-lhokseumawe.go.id/assets/img/logo/logo.png',
+            ];
+
+            $response = OneSignal::sendNotificationCustom($fields);
+            Log::info('OneSignal notification sent successfully', ['response' => $response]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send OneSignal notification', ['error' => $e->getMessage()]);
+        }
+
         return response()->json(['success' => true], 201);
     }
 }
