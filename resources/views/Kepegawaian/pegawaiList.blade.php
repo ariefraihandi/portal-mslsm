@@ -296,7 +296,7 @@
                             </div>
                         </div>
                         <input type="hidden" name="instansi" id="instansi" placeholder="Instansi" value="1">
-                        <button type="submit" class="btn btn-primary">Add Menu</button>
+                        <button type="submit" class="btn btn-primary">Tambah Pegawai</button>
                     </form>
                 </div>
             </div>
