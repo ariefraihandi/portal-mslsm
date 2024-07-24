@@ -263,7 +263,7 @@ class KepegawaianController extends Controller
     public function pegawaiGetData(Request $request)
     {
         if ($request->ajax()) {
-            $data = UserDetail::select(['users_detail.id', 'users_detail.name', 'users_detail.image', 'jabatan.name as jabatan', 'users_detail.nip', 'users_detail.whatsapp', 'users_detail.posisi', 'users_detail.created_at'])
+            $data = UserDetail::select(['users_detail.id', 'users_detail.user_id', 'users_detail.name', 'users_detail.image', 'jabatan.name as jabatan', 'users_detail.nip', 'users_detail.whatsapp', 'users_detail.posisi', 'users_detail.created_at'])
                 ->join('jabatan', 'users_detail.jabatan', '=', 'jabatan.name')
                 ->orderBy('jabatan.id', 'asc');
     
@@ -298,7 +298,7 @@ class KepegawaianController extends Controller
                     return $counter;
                 })
                 ->addColumn('action', function($row){
-                    $deleteUrl = route('pegawai.destroy', ['id' => $row->id]);
+                    $deleteUrl = route('pegawai.destroy', ['id' => $row->user_id]);
                     $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>';
                     $btn .= '<a href="javascript:void(0)" class="delete btn btn-danger btn-sm" onclick="showDeleteConfirmation(\'' . $deleteUrl . '\', \'Apakah Anda yakin ingin menghapus item ini?\')"><i class="fa fa-trash"></i></a>';
                     return $btn;
