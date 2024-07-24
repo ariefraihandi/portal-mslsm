@@ -41,4 +41,10 @@ class UserDetail extends Model
     {
         return $this->belongsTo(Instansi::class, 'instansi', 'id');
     }
+
+    public function jabatan()
+    {
+        return $this->belongsTo(Jabatan::class, 'jabatan', 'name');
+    }
+
 }

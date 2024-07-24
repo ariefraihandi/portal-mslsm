@@ -139,47 +139,32 @@
               <div class="vehicles-progress-label waiting-text" style="width: {{ $magangPercentage }}%">Magang</div>
           </div>
           <div class="vehicles-overview-progress progress rounded-2 mb-3" style="height: 46px">
-              <div
-                  class="progress-bar fs-big fw-medium text-start bg-primary px-1 px-lg-3 rounded-start shadow-none"
-                  role="progressbar" style="width: {{ $hakimCakimPercentage }}%" aria-valuenow="{{ $hakimCakimPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ $hakimCakimPercentage }}% | {{ $hakimCakimCount }} Orang
-              </div>
-              <div
-                  class="progress-bar fs-big fw-medium text-start bg-warning px-1 px-lg-3 shadow-none"
-                  role="progressbar"
-                  style="width: {{ $pegawaiCpnsPercentage }}%"
-                  aria-valuenow="{{ $pegawaiCpnsPercentage }}"
-                  aria-valuemin="0"
-                  aria-valuemax="100">
-                  {{ $pegawaiCpnsPercentage }}% | {{ $pegawaiCpnsCount }} Orang
-              </div>
-              <div
-                  class="progress-bar fs-big fw-medium text-start text-bg-dark px-1 px-lg-3 shadow-none"
-                  role="progressbar"
-                  style="width: {{ $ppnpnPercentage }}%"
-                  aria-valuenow="{{ $ppnpnPercentage }}"
-                  aria-valuemin="0"
-                  aria-valuemax="100">
-                  {{ $ppnpnPercentage }}% | {{ $ppnpnCount }} Orang
-              </div>
-              <div
-                  class="progress-bar fs-big fw-medium text-start text-bg-info px-1 px-lg-3 rounded-end shadow-none"
-                  role="progressbar"
-                  style="width: {{ $magangPercentage }}%"
-                  aria-valuenow="{{ $magangPercentage }}"
-                  aria-valuemin="0"
-                  aria-valuemax="100">
-                  {{ $magangPercentage }}% | {{ $magangCount }} Orang
-              </div>
-          </div>
+            <div
+                class="progress-bar fs-big fw-medium text-start bg-primary px-1 px-lg-3 rounded-start shadow-none"
+                role="progressbar" style="width: {{ $hakimCakimPercentage }}%" aria-valuenow="{{ $hakimCakimPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($hakimCakimPercentage, 2) }}% | {{ number_format($hakimCakimCount) }} Orang
+            </div>
+            <div
+                class="progress-bar fs-big fw-medium text-start bg-warning px-1 px-lg-3 shadow-none"
+                role="progressbar" style="width: {{ $pegawaiCpnsPercentage }}%" aria-valuenow="{{ $pegawaiCpnsPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($pegawaiCpnsPercentage, 2) }}% | {{ number_format($pegawaiCpnsCount) }} Orang
+            </div>
+            <div
+                class="progress-bar fs-big fw-medium text-start text-bg-dark px-1 px-lg-3 shadow-none"
+                role="progressbar" style="width: {{ $ppnpnPercentage }}%" aria-valuenow="{{ $ppnpnPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($ppnpnPercentage, 2) }}% | {{ number_format($ppnpnCount) }} Orang
+            </div>
+            <div
+                class="progress-bar fs-big fw-medium text-start text-bg-info px-1 px-lg-3 rounded-end shadow-none"
+                role="progressbar" style="width: {{ $magangPercentage }}%" aria-valuenow="{{ $magangPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($magangPercentage, 2) }}% | {{ number_format($magangCount) }} Orang
+            </div>
+        </div>
+        
             <div class="card-datatable table-responsive">
                 <table id="pegawai-table" class="datatables-users table border-top">              
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>No</th>
                             <th>Pegawai</th>
                             <th>Jabatan</th>
-                            <th>Posisi</th>
-                            <th>NIP</th>
+                            <th>Posisi</th>                            
                             <th>WhatsApp</th>
                             <th>Aksi</th>       
                         </tr>
@@ -240,8 +225,7 @@
                                     <option value="Kasubbag Perencanaan / IT"> Kasubbag Perencanaan / IT</option>
                                     <option value="Kasubbag Kepegawaian">Kasubbag Kepegawaian</option>
                                     <option value="Juru Sita">Juru Sita</option>
-                                    <option value="Juru Sita Pengganti">Juru Sita Pengganti</option>
-                                    <option value="Juru Sita Pengganti">Juru Sita Pengganti</option>
+                                    <option value="Juru Sita Pengganti">Juru Sita Pengganti</option>                                    
                                     <option value="Pranata Komputer Ahli Pertama">Pranata Komputer Ahli Pertama</option>
                                     <option value="Analis Perkara Peradilan">Analis Perkara Peradilan</option>
                                     <option value="Arsiparis Pelaksana">Arsiparis Pelaksana</option>
@@ -335,11 +319,10 @@
             serverSide: true,
             ajax: '{!! route('pegawai.getData') !!}',
             columns: [
-                { data: 'id', name: 'id' },
+                { data: 'no', name: 'no' }, 
                 { data: 'pegawai', name: 'pegawai' },
                 { data: 'jabatan', name: 'jabatan' },
                 { data: 'posisi', name: 'posisi' },
-                { data: 'nip', name: 'nip' },
                 { data: 'whatsapp', name: 'whatsapp' },
                 { data: 'action', name: 'action', orderable: false, searchable: false }
             ]
@@ -348,21 +331,23 @@
 </script>
 
   <script>
-    function showDeleteConfirmation(url, message) {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: message,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = url;
-            }
-        });
-    }
+   function showDeleteConfirmation(url, message) {
+    Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: message,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
+    });
+}
+
 
     function showSweetAlert(response) {
         Swal.fire({

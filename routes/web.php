@@ -29,6 +29,7 @@ Route::get('/whatsapp/verify',                  [AuthController::class, 'verifyW
 
 Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(function () {
     Route::get('/kepegawaian/pegawai/list',         [KepegawaianController::class, 'showPegawaiList'])->name('kepegawaian.pegawai.list');
+    
 
     Route::get('/user/account/detil',               [UserController::class, 'showAccount'])->name('user.account.detil');
     Route::get('/user/account/activity',            [UserController::class, 'showActivity'])->name('user.account.activity');
@@ -54,6 +55,8 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/account/avatar',                  [UserController::class, 'uploadAvatar'])->name('upload.avatar');
     Route::post('/account/update',                  [UserController::class, 'accountUpdate'])->name('account.update');    
     Route::post('/pegawai/add',                     [KepegawaianController::class, 'pegawaiAdd'])->name('pegawai.add');
+    Route::get('/kepegawaian/pegawai/destroy',      [KepegawaianController::class, 'destroyPegawai'])->name('pegawai.destroy');
+    
     //Move
         Route::post('/move-menu',                   [AdminController::class, 'moveMenu'])->name('move.menu');
         Route::post('/move-submenu',                [AdminController::class, 'moveSubmenu'])->name('move.submenu');
@@ -64,6 +67,8 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/send-notification/{userId}', [NotificationController::class, 'sendNotificationToUser']);
     Route::get('/test-notif', function () {return view('test-notif');});    
     
+    
+
     
 
     Route::get('/getdata/menu',                     [AdminController::class, 'getDataMenu'])->name('menu.getData');

@@ -263,35 +263,102 @@ class KepegawaianController extends Controller
     public function pegawaiGetData(Request $request)
     {
         if ($request->ajax()) {
-            $data = UserDetail::select(['id', 'name', 'image', 'jabatan', 'nip', 'whatsapp', 'posisi', 'created_at']);
+            $data = UserDetail::select(['users_detail.id', 'users_detail.name', 'users_detail.image', 'jabatan.name as jabatan', 'users_detail.nip', 'users_detail.whatsapp', 'users_detail.posisi', 'users_detail.created_at'])
+                ->join('jabatan', 'users_detail.jabatan', '=', 'jabatan.name')
+                ->orderBy('jabatan.id', 'asc');
+    
             return Datatables::of($data)
                 ->addColumn('pegawai', function ($user) {
                     $userImage = $user->image ? asset('assets/img/avatars/' . $user->image) : asset('assets/img/avatars/default-image.jpg');
                     $userName = $user->name ?? 'Unknown User';
                     $userNip = $user->nip ?? 'Unknown NIP';
                     $userSince = Carbon::parse($user->created_at)->format('d F Y');
-                
+    
                     // Format output
                     $output = '
                         <div class="d-flex align-items-center">
                             <img src="' . $userImage . '" alt="Avatar" class="rounded-circle me-2" width="40" height="40">
                             <div>
-                                <span class="fw-bold">' . e($userName) . '</span>
-                                <small class="text-muted d-block">' . e($userNip) . '</small>
-                                <small class="text-muted d-block">Since: ' . $userSince . '</small>
+                                <span class="fw-bold">' . e($userName) . '</span>';
+    
+                    // Add NIP only if it's not 'default_nip'
+                    if ($userNip !== 'default_nip') {
+                        $output .= '<small class="text-muted d-block">' . e($userNip) . '</small>';
+                    }
+    
+                    $output .= '<small class="text-muted d-block">Since: ' . $userSince . '</small>
                             </div>
                         </div>';
-                
+    
                     return $output;
                 })
+                ->addColumn('no', function () {
+                    static $counter = 0;
+                    $counter++;
+                    return $counter;
+                })
                 ->addColumn('action', function($row){
+                    $deleteUrl = route('pegawai.destroy', ['id' => $row->id]);
                     $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>';
-                    $btn .= '<a href="javascript:void(0)" class="delete btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>';
+                    $btn .= '<a href="javascript:void(0)" class="delete btn btn-danger btn-sm" onclick="showDeleteConfirmation(\'' . $deleteUrl . '\', \'Apakah Anda yakin ingin menghapus item ini?\')"><i class="fa fa-trash"></i></a>';
                     return $btn;
                 })
-                
                 ->rawColumns(['pegawai', 'action'])
                 ->make(true);
         }
     }
+
+    public function destroyPegawai(Request $request)
+    {
+        $id = $request->query('id');
+
+        if ($id) {
+            $pegawai = UserDetail::where('user_id', $id)->first();
+
+            if ($pegawai) {
+                $pegawaiName = $pegawai->name;
+
+                // Hapus dari tabel UserDetail
+                $pegawai->delete();
+
+                // Hapus dari tabel User
+                User::where('id', $id)->delete();
+
+                // Hapus dari tabel WhatsappVerificationToken
+                WhatsappVerificationToken::where('user_id', $id)->delete();
+
+                // Hapus dari tabel EmailVerificationToken
+                EmailVerificationToken::where('user_id', $id)->delete();
+
+                // Hapus dari tabel UserActivity
+                UserActivity::where('user_id', $id)->delete();
+
+                return redirect()->back()->with([
+                    'response' => [
+                        'success' => true,
+                        'title' => 'Berhasil',
+                        'message' => 'Pegawai ' . $pegawaiName . ' berhasil dihapus'
+                    ],
+                ]);
+            } else {
+                return redirect()->back()->with([
+                    'response' => [
+                        'success' => false,
+                        'title' => 'Gagal',
+                        'message' => 'Pegawai tidak ditemukan'
+                    ],
+                ]);
+            }
+        } else {
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => false,
+                    'title' => 'Gagal',
+                    'message' => 'ID pegawai tidak diberikan'
+                ],
+            ]);
+        }
+    }
+
+    
 }
