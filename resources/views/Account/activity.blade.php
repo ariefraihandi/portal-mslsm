@@ -43,35 +43,20 @@
                           Not set
                       @else
                           {{ $users->detail->nip }}
-                          @php
-                              // Ambil NIP dari user
-                              $nip = $users->detail->nip;
-                              
-                              // Pisahkan NIP menjadi bagian-bagian yang sesuai
-                              $tglLahir = substr($nip, 0, 8); // 19920521
-                              $tglMasuk = substr($nip, 8, 8); // 20220310
-              
-                              // Ubah tanggal menjadi format yang bisa diolah oleh Carbon
-                              $tglMasukKerja = Carbon::createFromFormat('Ymd', $tglMasuk);
-                              $today = Carbon::today();
-              
-                              // Hitung selisih masa kerja
-                              $masaKerja = $tglMasukKerja->diff($today);
-                              echo $masaKerja->y . " tahun, " . $masaKerja->m . " bulan, " . $masaKerja->d . " hari";
-                          @endphp
+                      
                       @endif
                   </h5>
-                  <span>Masa Kerja</span>
+                  <span>NIP</span>
                 </div>
               </div>
               <div class="d-flex align-items-start mt-3 gap-3">
                 <span class="badge bg-label-primary p-2 rounded"><i class="bx bx-user-pin bx-sm"></i></span>
                 <div>
                   <h5 class="mb-0">{{$users->detail->jabatan}}</h5>
-                  <span>Status</span>
+                  <span>Jabatan</span>
                 </div>
               </div>
-            </div>
+            </v>
             <h5 class="pb-2 border-bottom mb-4">Details</h5>
             <div class="info-container">
               <ul class="list-unstyled">
@@ -101,7 +86,7 @@
         </div>
         <!-- /User Card -->
         <!-- Plan Card -->
-        <div class="card mb-4">
+        {{-- <div class="card mb-4">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
               <span class="badge bg-label-primary">Sisa Cuti</span>
@@ -156,7 +141,7 @@
               </button>
             </div>
           </div>
-        </div>
+        </div> --}}
         <!-- /Plan Card -->
       </div>
       <!--/ User Sidebar -->

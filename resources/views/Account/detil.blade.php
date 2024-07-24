@@ -48,7 +48,7 @@
                       
                       @endif
                   </h5>
-                  <span>Masa Kerja</span>
+                  <span>NIP</span>
                 </div>
               </div>
               <div class="d-flex align-items-start mt-3 gap-3">
@@ -88,7 +88,7 @@
         </div>
         <!-- /User Card -->
         <!-- Plan Card -->
-        <div class="card mb-4">
+        {{-- <div class="card mb-4">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
               <span class="badge bg-label-primary">Sisa Cuti</span>
@@ -143,7 +143,7 @@
               </button>
             </div>
           </div>
-        </div>
+        </div> --}}
         <!-- /Plan Card -->
       </div>
       <!--/ User Sidebar -->
