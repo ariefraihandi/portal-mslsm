@@ -37,20 +37,18 @@
               </div>
             </div>
             <div class="d-flex justify-content-around flex-wrap my-4 py-3">
-              <div class="d-flex align-items-start me-4 mt-3 gap-3">
-                <span class="badge bg-label-primary p-2 rounded"><i class="bx bxs-time bx-sm"></i></span>
-                <div>
-                  <h5 class="mb-0">
-                      @if ($users->detail->nip == 'default_nip')
-                          Not set
-                      @else
-                          {{ $users->detail->nip }}
-                      
-                      @endif
-                  </h5>
-                  <span>NIP</span>
+              @if ($lamaBekerja)
+                <div class="d-flex align-items-start me-4 mt-3 gap-3">
+                    <span class="badge bg-label-primary p-2 rounded"><i class="bx bxs-time bx-sm"></i></span>
+                    <div>
+                        <h5 class="mb-0">                          
+                            {{ $lamaBekerja->y }} Tahun, {{ $lamaBekerja->m }} Bulan
+                        </h5>
+                        <span>Masa Kerja</span>
+                    </div>
                 </div>
-              </div>
+              @endif
+          
               <div class="d-flex align-items-start mt-3 gap-3">
                 <span class="badge bg-label-primary p-2 rounded"><i class="bx bx-user-pin bx-sm"></i></span>
                 <div>
@@ -296,11 +294,36 @@
                 </div>                       
                 <div class="row g-3 mt-1">
                     <div class="d-grid gap-2 col-lg-12 mx-auto">    
-                        <button type="submit" class="btn btn-success">Update Data</button>
+                        <button type="submit" class="btn btn-success">Perbaharui Detail Akun</button>
                     </div>
                 </div>
               </form>
             </div>
+            <h5 class="card-header">Masa Kerja</h5>
+            <div class="card-body">
+              <form id="formChangePassword" method="POST" action="{{ route('awalkerja.update') }}" enctype="multipart/form-data">                        
+                  @csrf                        
+                <div class="row g-3">                      
+                  <div class="col-sm-6">
+                    <label class="form-label" for="data_nip">Masa Kerja</label>
+                    <input type="text" readonly name="data_nip" id="data_nip" class="form-control"
+                        value="{{ ($users->detail->nip === 'default_nip') ? 'Belum ditentukan' : $lamaBekerja->y . ' Tahun, ' . $lamaBekerja->m . ' Bulan' }}" />
+                    <small class="error-message text-danger"></small>
+                  </div>                  
+                  <div class="col-sm-6">
+                    <label class="form-label" for="awal_kerja">Tanggal Awal Berkerja</label>
+                    <input type="date" required name="awal_kerja" id="awal_kerja" class="form-control"
+                        value="{{ ($users->detail->nip === 'default_nip' && is_null($users->detail->awal_kerja)) ? '' : \Carbon\Carbon::createFromFormat('d-m-Y', $tanggalAwalKerja)->format('Y-m-d') }}" />
+                    <small class="error-message text-danger"></small>
+                </div>
+              </div>                       
+              <div class="row g-3 mt-1">
+                  <div class="d-grid gap-2 col-lg-12 mx-auto">    
+                      <button type="submit" class="btn btn-info">Update Masa Kerja</button>
+                  </div>
+              </div>
+            </form>
+          </div>
           </div>
         <!-- /Project table -->
       </div>
@@ -332,8 +355,8 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-     appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
-    //  appId: "c058f61a-07ba-4a97-ae80-5620ef410850",
+        //  appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
+        appId: "c058f61a-07ba-4a97-ae80-5620ef410850",
         });
     
         let deviceToken = OneSignal.User.PushSubscription.id;

@@ -21,23 +21,44 @@ use Carbon\Carbon;
 class UserController extends Controller
 {
     public function showAccount(Request $request)
-    {
-        $accessMenus = $request->get('accessMenus');
-        $id = $request->session()->get('user_id');
-        $user = User::with('detail')->find($id); // Mengambil user beserta detailnya
-        $sessions = Session::where('user_id', $id)->get();
+{
+    $accessMenus = $request->get('accessMenus');
+    $id = $request->session()->get('user_id');
+    $user = User::with('detail')->find($id);
+    $sessions = Session::where('user_id', $id)->get();
+    $nip = $user->detail->nip;
+    $awalKerja = $user->detail->awal_kerja;
 
-        $data = [
-            'title' => 'Profile',
-            'subtitle' => 'Portal MS Lhokseumawe',
-            'sidebar' => $accessMenus,
-            'users' => $user,
-            'sessions' => $sessions,
-        ];
-
-        return view('Account.detil', $data);
+    if (is_null($awalKerja) && $nip == 'default_nip') {
+        $lamaBekerja = null;
+        $tanggalAwalKerja = null;
+    } else {
+        if ($awalKerja) {
+            $tanggalPengangkatanCarbon = Carbon::parse($awalKerja, 'Asia/Jakarta');
+        } else {
+            $tanggalPengangkatan = substr($nip, 8, 6);
+            $tahunPengangkatan = substr($tanggalPengangkatan, 0, 4);
+            $bulanPengangkatan = substr($tanggalPengangkatan, 4, 2);
+            $tanggalPengangkatanCarbon = Carbon::createFromDate($tahunPengangkatan, $bulanPengangkatan, 1, 'Asia/Jakarta');
+        }
+        $tanggalHariIni = Carbon::now('Asia/Jakarta');
+        $lamaBekerja = $tanggalPengangkatanCarbon->diff($tanggalHariIni);
+        $tanggalAwalKerja = $tanggalPengangkatanCarbon->format('d-m-Y'); // Format dd-mm-yyyy
     }
-   
+
+    $data = [
+        'title' => 'Profile',
+        'subtitle' => 'Portal MS Lhokseumawe',
+        'sidebar' => $accessMenus,
+        'users' => $user,
+        'sessions' => $sessions,
+        'lamaBekerja' => $lamaBekerja,
+        'tanggalAwalKerja' => $tanggalAwalKerja,
+    ];
+
+    return view('Account.detil', $data);
+}
+
     public function showActivity(Request $request)
     {
         $accessMenus        = $request->get('accessMenus');
@@ -45,6 +66,35 @@ class UserController extends Controller
         $user               = User::with('detail')->find($id); // Mengambil user beserta detailnya
         $sessions           = Session::where('user_id', $id)->orderBy('last_activity', 'desc')->take(3)->get();
         $activities         = UserActivity::where('user_id', $id)->orderBy('created_at', 'desc')->take(10)->get();
+        $nip                = $user->detail->nip;
+        $awalKerja          = $user->detail->awal_kerja;
+
+        // Debugging: Check the detail of the user's awal_kerja and nip
+       
+        if (is_null($awalKerja) && $nip == 'default_nip') {
+            $lamaBekerja = null; // Atau nilai default yang Anda inginkan
+        } else {
+            // Memeriksa apakah kolom awal_kerja kosong
+            if ($awalKerja) {
+                // Menggunakan awal_kerja jika ada
+                $tanggalPengangkatanCarbon = Carbon::parse($awalKerja, 'Asia/Jakarta');
+            } else {
+                // Menggunakan NIP jika awal_kerja kosong
+                // Mendapatkan tahun dan bulan pengangkatan dari NIP
+                $tanggalPengangkatan = substr($nip, 8, 6); // 199403
+
+                // Membuat objek Carbon untuk tanggal pengangkatan
+                $tahunPengangkatan = substr($tanggalPengangkatan, 0, 4); // 1994
+                $bulanPengangkatan = substr($tanggalPengangkatan, 4, 2); // 03
+                $tanggalPengangkatanCarbon = Carbon::createFromDate($tahunPengangkatan, $bulanPengangkatan, 1, 'Asia/Jakarta');
+            }
+
+            // Mendapatkan tanggal hari ini
+            $tanggalHariIni = Carbon::now('Asia/Jakarta');
+
+            // Menghitung selisih tahun dan bulan
+            $lamaBekerja = $tanggalPengangkatanCarbon->diff($tanggalHariIni);
+        }
 
         foreach ($sessions as $session) {
             $session->deviceIcon = $this->getDeviceIcon($session->user_agent);
@@ -63,6 +113,7 @@ class UserController extends Controller
             'users' => $user,
             'sessions' => $sessions,
             'activities' => $activities,
+            'lamaBekerja' => $lamaBekerja,
         ];
 
         return view('Account.activity', $data);

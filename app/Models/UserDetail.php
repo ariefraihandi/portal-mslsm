@@ -21,6 +21,7 @@ class UserDetail extends Model
         'kelamin',
         'alamat',
         'instansi',
+        'awal_kerja',
         'iguser',
         'fbuser',
         'twuser',

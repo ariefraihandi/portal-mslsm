@@ -360,6 +360,37 @@ class KepegawaianController extends Controller
         return response()->json(['message' => 'Atasan updated successfully', 'userName' => $userName]);
     }
 
+    public function updateAwalKerja(Request $request)
+    {
+        $request->validate([
+            'awal_kerja' => 'required|date',
+        ]);
+
+        $id = $request->session()->get('user_id');
+        $userDetail = UserDetail::where('user_id', $id)->first();
+
+        if ($userDetail) {
+            $userDetail->awal_kerja = Carbon::parse($request->input('awal_kerja'));
+            $userDetail->save();
+
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => true,
+                    'title' => 'Berhasil Mengubah Tanggal Awal Kerja',
+                    'message' => 'Tanggal awal bekerja berhasil diperbarui.',
+                ],
+            ]);
+        }
+
+        return redirect()->back()->with([
+            'response' => [
+                'success' => false,
+                'title' => 'Gagal Mengubah Tanggal Awal Kerja',
+                'message' => 'Gagal memperbarui tanggal awal bekerja.',
+            ],
+        ]);
+    }
+
     //getData
         public function pegawaiGetData(Request $request)
         {

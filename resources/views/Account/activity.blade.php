@@ -17,7 +17,6 @@
     <div class="row">
       <!-- User Sidebar -->
       <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
-        <!-- User Card -->
         <div class="card mb-4">
           <div class="card-body">
             <div class="user-avatar-section">
@@ -30,25 +29,24 @@
                   alt="User avatar" />
                 <div class="user-info text-center">
                   <h4 class="mb-2">{{$users->detail->name}}</h4>
-                  <span class="badge bg-label-secondary">{{$users->detail->instansi}}</span>
+                  <span class="badge bg-label-secondary">
+                    MS Lhokseumawe
+                </span>
                 </div>
               </div>
             </div>
             <div class="d-flex justify-content-around flex-wrap my-4 py-3">
+              @if ($lamaBekerja)
               <div class="d-flex align-items-start me-4 mt-3 gap-3">
-                <span class="badge bg-label-primary p-2 rounded"><i class="bx bxs-time bx-sm"></i></span>
-                <div>
-                  <h5 class="mb-0">
-                      @if ($users->detail->nip == 'default_nip')
-                          Not set
-                      @else
-                          {{ $users->detail->nip }}
-                      
-                      @endif
-                  </h5>
-                  <span>NIP</span>
-                </div>
+                  <span class="badge bg-label-primary p-2 rounded"><i class="bx bxs-time bx-sm"></i></span>
+                  <div>
+                      <h5 class="mb-0">                          
+                          {{ $lamaBekerja->y }} Tahun, {{ $lamaBekerja->m }} Bulan
+                      </h5>
+                      <span>Masa Kerja</span>
+                  </div>
               </div>
+            @endif              
               <div class="d-flex align-items-start mt-3 gap-3">
                 <span class="badge bg-label-primary p-2 rounded"><i class="bx bx-user-pin bx-sm"></i></span>
                 <div>
@@ -56,7 +54,7 @@
                   <span>Jabatan</span>
                 </div>
               </div>
-            </v>
+            </div>
             <h5 class="pb-2 border-bottom mb-4">Details</h5>
             <div class="info-container">
               <ul class="list-unstyled">
@@ -84,79 +82,15 @@
             </div>
           </div>
         </div>
-        <!-- /User Card -->
-        <!-- Plan Card -->
-        {{-- <div class="card mb-4">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start">
-              <span class="badge bg-label-primary">Sisa Cuti</span>
-              <div class="d-flex justify-content-center">                
-                <h1 class="display-5 mb-0 text-primary">99</h1>
-                <sub class="fs-6 pricing-duration mt-auto mb-3">&nbsp;Hari</sub>
-              </div>
-            </div>     
-                  
-            <div class="d-flex justify-content-between align-items-center mb-1 mt-2">
-              <span>Cuti 2024</span>
-              <span>65% Completed</span>
-            </div>
-            <div class="progress mb-3" style="height: 8px">
-              <div
-                class="progress-bar"
-                role="progressbar"
-                style="width: 95%"
-                aria-valuenow="65"
-                aria-valuemin="0"
-                aria-valuemax="100"></div>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span>Cuti 2023</span>
-              <span>65% Completed</span>
-            </div>
-            <div class="progress mb-3" style="height: 8px">
-              <div
-                class="progress-bar"
-                role="progressbar"
-                style="width: 65%"
-                aria-valuenow="65"
-                aria-valuemin="0"
-                aria-valuemax="100"></div>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span>Cuti 2022</span>
-              <span>65% Completed</span>
-            </div>
-            <div class="progress mb-3" style="height: 8px">
-              <div
-                class="progress-bar"
-                role="progressbar"
-                style="width: 55%"
-                aria-valuenow="65"
-                aria-valuemin="0"
-                aria-valuemax="100"></div>
-            </div>
-            <div class="d-grid w-100 mt-4 pt-2">
-              <button class="btn btn-primary" data-bs-target="#upgradePlanModal" data-bs-toggle="modal">
-                Ajukan Cuti
-              </button>
-            </div>
-          </div>
-        </div> --}}
-        <!-- /Plan Card -->
       </div>
-      <!--/ User Sidebar -->
-
-      <!-- User Content -->
+       
       <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
-        <!-- User Pills -->
         <ul class="nav nav-pills flex-column flex-md-row mb-3">
           <li class="nav-item">
             <a class="nav-link" href="{{ route('user.account.detil') }}"><i class="bx bx-user me-1"></i>Details</a>          
           </li>
           <li class="nav-item">
-            <a class="nav-link active" href="{{ route('user.account.activity') }}"
-              ><i class="bx bxs-timer me-1"></i>Aktifitas</a
-            >
+            <a class="nav-link active" href="{{ route('user.account.activity') }}"><i class="bx bxs-timer me-1"></i>Aktifitas</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="app-user-view-security.html"
@@ -169,7 +103,6 @@
             >
           </li>          
         </ul>
-        <!--/ User Pills -->
 
         <div class="card mb-4">
             <h5 class="card-header">User Activity Timeline</h5>
@@ -221,7 +154,9 @@
           
             </div>
         </div>
-    </div>
+      </div>
+    
+  </div>
 @endsection
 
 @push('footer-script') 
@@ -246,8 +181,8 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
-          // appId: "c058f61a-07ba-4a97-ae80-5620ef410850",
+          // appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
+          appId: "c058f61a-07ba-4a97-ae80-5620ef410850",
         });
     
         let deviceToken = OneSignal.User.PushSubscription.id;
@@ -359,8 +294,6 @@
               var response = @json(session('response'));
               showSweetAlert(response);
           @endif
-
-          
       });
   </script>
     
