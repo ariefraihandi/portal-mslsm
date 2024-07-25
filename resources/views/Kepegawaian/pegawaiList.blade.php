@@ -163,9 +163,10 @@
                         <tr>
                             <th>No</th>
                             <th>Pegawai</th>
-                            <th>Jabatan</th>
-                            <th>Posisi</th>                            
-                            <th>WhatsApp</th>
+                            <th>Jabatan dan<br>Posisi</th>                                                    
+                            <th>Atasan</th>                            
+                            <th>Kontak</th>
+                            <th>Status</th>
                             <th>Aksi</th>       
                         </tr>
                     </thead>
@@ -303,6 +304,70 @@
         </div>
     </div>
 
+    <div class="modal fade" id="selectAtasanModal" tabindex="-1" aria-labelledby="selectAtasanModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="selectAtasanModalLabel">Pilih Atasan untuk <span id="userName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="selectAtasanForm">
+                        @csrf
+                        <input type="hidden" id="userId" name="user_id">
+                        <input type="hidden" id="atasanType" name="atasan_type">
+                        <div class="mb-3">
+                            <label for="atasanSelect" class="form-label">Pilih Atasan</label>
+                            <select id="atasanSelect" name="atasan_id" class="form-control">
+                                @foreach($atasans as $atasan)
+                                    <option value="{{ $atasan->id }}">{{ $atasan->name }} | {{ $atasan->jabatan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="saveAtasan()">Simpan</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editKehadiranModal" tabindex="-1" role="dialog" aria-labelledby="editKehadiranModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editKehadiranModalLabel">Ubah Kehadiran</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <input type="hidden" id="editUserId">
+                        <div class="form-group">
+                            <label for="editUserName">Nama Pegawai</label>
+                            <p id="editUserName" class="form-control-static"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="kehadiranStatusSelect">Status Kehadiran</label>
+                            <select class="form-control" id="kehadiranStatusSelect">
+                                <option value="Hadir">Hadir</option>
+                                <option value="Tidak Hadir">Tidak Hadir</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="kehadiranKeterangan">Keterangan</label>
+                            <textarea class="form-control" id="kehadiranKeterangan" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveKehadiran()">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
 @endsection
 
 @push('footer-script')            
@@ -321,14 +386,99 @@
             columns: [
                 { data: 'no', name: 'no' }, 
                 { data: 'pegawai', name: 'pegawai' },
-                { data: 'jabatan', name: 'jabatan' },
-                { data: 'posisi', name: 'posisi' },
-                { data: 'whatsapp', name: 'whatsapp' },
+                { data: 'jabatan', name: 'jabatan' },         
+                { data: 'atasan', name: 'atasan' },
+                { data: 'kontak', name: 'kontak' },
+                { data: 'status', name: 'status' },
                 { data: 'action', name: 'action', orderable: false, searchable: false }
             ]
         });
     });
+
+    function showEditKehadiranModal(userId, userName) {
+        $('#editUserId').val(userId);
+        $('#editUserName').text(userName);
+        $('#editKehadiranModal').modal('show');
+    }
+
+    function saveKehadiran() {
+        var userId = $('#editUserId').val();
+        var kehadiranStatus = $('#kehadiranStatusSelect').val();
+        var keterangan = $('#kehadiranKeterangan').val();
+
+        var data = {
+            user_id: userId,
+            kehadiran_status: kehadiranStatus,
+            keterangan: keterangan,
+            _token: $('input[name="_token"]').val()
+        };
+
+        $.ajax({
+            url: '{{ route('update-kehadiran') }}',
+            method: 'POST',
+            data: data,
+            success: function(response) {
+                $('#editKehadiranModal').modal('hide');
+                $('#pegawai-table').DataTable().ajax.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Status kehadiran berhasil diperbarui'
+                });
+            },
+            error: function(response) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Gagal memperbarui status kehadiran. Silakan coba lagi.'
+                });
+            }
+        });
+    }
+
+    function showSelectAtasanModal(userId, atasanType, userName) {
+        $('#userId').val(userId);
+        $('#atasanType').val(atasanType);
+        $('#userName').text(userName);
+        $('#selectAtasanModal').modal('show');
+    }
+
+    function saveAtasan() {
+        var userId = $('#userId').val();
+        var atasanType = $('#atasanType').val();
+        var atasanId = $('#atasanSelect').val();
+        
+        var data = {
+            user_id: userId,
+            atasan_type: atasanType,
+            atasan_id: atasanId,
+            _token: $('input[name="_token"]').val()
+        };
+
+        $.ajax({
+            url: '{{ route('save-atasan') }}',
+            method: 'POST',
+            data: data,
+            success: function(response) {
+                $('#selectAtasanModal').modal('hide');
+                $('#pegawai-table').DataTable().ajax.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Atasan ' + (atasanType === 'atasan1' ? 'satu' : 'dua') + ' (' + response.userName + ') berhasil ditambahkan'
+                });
+            },
+            error: function(response) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Gagal menambahkan atasan. Silakan coba lagi.'
+                });
+            }
+        });
+    }
 </script>
+
 
   <script>
    function showDeleteConfirmation(url, message) {

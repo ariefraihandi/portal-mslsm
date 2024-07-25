@@ -56,7 +56,8 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/account/update',                  [UserController::class, 'accountUpdate'])->name('account.update');    
     Route::post('/pegawai/add',                     [KepegawaianController::class, 'pegawaiAdd'])->name('pegawai.add');
     Route::get('/kepegawaian/pegawai/destroy',      [KepegawaianController::class, 'destroyPegawai'])->name('pegawai.destroy');
-    
+    Route::post('/save-atasan',                     [KepegawaianController::class, 'saveAtasan'])->name('save-atasan');
+    Route::post('/update-kehadiran',                [KepegawaianController::class, 'saveAtasan'])->name('update-kehadiran');
     //Move
         Route::post('/move-menu',                   [AdminController::class, 'moveMenu'])->name('move.menu');
         Route::post('/move-submenu',                [AdminController::class, 'moveSubmenu'])->name('move.submenu');

@@ -7,7 +7,7 @@
           document.write(new Date().getFullYear());
         </script>
         , made with ❤️ by 
-        <a href="https://ariefraihandi.biz.id" target="_blank" class="footer-link fw-medium">Ar Project</a>
+        <a href="https://ariefraihandi.biz.id" target="_blank" class="footer-link fw-medium">Azmir's Son</a>
       </div>
       <div class="d-none d-lg-inline-block">
         <a href="https://api.whatsapp.com/send/?phone=6282276624504&text=%2A+Bugs+Report&type=phone_number&app_absent=0"  target="_blank"  class="footer-link me-4" target="_blank">Report Bugs</a>

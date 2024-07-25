@@ -6,6 +6,8 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserDetail;
 use App\Models\UserActivity;
+use App\Models\Atasan;
+use App\Models\Kehadiran;
 use App\Models\WhatsappVerificationToken;
 use App\Models\EmailVerificationToken;
 use Illuminate\Http\Request;
@@ -28,6 +30,11 @@ class KepegawaianController extends Controller
         $roles              = Role::all();
         $userDetails        = UserDetail::all();
         $totalData          = $userDetails->count();      
+        $atasans            = UserDetail::join('jabatan', 'users_detail.jabatan', '=', 'jabatan.name')
+                            ->where('users_detail.jabatan', '!=', 'PPNPN')
+                            ->orderBy('jabatan.id', 'asc')
+                            ->select('users_detail.*', 'jabatan.name as jabatan_name')
+                            ->get();
 
         // Menghitung jumlah data dengan posisi tertentu
         $hakimCount = $userDetails->where('posisi', 'HAKIM')->count();
@@ -50,6 +57,7 @@ class KepegawaianController extends Controller
             'title' => 'Pegawai',
             'subtitle' => 'Portal MS Lhokseumawe',
             'sidebar' => $accessMenus,
+            'atasans' => $atasans,
             'roles' => $roles, 
             'totalData' => $totalData,        
             'hakimCount' => $hakimCount,
@@ -259,55 +267,7 @@ class KepegawaianController extends Controller
             return false;
         }
     }
-
-    public function pegawaiGetData(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = UserDetail::select(['users_detail.id', 'users_detail.user_id', 'users_detail.name', 'users_detail.image', 'jabatan.name as jabatan', 'users_detail.nip', 'users_detail.whatsapp', 'users_detail.posisi', 'users_detail.created_at'])
-                ->join('jabatan', 'users_detail.jabatan', '=', 'jabatan.name')
-                ->orderBy('jabatan.id', 'asc');
     
-            return Datatables::of($data)
-                ->addColumn('pegawai', function ($user) {
-                    $userImage = $user->image ? asset('assets/img/avatars/' . $user->image) : asset('assets/img/avatars/default-image.jpg');
-                    $userName = $user->name ?? 'Unknown User';
-                    $userNip = $user->nip ?? 'Unknown NIP';
-                    $userSince = Carbon::parse($user->created_at)->format('d F Y');
-    
-                    // Format output
-                    $output = '
-                        <div class="d-flex align-items-center">
-                            <img src="' . $userImage . '" alt="Avatar" class="rounded-circle me-2" width="40" height="40">
-                            <div>
-                                <span class="fw-bold">' . e($userName) . '</span>';
-    
-                    // Add NIP only if it's not 'default_nip'
-                    if ($userNip !== 'default_nip') {
-                        $output .= '<small class="text-muted d-block">' . e($userNip) . '</small>';
-                    }
-    
-                    $output .= '<small class="text-muted d-block">Since: ' . $userSince . '</small>
-                            </div>
-                        </div>';
-    
-                    return $output;
-                })
-                ->addColumn('no', function () {
-                    static $counter = 0;
-                    $counter++;
-                    return $counter;
-                })
-                ->addColumn('action', function($row){
-                    $deleteUrl = route('pegawai.destroy', ['id' => $row->user_id]);
-                    $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>';
-                    $btn .= '<a href="javascript:void(0)" class="delete btn btn-danger btn-sm" onclick="showDeleteConfirmation(\'' . $deleteUrl . '\', \'Apakah Anda yakin ingin menghapus item ini?\')"><i class="fa fa-trash"></i></a>';
-                    return $btn;
-                })
-                ->rawColumns(['pegawai', 'action'])
-                ->make(true);
-        }
-    }
-
     public function destroyPegawai(Request $request)
     {
         $id = $request->query('id');
@@ -360,5 +320,150 @@ class KepegawaianController extends Controller
         }
     }
 
+    public function saveAtasan(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'atasan_type' => 'required|in:atasan1,atasan2',
+            'atasan_id' => 'required|exists:users,id',
+        ]);
+
+        // Cek apakah user_id tidak sama dengan atasan_id
+        if ($request->user_id == $request->atasan_id) {
+            return response()->json(['message' => 'Pegawai Tidak Boleh Sama Dengan Atasan'], 422);
+        }
+
+        // Cek apakah entri untuk user_id sudah ada
+        $atasan = Atasan::where('user_id', $request->user_id)->first();
+
+        if ($atasan) {
+            // Jika entri sudah ada, update kolom yang sesuai
+            if ($request->atasan_type == 'atasan1') {
+                $atasan->atasan_id = $request->atasan_id;
+            } else {
+                $atasan->atasan_dua_id = $request->atasan_id;
+            }
+            $atasan->save();
+        } else {
+            // Jika entri belum ada, buat entri baru
+            $data = [
+                'user_id' => $request->user_id,
+                'atasan_id' => $request->atasan_type == 'atasan1' ? $request->atasan_id : null,
+                'atasan_dua_id' => $request->atasan_type == 'atasan2' ? $request->atasan_id : null,
+            ];
+            Atasan::create($data);
+        }
+
+        // Ambil nama pengguna berdasarkan user_id
+        $userName = UserDetail::find($request->user_id)->name;
+
+        return response()->json(['message' => 'Atasan updated successfully', 'userName' => $userName]);
+    }
+
+    //getData
+        public function pegawaiGetData(Request $request)
+        {
+            if ($request->ajax()) {
+                $today = Carbon::today()->toDateString();
+                $data = UserDetail::select([
+                    'users_detail.id', 'users_detail.user_id', 'users_detail.name', 
+                    'users_detail.image', 'jabatan.name as jabatan', 'users_detail.nip', 
+                    'users_detail.whatsapp', 'users_detail.posisi', 'users_detail.created_at', 
+                    'atasans.atasan_id', 'atasans.atasan_dua_id', 'users.email'
+                ])
+                ->join('jabatan', 'users_detail.jabatan', '=', 'jabatan.name')
+                ->leftJoin('atasans', 'users_detail.user_id', '=', 'atasans.user_id')
+                ->leftJoin('users', 'users_detail.user_id', '=', 'users.id')
+                ->orderBy('jabatan.id', 'asc')
+                ->get();
+        
+                return Datatables::of($data)
+                    ->addColumn('pegawai', function ($user) {
+                        $userImage = $user->image ? asset('assets/img/avatars/' . $user->image) : asset('assets/img/avatars/default-image.jpg');
+                        $userName = $user->name ?? 'Unknown User';
+                        $userNip = $user->nip ?? 'Unknown NIP';
+                        $userSince = Carbon::parse($user->created_at)->format('d F Y');
+        
+                        $output = '
+                            <div class="d-flex align-items-center">
+                                <img src="' . $userImage . '" alt="Avatar" class="rounded-circle me-2" width="40" height="40">
+                                <div>
+                                    <span class="fw-bold">' . e($userName) . '</span>';
+        
+                        if ($userNip !== 'default_nip') {
+                            $output .= '<small class="text-muted d-block">' . e($userNip) . '</small>';
+                        }
+        
+                        $output .= '<small class="text-muted d-block">Since: ' . $userSince . '</small>
+                                </div>
+                            </div>';
+        
+                        return $output;
+                    })
+                    ->addColumn('atasan', function ($user) {
+                        $atasan1 = $user->atasan_id ? UserDetail::find($user->atasan_id)->name : null;
+                        $atasan2 = $user->atasan_dua_id ? UserDetail::find($user->atasan_dua_id)->name : null;
+        
+                        $output = '<strong>Atasan 1:<br></strong> ';
+                        if ($atasan1) {
+                            $output .= e($atasan1) . ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan1\', \'' . e($user->name) . '\')"></i><br>';
+                        } else {
+                            $output .= '<button type="button" class="btn btn-primary btn-sm" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan1\', \'' . e($user->name) . '\')">Pilih Atasan</button><br><br>';
+                        }
+        
+                        $output .= '<strong>Atasan 2:<br></strong> ';
+                        if ($atasan2) {
+                            $output .= e($atasan2) . ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan2\', \'' . e($user->name) . '\')"></i><br>';
+                        } else {
+                            $output .= '<button type="button" class="btn btn-primary btn-sm" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan2\', \'' . e($user->name) . '\')">Pilih Atasan</button>';
+                        }
+        
+                        return $output;
+                    })
+                    ->addColumn('kontak', function ($user) {
+                        $whatsapp = $user->whatsapp ? e($user->whatsapp) : 'Tidak ada';
+                        $email = $user->email ? e($user->email) : 'Tidak ada';
+        
+                        return '<strong>WA:</strong><br>' . $whatsapp . '<br><strong>Email:</strong><br> ' . $email;
+                    })
+                    ->addColumn('no', function () {
+                        static $counter = 0;
+                        $counter++;
+                        return $counter;
+                    })
+                    ->addColumn('jabatan', function ($user) {
+                        $jabatan = '<strong>' . e($user->jabatan) . '</strong>';
+                        if (($user->jabatan) !== 'PPNPN') {
+                            $jabatan .= '<br>(' . e($user->posisi) . ')';
+                        }
+                        return $jabatan;
+                    })
+                    ->addColumn('status', function ($user) use ($today) {
+                        $kehadiran = Kehadiran::where('user_id', $user->user_id)
+                            ->where('tgl_awal', '<=', $today)
+                            ->where('tgl_akhir', '>=', $today)
+                            ->first();
+                        
+                        if ($kehadiran) {
+                            $status = '<span class="badge bg-danger">Tidak Hadir</span>';
+                        } else {
+                            $status = '<span class="badge bg-success">Hadir</span>';
+                        }
+        
+                        $status .= ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showEditKehadiranModal(' . $user->user_id . ', \'' . e($user->name) . '\')"></i>';
+        
+                        return $status;
+                    })
+                    ->addColumn('action', function($row){
+                        $deleteUrl = route('pegawai.destroy', ['id' => $row->user_id]);
+                        $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>';
+                        $btn .= '<a href="javascript:void(0)" class="delete btn btn-danger btn-sm" onclick="showDeleteConfirmation(\'' . $deleteUrl . '\', \'Apakah Anda yakin ingin menghapus item ini?\')"><i class="fa fa-trash"></i></a>';
+                        return $btn;
+                    })
+                    ->rawColumns(['pegawai', 'atasan', 'action', 'kontak', 'jabatan', 'status'])
+                    ->make(true);
+            }
+        }
+    //!getData
     
 }
