@@ -14,6 +14,9 @@ class JabatanSeeder extends Seeder
      */
     public function run()
     {
+        // Truncate the table to remove all existing data
+        DB::table('jabatan')->truncate();
+
         $jabatans = [
             'Ketua',
             'Wakil Ketua',
@@ -32,6 +35,7 @@ class JabatanSeeder extends Seeder
             'Juru Sita Pengganti',
             'Pranata Komputer Ahli Pertama',
             'Analis Perkara Peradilan',
+            'Pengelola Barang Milik Negara',
             'Arsiparis Pelaksana',
             'Calon Hakim',
             'CPNS',
