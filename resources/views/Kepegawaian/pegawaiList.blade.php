@@ -322,6 +322,7 @@
                                 @foreach($atasans as $atasan)
                                     <option value="{{ $atasan->id }}">{{ $atasan->name }} | {{ $atasan->jabatan }}</option>
                                 @endforeach
+                                <option value="10000">Tidak Ada</option>
                             </select>
                         </div>
                         <button type="button" class="btn btn-primary" onclick="saveAtasan()">Simpan</button>
@@ -331,37 +332,32 @@
         </div>
     </div>
 
-    <div class="modal fade" id="editKehadiranModal" tabindex="-1" role="dialog" aria-labelledby="editKehadiranModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+    <div class="modal fade" id="editKehadiranModal" tabindex="-1" aria-labelledby="editKehadiranModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editKehadiranModalLabel">Ubah Kehadiran</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5 class="modal-title" id="editKehadiranModalLabel">Ubah Kehadiran untuk <span id="editUserName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
-                        <input type="hidden" id="editUserId">
-                        <div class="form-group">
-                            <label for="editUserName">Nama Pegawai</label>
-                            <p id="editUserName" class="form-control-static"></p>
-                        </div>
-                        <div class="form-group">
-                            <label for="kehadiranStatusSelect">Status Kehadiran</label>
-                            <select class="form-control" id="kehadiranStatusSelect">
+                    <form id="editKehadiranForm">
+                        @csrf
+                        <input type="hidden" id="editUserId" name="user_id">
+                        <div class="mb-3">
+                            <label for="kehadiranStatusSelect" class="form-label">Status Kehadiran</label>
+                            <select class="form-control" id="kehadiranStatusSelect" name="kehadiran_status">
                                 <option value="Hadir">Hadir</option>
                                 <option value="Tidak Hadir">Tidak Hadir</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="kehadiranKeterangan">Keterangan</label>
-                            <textarea class="form-control" id="kehadiranKeterangan" rows="3"></textarea>
+                        <div class="mb-3">
+                            <label for="kehadiranKeterangan" class="form-label">Keterangan</label>
+                            <textarea class="form-control" id="kehadiranKeterangan" name="keterangan" rows="3"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-primary" onclick="saveKehadiran()">Simpan</button>
                 </div>
             </div>
