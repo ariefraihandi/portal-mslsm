@@ -304,11 +304,6 @@ id="layout-navbar">
         $user = App\Models\UserDetail::find($userId);
         $userImage = $user->image ?? 'default.jpg'; // Use default image if no image is found
 
-        // Find the user's role
-        $role = App\Models\Role::find($user->role);
-
-        // Get the role name
-        $roleName = $role ? $role->name : 'Unknown Role';
       @endphp
     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
       <div class="avatar avatar-online">
@@ -326,25 +321,19 @@ id="layout-navbar">
               </div>
               <div class="flex-grow-1">
                 <span class="fw-medium d-block">{{ $user->name }}</span>
-                <small class="text-muted">{{ $roleName }}</small>
+                <small class="text-muted">{{ $user->jabatan }}</small>
               </div>
             </div>
           </a>
         </li>
         <li>
           <div class="dropdown-divider"></div>
-        </li>
+        </li>      
         <li>
-          {{-- <a class="dropdown-item" href="{{route('account.profile')}}">
-            <i class="bx bx-user me-2"></i>
-            <span class="align-middle">My Profile</span>
-          </a> --}}
-        </li>
-        <li>
-          {{-- <a class="dropdown-item" href="{{route('account.detil')}}">
+          <a class="dropdown-item" href="{{route('user.account.detil')}}">
             <i class="bx bx-cog me-2"></i>
-            <span class="align-middle">Settings</span>
-          </a> --}}
+            <span class="align-middle">Account Details</span>
+          </a>
         </li>
         {{-- <li>
           <a class="dropdown-item" href="pages-account-settings-billing.html">
@@ -374,10 +363,10 @@ id="layout-navbar">
           <div class="dropdown-divider"></div>
         </li> --}}
         <li>
-          {{-- <a class="dropdown-item" href="{{ route('logout') }}">
+          <a class="dropdown-item" href="{{ route('logout') }}">
             <i class="bx bx-power-off me-2"></i>
             <span class="align-middle">Log Out</span>
-          </a> --}}
+          </a>
         </li>
       </ul>
     </li>

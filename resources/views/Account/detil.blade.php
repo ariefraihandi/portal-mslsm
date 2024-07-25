@@ -158,7 +158,7 @@
               ><i class="bx bxs-timer me-1"></i>Aktifitas</a
             >
           </li>
-          <li class="nav-item">
+          {{-- <li class="nav-item">
             <a class="nav-link" href="app-user-view-security.html"
               ><i class="bx bx-lock-alt me-1"></i>Security</a
             >
@@ -167,7 +167,7 @@
             <a class="nav-link" href="app-user-view-billing.html"
               ><i class="bx bxs-devices me-1"></i>Device</a
             >
-          </li>          
+          </li>           --}}
         </ul>
         <!--/ User Pills -->
 
@@ -307,9 +307,10 @@
                   <div class="col-sm-6">
                     <label class="form-label" for="data_nip">Masa Kerja</label>
                     <input type="text" readonly name="data_nip" id="data_nip" class="form-control"
-                        value="{{ ($users->detail->nip === 'default_nip') ? 'Belum ditentukan' : $lamaBekerja->y . ' Tahun, ' . $lamaBekerja->m . ' Bulan' }}" />
+                        value="{{ isset($lamaBekerja) ? $lamaBekerja->y . ' Tahun, ' . $lamaBekerja->m . ' Bulan' : 'Belum ditentukan' }}" />
                     <small class="error-message text-danger"></small>
-                  </div>                  
+                </div>
+                            
                   <div class="col-sm-6">
                     <label class="form-label" for="awal_kerja">Tanggal Awal Berkerja</label>
                     <input type="date" required name="awal_kerja" id="awal_kerja" class="form-control"
@@ -355,8 +356,8 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-        //  appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
-        appId: "c058f61a-07ba-4a97-ae80-5620ef410850",
+        appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
+        //appId: "c058f61a-07ba-4a97-ae80-5620ef410850",
         });
     
         let deviceToken = OneSignal.User.PushSubscription.id;

@@ -92,7 +92,7 @@
           <li class="nav-item">
             <a class="nav-link active" href="{{ route('user.account.activity') }}"><i class="bx bxs-timer me-1"></i>Aktifitas</a>
           </li>
-          <li class="nav-item">
+          {{-- <li class="nav-item">
             <a class="nav-link" href="app-user-view-security.html"
               ><i class="bx bx-lock-alt me-1"></i>Security</a
             >
@@ -101,7 +101,7 @@
             <a class="nav-link" href="app-user-view-billing.html"
               ><i class="bx bxs-devices me-1"></i>Device</a
             >
-          </li>          
+          </li>           --}}
         </ul>
 
         <div class="card mb-4">
@@ -181,8 +181,8 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          // appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
-          appId: "c058f61a-07ba-4a97-ae80-5620ef410850",
+          appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
+          // appId: "c058f61a-07ba-4a97-ae80-5620ef410850",
         });
     
         let deviceToken = OneSignal.User.PushSubscription.id;
