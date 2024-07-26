@@ -149,7 +149,7 @@
             <div class="vehicles-overview-progress progress rounded-2 mb-3" style="height: 46px">
                 @if ($hakimCakimPercentage > 0)
                     <div
-                        class="progress-bar fs-big fw-medium text-start bg-primary px-1 px-lg-3 rounded-start shadow-none"
+                        class="progress-bar fs-big fw-medium text-start bg-primary px-1 px-lg-3 shadow-none"
                         role="progressbar" style="width: {{ $hakimCakimPercentage }}%" aria-valuenow="{{ $hakimCakimPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($hakimCakimPercentage, 2) }}% | {{ number_format($hakimCakimCount) }} Orang
                     </div>
                 @endif
