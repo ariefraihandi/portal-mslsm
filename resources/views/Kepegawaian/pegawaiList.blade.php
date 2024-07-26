@@ -133,29 +133,45 @@
           </div>
           <div class="card-body">
             <div class="d-none d-lg-flex vehicles-progress-labels mb-3">
-              <div class="vehicles-progress-label on-the-way-text" style="width: {{ $hakimCakimPercentage }}%">Hakim & CAKIM</div>
-              <div class="vehicles-progress-label unloading-text" style="width: {{ $pegawaiCpnsPercentage }}%">Pegawai & CPNS</div>
-              <div class="vehicles-progress-label loading-text" style="width: {{ $ppnpnPercentage }}%">PPNPN</div>
-              <div class="vehicles-progress-label waiting-text" style="width: {{ $magangPercentage }}%">Magang</div>
-          </div>
-          <div class="vehicles-overview-progress progress rounded-2 mb-3" style="height: 46px">
-            <div
-                class="progress-bar fs-big fw-medium text-start bg-primary px-1 px-lg-3 rounded-start shadow-none"
-                role="progressbar" style="width: {{ $hakimCakimPercentage }}%" aria-valuenow="{{ $hakimCakimPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($hakimCakimPercentage, 2) }}% | {{ number_format($hakimCakimCount) }} Orang
+                @if ($hakimCakimPercentage > 0)
+                    <div class="vehicles-progress-label on-the-way-text" style="width: {{ $hakimCakimPercentage }}%">Hakim & CAKIM</div>
+                @endif
+                @if ($pegawaiCpnsPercentage > 0)
+                    <div class="vehicles-progress-label unloading-text" style="width: {{ $pegawaiCpnsPercentage }}%">Pegawai & CPNS</div>
+                @endif
+                @if ($ppnpnPercentage > 0)
+                    <div class="vehicles-progress-label loading-text" style="width: {{ $ppnpnPercentage }}%">PPNPN</div>
+                @endif
+                @if ($magangPercentage > 0)
+                    <div class="vehicles-progress-label waiting-text" style="width: {{ $magangPercentage }}%">Magang</div>
+                @endif
             </div>
-            <div
-                class="progress-bar fs-big fw-medium text-start bg-warning px-1 px-lg-3 shadow-none"
-                role="progressbar" style="width: {{ $pegawaiCpnsPercentage }}%" aria-valuenow="{{ $pegawaiCpnsPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($pegawaiCpnsPercentage, 2) }}% | {{ number_format($pegawaiCpnsCount) }} Orang
+            <div class="vehicles-overview-progress progress rounded-2 mb-3" style="height: 46px">
+                @if ($hakimCakimPercentage > 0)
+                    <div
+                        class="progress-bar fs-big fw-medium text-start bg-primary px-1 px-lg-3 rounded-start shadow-none"
+                        role="progressbar" style="width: {{ $hakimCakimPercentage }}%" aria-valuenow="{{ $hakimCakimPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($hakimCakimPercentage, 2) }}% | {{ number_format($hakimCakimCount) }} Orang
+                    </div>
+                @endif
+                @if ($pegawaiCpnsPercentage > 0)
+                    <div
+                        class="progress-bar fs-big fw-medium text-start bg-warning px-1 px-lg-3 shadow-none"
+                        role="progressbar" style="width: {{ $pegawaiCpnsPercentage }}%" aria-valuenow="{{ $pegawaiCpnsPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($pegawaiCpnsPercentage, 2) }}% | {{ number_format($pegawaiCpnsCount) }} Orang
+                    </div>
+                @endif
+                @if ($ppnpnPercentage > 0)
+                    <div
+                        class="progress-bar fs-big fw-medium text-start text-bg-dark px-1 px-lg-3 shadow-none"
+                        role="progressbar" style="width: {{ $ppnpnPercentage }}%" aria-valuenow="{{ $ppnpnPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($ppnpnPercentage, 2) }}% | {{ number_format($ppnpnCount) }} Orang
+                    </div>
+                @endif
+                @if ($magangPercentage > 0)
+                    <div
+                        class="progress-bar fs-big fw-medium text-start text-bg-info px-1 px-lg-3 rounded-end shadow-none"
+                        role="progressbar" style="width: {{ $magangPercentage }}%" aria-valuenow="{{ $magangPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($magangPercentage, 2) }}% | {{ number_format($magangCount) }} Orang
+                    </div>
+                @endif
             </div>
-            <div
-                class="progress-bar fs-big fw-medium text-start text-bg-dark px-1 px-lg-3 shadow-none"
-                role="progressbar" style="width: {{ $ppnpnPercentage }}%" aria-valuenow="{{ $ppnpnPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($ppnpnPercentage, 2) }}% | {{ number_format($ppnpnCount) }} Orang
-            </div>
-            <div
-                class="progress-bar fs-big fw-medium text-start text-bg-info px-1 px-lg-3 rounded-end shadow-none"
-                role="progressbar" style="width: {{ $magangPercentage }}%" aria-valuenow="{{ $magangPercentage }}" aria-valuemin="0" aria-valuemax="100">{{ number_format($magangPercentage, 2) }}% | {{ number_format($magangCount) }} Orang
-            </div>
-        </div>
         
             <div class="card-datatable table-responsive">
                 <table id="pegawai-table" class="datatables-users table border-top">              
