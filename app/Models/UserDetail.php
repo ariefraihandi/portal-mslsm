@@ -48,4 +48,9 @@ class UserDetail extends Model
         return $this->belongsTo(Jabatan::class, 'jabatan', 'name');
     }
 
+    public function cutiSisa()
+    {
+        return $this->hasOne(CutiSisa::class, 'user_id', 'user_id');
+    }
+
 }

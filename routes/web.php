@@ -11,6 +11,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KepegawaianController;
+use App\Http\Controllers\CutiController;
 
 Route::get('/',                                 [MaintenanceController::class, 'index'])->name('index');
 Route::get('/buku-tamu',                        [GuestBookController::class, 'showBukuTamu'])->name('show.bukutamu');
@@ -29,6 +30,7 @@ Route::get('/whatsapp/verify',                  [AuthController::class, 'verifyW
 
 Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(function () {
     Route::get('/kepegawaian/pegawai/list',         [KepegawaianController::class, 'showPegawaiList'])->name('kepegawaian.pegawai.list');
+    Route::get('/kepegawaian/cuti/sisa',         [CutiController::class, 'showCutiSisa'])->name('kepegawaian.cuti.sisa');
     
 
     Route::get('/user/account/detil',               [UserController::class, 'showAccount'])->name('user.account.detil');
@@ -39,7 +41,7 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
     Route::get('/admin/menu/submenulist',           [AdminController::class, 'showsubMenu'])->name('admin.menu.submenulist');
     Route::get('/admin/menu/childmenulist',         [AdminController::class, 'showchildMenu'])->name('admin.menu.childmenulist');
     Route::get('/admin/menu/role',                  [AdminController::class, 'showRoleList'])->name('admin.menu.role');
-    Route::get('/admin/instansi',            [AdminController::class, 'showInstasi'])->name('admin.instansi');
+    Route::get('/admin/instansi',                   [AdminController::class, 'showInstasi'])->name('admin.instansi');
 });
         
         
@@ -54,11 +56,14 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/delete/role',                      [AdminController::class, 'deleteRole'])->name('role.delete');
     Route::post('/account/avatar',                  [UserController::class, 'uploadAvatar'])->name('upload.avatar');
     Route::post('/account/update',                  [UserController::class, 'accountUpdate'])->name('account.update');    
+   
     Route::post('/pegawai/add',                     [KepegawaianController::class, 'pegawaiAdd'])->name('pegawai.add');
     Route::get('/kepegawaian/pegawai/destroy',      [KepegawaianController::class, 'destroyPegawai'])->name('pegawai.destroy');
     Route::post('/save-atasan',                     [KepegawaianController::class, 'saveAtasan'])->name('save-atasan');
     Route::post('/update-kehadiran',                [KepegawaianController::class, 'saveAtasan'])->name('update-kehadiran');
     Route::post('/awalkerja/update',                [KepegawaianController::class, 'updateAwalKerja'])->name('awalkerja.update');
+    
+    Route::post('/edit-cuti-sisa',                  [CutiController::class, 'editCutiSisa'])->name('editCutiSisa');
     //Move
         Route::post('/move-menu',                   [AdminController::class, 'moveMenu'])->name('move.menu');
         Route::post('/move-submenu',                [AdminController::class, 'moveSubmenu'])->name('move.submenu');
@@ -78,6 +83,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/getdata/childmenu',                [AdminController::class, 'getDataChildMenu'])->name('getDataChildMenu');
     Route::get('/getdata/rolelist',                 [AdminController::class, 'getDataRoleList'])->name('roleList.getData');
     Route::get('/getdata/pegawai',                  [KepegawaianController::class, 'pegawaiGetData'])->name('pegawai.getData');
+    Route::get('/getdata/cutisisa',                 [CutiController::class, 'sisaCutigetData'])->name('cutis.getData');
 });
 
 
