@@ -106,7 +106,7 @@
             ajax: '{!! route('cutis.getData') !!}',
             columns: [
                 { data: 'no', name: 'no' },
-                { data: 'pegawai', name: 'pegawai', orderable: false, searchable: false },
+                { data: 'pegawai', name: 'pegawai', orderable: false, searchable: true },
                 { data: 'cutinsatu', name: 'cutinsatu' },         
                 { data: 'cutindua', name: 'cutindua' },
                 { data: 'cutintiga', name: 'cutintiga' },
