@@ -139,7 +139,8 @@ class UserController extends Controller
         $nip                = $user->detail->nip;
         $awalKerja          = $user->detail->awal_kerja;
         $cutiSisa           = CutiSisa::where('user_id', $id)->first();
-        $atasan             = Atasan::where('user_id', $userId)->first();
+        $atasan             = Atasan::where('user_id', $id)->first();
+        // dd($atasan);
       
         if (is_null($awalKerja) && $nip == 'default_nip') {
             $lamaBekerja = null;
