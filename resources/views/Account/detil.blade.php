@@ -86,101 +86,104 @@
         </div>
         <!-- /User Card -->
         <!-- Plan Card -->
+        @if($cutiSisa)
         <div class="card mb-4">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start">
-              <span class="badge bg-label-primary">Sisa Cuti Tahunan</span>
-              <div class="d-flex justify-content-center">                
-                <h1 class="display-5 mb-0 text-primary">{{ $cutiSisa->cuti_nsatu+$cutiSisa->cuti_ndua+$cutiSisa->cuti_n }}</h1>
-                <sub class="fs-6 pricing-duration mt-auto mb-3">&nbsp;Hari</sub>
-              </div>
-            </div>     
-              
-            @php             
-              $cutiPercent2024 = ($cutiSisa->cuti_n / 12) * 100;
-              if ($cutiPercent2024 < 10) {
-                $progressBarClass2024 = 'bg-danger';
-              } elseif ($cutiPercent2024 < 30) {
-                $progressBarClass2024 = 'bg-warning';
-              } else {
-                $progressBarClass2024 = 'bg-primary';
-              }
-          
-              // Data cuti untuk tahun 2023
-              $cutiPercent2023 = ($cutiSisa->cuti_nsatu / 12) * 100;
-              if ($cutiPercent2023 < 10) {
-                $progressBarClass2023 = 'bg-danger';
-              } elseif ($cutiPercent2023 < 30) {
-                $progressBarClass2023 = 'bg-warning';
-              } else {
-                $progressBarClass2023 = 'bg-primary';
-              }
-          
-              $cutiPercent2022 = ($cutiSisa->cuti_ndua / 12) * 100;
-              if ($cutiPercent2022 < 10) {
-                $progressBarClass2022 = 'bg-danger';
-              } elseif ($cutiPercent2022 < 30) {
-                $progressBarClass2022 = 'bg-warning';
-              } else {
-                $progressBarClass2022 = 'bg-primary';
-              }
-            @endphp
-          
-            <div class="d-flex justify-content-between align-items-center mb-1 mt-2">
-              <span>Cuti {{ $tahunIni }}</span>
-              <span>{{ $cutiSisa->cuti_n }} (Hari Sisa)</span>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="badge bg-label-primary">Sisa Cuti Tahunan</span>
+                    <div class="d-flex justify-content-center">                
+                        <h1 class="display-5 mb-0 text-primary">{{ $cutiSisa->cuti_nsatu + $cutiSisa->cuti_ndua + $cutiSisa->cuti_n }}</h1>
+                        <sub class="fs-6 pricing-duration mt-auto mb-3">&nbsp;Hari</sub>
+                    </div>
+                </div>     
+                
+                @php             
+                    $cutiPercent2024 = ($cutiSisa->cuti_n / 12) * 100;
+                    if ($cutiPercent2024 < 10) {
+                        $progressBarClass2024 = 'bg-danger';
+                    } elseif ($cutiPercent2024 < 30) {
+                        $progressBarClass2024 = 'bg-warning';
+                    } else {
+                        $progressBarClass2024 = 'bg-primary';
+                    }
+                
+                    // Data cuti untuk tahun 2023
+                    $cutiPercent2023 = ($cutiSisa->cuti_nsatu / 12) * 100;
+                    if ($cutiPercent2023 < 10) {
+                        $progressBarClass2023 = 'bg-danger';
+                    } elseif ($cutiPercent2023 < 30) {
+                        $progressBarClass2023 = 'bg-warning';
+                    } else {
+                        $progressBarClass2023 = 'bg-primary';
+                    }
+                
+                    $cutiPercent2022 = ($cutiSisa->cuti_ndua / 12) * 100;
+                    if ($cutiPercent2022 < 10) {
+                        $progressBarClass2022 = 'bg-danger';
+                    } elseif ($cutiPercent2022 < 30) {
+                        $progressBarClass2022 = 'bg-warning';
+                    } else {
+                        $progressBarClass2022 = 'bg-primary';
+                    }
+                @endphp
+                
+                <div class="d-flex justify-content-between align-items-center mb-1 mt-2">
+                    <span>Cuti {{ $tahunIni }}</span>
+                    <span>{{ $cutiSisa->cuti_n }} (Hari Sisa)</span>
+                </div>
+                
+                <div class="progress mb-3" style="height: 8px">
+                    <div
+                        class="progress-bar {{ $progressBarClass2024 }}"
+                        role="progressbar"
+                        style="width: {{ $cutiPercent2024 }}%"
+                        aria-valuenow="{{ $cutiPercent2024 }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100">
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span>Cuti {{ $tahunLalu }}</span>
+                    <span>{{ $cutiSisa->cuti_nsatu }} (Hari Sisa)</span>
+                </div>
+                
+                <div class="progress mb-3" style="height: 8px">
+                    <div
+                        class="progress-bar {{ $progressBarClass2023 }}"
+                        role="progressbar"
+                        style="width: {{ $cutiPercent2023 }}%"
+                        aria-valuenow="{{ $cutiPercent2023 }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100">
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span>Cuti {{ $duaTahunLalu }}</span>
+                    <span>{{ $cutiSisa->cuti_ndua }} (Hari Sisa)</span>
+                </div>
+                
+                <div class="progress mb-3" style="height: 8px">
+                    <div
+                        class="progress-bar {{ $progressBarClass2022 }}"
+                        role="progressbar"
+                        style="width: {{ $cutiPercent2022 }}%"
+                        aria-valuenow="{{ $cutiPercent2022 }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100">
+                    </div>
+                </div>
+                <div class="d-grid w-100 mt-4 pt-2">
+                    <button class="btn btn-primary" data-bs-target="#upgradePlanModal" data-bs-toggle="modal">
+                        Ajukan Cuti
+                    </button>
+                </div>
             </div>
-          
-            <div class="progress mb-3" style="height: 8px">
-              <div
-                class="progress-bar {{ $progressBarClass2024 }}"
-                role="progressbar"
-                style="width: {{ $cutiPercent2024 }}%"
-                aria-valuenow="{{ $cutiPercent2024 }}"
-                aria-valuemin="0"
-                aria-valuemax="100">
-              </div>
-            </div>
-            
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span>Cuti {{ $tahunLalu }}</span>
-              <span>{{ $cutiSisa->cuti_nsatu }} (Hari Sisa)</span>
-            </div>
-            
-            <div class="progress mb-3" style="height: 8px">
-              <div
-                class="progress-bar {{ $progressBarClass2023 }}"
-                role="progressbar"
-                style="width: {{ $cutiPercent2023 }}%"
-                aria-valuenow="{{ $cutiPercent2023 }}"
-                aria-valuemin="0"
-                aria-valuemax="100">
-              </div>
-            </div>
-            
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span>Cuti {{ $duaTahunLalu }}</span>
-              <span>{{ $cutiSisa->cuti_ndua }} (Hari Sisa)</span>
-            </div>
-            
-            <div class="progress mb-3" style="height: 8px">
-              <div
-                class="progress-bar {{ $progressBarClass2022 }}"
-                role="progressbar"
-                style="width: {{ $cutiPercent2022 }}%"
-                aria-valuenow="{{ $cutiPercent2022 }}"
-                aria-valuemin="0"
-                aria-valuemax="100">
-              </div>
-            </div>
-            <div class="d-grid w-100 mt-4 pt-2">
-              <button class="btn btn-primary" data-bs-target="#upgradePlanModal" data-bs-toggle="modal">
-                Ajukan Cuti
-              </button>
-            </div>
-          </div>
         </div>
-        <!-- /Plan Card -->
+      @endif
+      
+    
       </div>
       <!--/ User Sidebar -->
 
