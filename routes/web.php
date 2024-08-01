@@ -30,7 +30,7 @@ Route::get('/whatsapp/verify',                  [AuthController::class, 'verifyW
 
 Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(function () {
     Route::get('/kepegawaian/pegawai/list',         [KepegawaianController::class, 'showPegawaiList'])->name('kepegawaian.pegawai.list');
-    Route::get('/kepegawaian/cuti/sisa',         [CutiController::class, 'showCutiSisa'])->name('kepegawaian.cuti.sisa');
+    Route::get('/kepegawaian/cuti/sisa',            [CutiController::class, 'showCutiSisa'])->name('kepegawaian.cuti.sisa');
     
 
     Route::get('/user/account/detil',               [UserController::class, 'showAccount'])->name('user.account.detil');
@@ -65,6 +65,8 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/awalkerja/update',                [KepegawaianController::class, 'updateAwalKerja'])->name('awalkerja.update');
     
     Route::post('/edit-cuti-sisa',                  [CutiController::class, 'editCutiSisa'])->name('editCutiSisa');
+    Route::post('/edit-cuti-sisa',                  [CutiController::class, 'editCutiSisa'])->name('editCutiSisa');
+    Route::post('/hitung-hari-cuti',                [CutiController::class, 'hitungHariCuti']);
     //Move
         Route::post('/move-menu',                   [AdminController::class, 'moveMenu'])->name('move.menu');
         Route::post('/move-submenu',                [AdminController::class, 'moveSubmenu'])->name('move.submenu');

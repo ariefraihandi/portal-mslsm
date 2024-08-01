@@ -7,6 +7,7 @@ use App\Models\CutiSisa;
 use App\Models\UserDetail;
 use DataTables;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class CutiController extends Controller
 {
@@ -131,4 +132,6 @@ class CutiController extends Controller
                 ->make(true);
         }
     }
+
+    
 }

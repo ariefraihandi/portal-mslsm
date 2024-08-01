@@ -55,32 +55,7 @@
                     <span>Jabatan</span>
                   </div>
                 </div>
-              </div>
-              <h5 class="pb-2 border-bottom mb-4">Details</h5>
-              <div class="info-container">
-                <ul class="list-unstyled">
-                  <li class="mb-3">
-                    <span class="fw-medium me-2">Username:</span>
-                    <span>{{$users->username}}</span>
-                  </li>
-                  <li class="mb-3">
-                    <span class="fw-medium me-2">Email:</span>
-                    <span>{{$users->email}}</span>
-                  </li>
-                  <li class="mb-3">
-                    <span class="fw-medium me-2">Status:</span>
-                    <span class="badge bg-label-success">Active</span>
-                  </li>
-                  <li class="mb-3">
-                    <span class="fw-medium me-2">Jabatan:</span>
-                    <span>{{$users->detail->jabatan}}</span>
-                  </li>
-                  <li class="mb-3">
-                    <span class="fw-medium me-2">Whatsapp:</span>
-                    <span>{{$users->detail->jabatan}}</span>
-                  </li>                
-                </ul>              
-              </div>
+              </div>              
             </div>
           </div>
         
@@ -173,9 +148,9 @@
                         </div>
                     </div>
                     <div class="d-grid w-100 mt-4 pt-2">
-                        <button class="btn btn-primary" data-bs-target="#upgradePlanModal" data-bs-toggle="modal">
-                            Ajukan Cuti
-                        </button>
+                      <a href="{{ route('user.account.cuti') }}" class="btn btn-primary">
+                        Ajukan Cuti Tahunan
+                      </a>
                     </div>
                 </div>
             </div>
@@ -200,9 +175,9 @@
         <ul class="nav nav-pills flex-column flex-md-row mb-3">
           <li class="nav-item">
             <a class="nav-link active" href="{{ route('user.account.detil') }}"><i class="bx bx-user me-1"></i>Details</a>          
-          </li>
+          </li>        
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('user.account.activity') }}"
+            <a class="nav-link" href="{{ route('user.account.cuti') }}"
               ><i class="bx bx-calendar-event me-1"></i>Cuti</a
             >
           </li>

@@ -90,7 +90,7 @@
             <a class="nav-link" href="{{ route('user.account.detil') }}"><i class="bx bx-user me-1"></i>Details</a>          
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('user.account.activity') }}"
+            <a class="nav-link" href="{{ route('user.account.cuti') }}"
               ><i class="bx bx-calendar-event me-1"></i>Cuti</a
             >
           </li>

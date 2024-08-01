@@ -171,9 +171,8 @@
               
         </div>
           
-
         <div class="card mb-4">
-            <h5 class="card-header">User Activity Timeline</h5>
+            <h5 class="card-header">Daftar Cuti</h5>
             <div class="card-body">
               
             </div>
@@ -376,25 +375,90 @@
                                           
     <script>
       
-      function checkNotificationPermission() {
-          return Notification.permission;
-      }
+        function checkNotificationPermission() {
+            return Notification.permission;
+        }
 
-      // Fungsi untuk memantau perubahan izin notifikasi
-      function monitorNotificationPermission() {
-          let currentPermission = checkNotificationPermission();
+        function monitorNotificationPermission() {
+            let currentPermission = checkNotificationPermission();
 
-          setInterval(() => {
-              let newPermission = checkNotificationPermission();
-              if (newPermission !== currentPermission) {
-                  location.reload();  // Reload halaman jika izin berubah
-              }
-          }, 1000); // Memeriksa setiap 1 detik
-      }
-
-      // Memulai pemantauan izin notifikasi
-      monitorNotificationPermission();
+            setInterval(() => {
+                let newPermission = checkNotificationPermission();
+                if (newPermission !== currentPermission) {
+                    location.reload(); 
+                }
+            }, 1000);
+        }
+        monitorNotificationPermission();
     </script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tglAwalInput = document.getElementById('tglawal');
+        const tglAkhirInput = document.getElementById('tglakhir');
+        const saldoCutiInput = document.getElementById('saldo_cuti');
+        const saldoCutiRow = document.getElementById('saldo_cuti_row');
+
+        // Ambil data sisa cuti dari PHP
+        const sisaCuti = @json($cutiSisa->cuti_n + $cutiSisa->cuti_nsatu + $cutiSisa->cuti_ndua);
+
+        tglAwalInput.addEventListener('change', calculateLeaveDays);
+        tglAkhirInput.addEventListener('change', calculateLeaveDays);
+
+        async function calculateLeaveDays() {
+            const tglAwal = tglAwalInput.value;
+            const tglAkhir = tglAkhirInput.value;
+
+            if (!tglAwal || !tglAkhir) {
+                return;
+            }
+
+            const startDate = new Date(tglAwal);
+            const endDate = new Date(tglAkhir);
+
+            if (startDate > endDate) {
+                saldoCutiInput.value = 'Tanggal awal tidak boleh lebih besar dari tanggal akhir.';
+                saldoCutiRow.style.display = 'block';
+                return;
+            }
+
+            let totalHari = 0;
+            let hariLibur = [];
+            let currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                const dayOfWeek = currentDate.getDay();
+                if (dayOfWeek !== 6 && dayOfWeek !== 0) { // Exclude Saturdays (6) and Sundays (0)
+                    totalHari++;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            let currentYear = startDate.getFullYear();
+            while (currentYear <= endDate.getFullYear()) {
+                let response = await fetch(`https://api-harilibur.vercel.app/api?year=${currentYear}`);
+                let data = await response.json();
+                hariLibur = hariLibur.concat(data.filter(libur => libur.is_national_holiday));
+                currentYear++;
+            }
+
+            const hariLiburDalamRentang = hariLibur.filter(libur => {
+                const tanggalLibur = new Date(libur.holiday_date);
+                return tanggalLibur >= startDate && tanggalLibur <= endDate;
+            });
+
+            const jumlahHariLibur = hariLiburDalamRentang.length;
+            const jumlahHariCuti = totalHari - jumlahHariLibur;
+            const sisaCutiAkhir = sisaCuti - jumlahHariCuti;
+            const sisaCutiMessage = sisaCutiAkhir < 0 ? " | Sisa Cuti Anda Tidak Mencukupi" : "";
+
+            saldoCutiInput.value = `Jumlah Hari Cuti: ${jumlahHariCuti} | Sisa Cuti: ${sisaCutiAkhir}${sisaCutiMessage}`;
+            saldoCutiRow.style.display = 'block';
+        }
+    });
+</script>
+
     <script>
       document.getElementById('upload').addEventListener('change', function() {
           document.getElementById('uploadForm').submit();
@@ -414,6 +478,6 @@
               showSweetAlert(response);
           @endif
       });
-  </script>
+    </script>
     
 @endpush

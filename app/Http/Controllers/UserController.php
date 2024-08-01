@@ -8,6 +8,7 @@ use App\Models\UserDetail;
 use App\Models\Session;
 use App\Models\CutiSisa;
 use App\Models\UserActivity;
+use App\Models\Atasan;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\WebpEncoder;
@@ -137,9 +138,9 @@ class UserController extends Controller
         $activities         = UserActivity::where('user_id', $id)->orderBy('created_at', 'desc')->take(10)->get();
         $nip                = $user->detail->nip;
         $awalKerja          = $user->detail->awal_kerja;
-
+        $cutiSisa           = CutiSisa::where('user_id', $id)->first();
+        $atasan             = Atasan::where('user_id', $userId)->first();
       
-       
         if (is_null($awalKerja) && $nip == 'default_nip') {
             $lamaBekerja = null;
         } else {      
@@ -169,11 +170,12 @@ class UserController extends Controller
         }
 
         $data = [
-            'title' => 'Activity',
-            'subtitle' => 'Portal MS Lhokseumawe',
-            'sidebar' => $accessMenus,
-            'users' => $user,
-         
+            'title'         => 'Activity',
+            'subtitle'      => 'Portal MS Lhokseumawe',
+            'sidebar'       => $accessMenus,
+            'users'         => $user,
+            'cutiSisa'      => $cutiSisa,
+            
         ];
 
         return view('Account.cuti', $data);
