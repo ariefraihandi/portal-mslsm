@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserDetail;
 use App\Models\Session;
-use App\Models\cutiSisa;
+use App\Models\CutiSisa;
 use App\Models\UserActivity;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
