@@ -186,7 +186,7 @@
               <div class="card-body text-center">
                   <p>Data Cuti Anda Belum Di Perbaharui</p>
                   <div class="d-grid w-100 mt-4 pt-2">
-                      <a href="https://wa.me/6285272401835?text=Permohonan%20Pembaharuan%20Data%20Cuti%20{{ urlencode($user->detail->name) }}" class="btn btn-primary">
+                      <a href="https://wa.me/6285272401835?text=Permohonan%20Pembaharuan%20Data%20Cuti%20{{ urlencode($users->detail->name) }}" class="btn btn-primary">
                           Hubungi Kepegawaian
                       </a>
                   </div>
