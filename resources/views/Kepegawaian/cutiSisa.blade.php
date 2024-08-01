@@ -118,7 +118,6 @@
             ]
         });
 
-        // Event listener untuk ikon action
         $('#sisaCutiModal').on('show.bs.modal', function (event) {
             var icon = $(event.relatedTarget); // Icon yang mengaktifkan modal
             var userId = icon.data('id'); // Ekstrak info dari data-* attributes
@@ -142,6 +141,7 @@
             modal.find('#cuti-melahirkan').val(cutiMelahirkan);
             modal.find('#user-id').val(userId);
         });
+
 
         // Handle form submission
         $('#cutiForm').on('submit', function(event) {
@@ -176,21 +176,21 @@
 
   <script>
    function showDeleteConfirmation(url, message) {
-    Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: message,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = url;
-        }
-    });
-}
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: message,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
 
 
     function showSweetAlert(response) {

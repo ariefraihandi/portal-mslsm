@@ -40,9 +40,9 @@ class CutiController extends Controller
         $cutiSisa = CutiSisa::updateOrCreate(
             ['user_id' => $request->user_id],
             [
-                'cuti_nsatu' => $request->cuti_n1,
-                'cuti_ndua' => $request->cuti_n2,
-                'cuti_n' => $request->cuti_n3,
+                'cuti_n' => $request->cuti_n1,
+                'cuti_nsatu' => $request->cuti_n2,
+                'cuti_ndua' => $request->cuti_n3,
                 'cuti_s' => $request->cuti_sakit,
                 'cuti_ap' => $request->cap,
                 'cuti_b' => $request->cuti_besar,
@@ -95,13 +95,13 @@ class CutiController extends Controller
                     return $output;
                 })
                 ->addColumn('cutinsatu', function ($user) {
-                    return $user->cutiSisa->cuti_nsatu ?? 0;
+                    return $user->cutiSisa->cuti_n ?? 0;
                 })
                 ->addColumn('cutindua', function ($user) {
-                    return $user->cutiSisa->cuti_ndua ?? 0;
+                    return $user->cutiSisa->cuti_nsatu ?? 0;
                 })
                 ->addColumn('cutintiga', function ($user) {
-                    return $user->cutiSisa->cuti_n ?? 0;
+                    return $user->cutiSisa->cuti_ndua ?? 0;
                 })
                 ->addColumn('cs', function ($user) {
                     return $user->cutiSisa->cuti_s ?? 0;
@@ -116,7 +116,16 @@ class CutiController extends Controller
                     return $user->cutiSisa->cuti_m ?? 0;
                 })
                 ->addColumn('action', function ($user) {
-                    return '<i class="fas fa-edit" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#sisaCutiModal" data-id="' . $user->id . '" data-name="' . e($user->name) . '"></i>';
+                    return '<i class="fas fa-edit" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#sisaCutiModal" 
+                    data-id="' . $user->id . '" 
+                    data-name="' . e($user->name) . '"
+                    data-cutinsatu="' . ($user->cutiSisa->cuti_n ?? 0) . '"
+                    data-cutindua="' . ($user->cutiSisa->cuti_nsatu ?? 0) . '"
+                    data-cutintiga="' . ($user->cutiSisa->cuti_ndua ?? 0) . '"
+                    data-cs="' . ($user->cutiSisa->cuti_s ?? 0) . '"
+                    data-cap="' . ($user->cutiSisa->cuti_ap ?? 0) . '"
+                    data-cb="' . ($user->cutiSisa->cuti_b ?? 0) . '"
+                    data-cm="' . ($user->cutiSisa->cuti_m ?? 0) . '"></i>';
                 })
                 ->rawColumns(['pegawai', 'action'])
                 ->make(true);

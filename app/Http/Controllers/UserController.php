@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserDetail;
 use App\Models\Session;
+use App\Models\cutiSisa;
 use App\Models\UserActivity;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -21,43 +22,51 @@ use Carbon\Carbon;
 class UserController extends Controller
 {
     public function showAccount(Request $request)
-{
-    $accessMenus = $request->get('accessMenus');
-    $id = $request->session()->get('user_id');
-    $user = User::with('detail')->find($id);
-    $sessions = Session::where('user_id', $id)->get();
-    $nip = $user->detail->nip;
-    $awalKerja = $user->detail->awal_kerja;
+    {
+        $accessMenus    = $request->get('accessMenus');
+        $id             = $request->session()->get('user_id');
+        $user           = User::with('detail')->find($id);
+        $sessions       = Session::where('user_id', $id)->get();
+        $nip            = $user->detail->nip;
+        $awalKerja      = $user->detail->awal_kerja;
+        $cutiSisa       = CutiSisa::where('user_id', $id)->first();
+        $tahunIni       = Carbon::now()->year;
+        $tahunLalu      = Carbon::now()->subYear()->year;
+        $duaTahunLalu   = Carbon::now()->subYears(2)->year;
 
-    if (is_null($awalKerja) && $nip == 'default_nip') {
-        $lamaBekerja = null;
-        $tanggalAwalKerja = null;
-    } else {
-        if ($awalKerja) {
-            $tanggalPengangkatanCarbon = Carbon::parse($awalKerja, 'Asia/Jakarta');
+        if (is_null($awalKerja) && $nip == 'default_nip') {
+            $lamaBekerja = null;
+            $tanggalAwalKerja = null;
         } else {
-            $tanggalPengangkatan = substr($nip, 8, 6);
-            $tahunPengangkatan = substr($tanggalPengangkatan, 0, 4);
-            $bulanPengangkatan = substr($tanggalPengangkatan, 4, 2);
-            $tanggalPengangkatanCarbon = Carbon::createFromDate($tahunPengangkatan, $bulanPengangkatan, 1, 'Asia/Jakarta');
+            if ($awalKerja) {
+                $tanggalPengangkatanCarbon = Carbon::parse($awalKerja, 'Asia/Jakarta');
+            } else {
+                $tanggalPengangkatan = substr($nip, 8, 6);
+                $tahunPengangkatan = substr($tanggalPengangkatan, 0, 4);
+                $bulanPengangkatan = substr($tanggalPengangkatan, 4, 2);
+                $tanggalPengangkatanCarbon = Carbon::createFromDate($tahunPengangkatan, $bulanPengangkatan, 1, 'Asia/Jakarta');
+            }
+            $tanggalHariIni = Carbon::now('Asia/Jakarta');
+            $lamaBekerja = $tanggalPengangkatanCarbon->diff($tanggalHariIni);
+            $tanggalAwalKerja = $tanggalPengangkatanCarbon->format('d-m-Y'); // Format dd-mm-yyyy
         }
-        $tanggalHariIni = Carbon::now('Asia/Jakarta');
-        $lamaBekerja = $tanggalPengangkatanCarbon->diff($tanggalHariIni);
-        $tanggalAwalKerja = $tanggalPengangkatanCarbon->format('d-m-Y'); // Format dd-mm-yyyy
+
+        $data = [
+            'title' => 'Profile',
+            'subtitle' => 'Portal MS Lhokseumawe',
+            'sidebar' => $accessMenus,
+            'users' => $user,
+            'sessions' => $sessions,
+            'lamaBekerja' => $lamaBekerja,
+            'tanggalAwalKerja' => $tanggalAwalKerja,
+            'cutiSisa' => $cutiSisa,
+            'tahunIni' => $tahunIni,
+            'tahunLalu' => $tahunLalu,
+            'duaTahunLalu' => $duaTahunLalu,
+        ];
+
+        return view('Account.detil', $data);
     }
-
-    $data = [
-        'title' => 'Profile',
-        'subtitle' => 'Portal MS Lhokseumawe',
-        'sidebar' => $accessMenus,
-        'users' => $user,
-        'sessions' => $sessions,
-        'lamaBekerja' => $lamaBekerja,
-        'tanggalAwalKerja' => $tanggalAwalKerja,
-    ];
-
-    return view('Account.detil', $data);
-}
 
     public function showActivity(Request $request)
     {
