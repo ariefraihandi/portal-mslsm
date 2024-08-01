@@ -35,6 +35,7 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
 
     Route::get('/user/account/detil',               [UserController::class, 'showAccount'])->name('user.account.detil');
     Route::get('/user/account/activity',            [UserController::class, 'showActivity'])->name('user.account.activity');
+    Route::get('/user/account/cuti',                [UserController::class, 'showCuti'])->name('user.account.cuti');
     
     Route::get('/admin/user/access',                [AdminController::class, 'showRole'])->name('admin.user.access');
     Route::get('/admin/menu/menulist',              [AdminController::class, 'showMenu'])->name('admin.menu.menulist');

@@ -19,7 +19,7 @@
     <!--/ Card Border Shadow -->
     <div class="row">
       <!-- Vehicles overview -->
-        <div class="col-xxl-6 mb-4 order-5 order-xxl-0">      
+        <div class="col-xxl-12 mb-4 order-5 order-xxl-0">      
             <div class="card-datatable table-responsive">
                 <table id="pegawai-table" class="datatables-users table border-top">              
                     <thead>

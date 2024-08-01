@@ -16,186 +16,182 @@
     <h4 class="py-3 mb-4"><span class="text-muted fw-light">User / Account /</span> Details</h4>
     <div class="row">
       <!-- User Sidebar -->
-      <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
-        <!-- User Card -->
-        <div class="card mb-4">
-          <div class="card-body">
-            <div class="user-avatar-section">
-              <div class="d-flex align-items-center flex-column">
-                <img
-                  class="img-fluid rounded my-4"
-                  src="{{ asset('assets') }}/img/avatars/{{ $users->detail->image }}"
-                  height="110"
-                  width="110"
-                  alt="User avatar" />
-                <div class="user-info text-center">
-                  <h4 class="mb-2">{{$users->detail->name}}</h4>
-                  <span class="badge bg-label-secondary">
-                    MS Lhokseumawe
-                </span>
-                </div>
-              </div>
-            </div>
-            <div class="d-flex justify-content-around flex-wrap my-4 py-3">
-              @if ($lamaBekerja)
-                <div class="d-flex align-items-start me-4 mt-3 gap-3">
-                    <span class="badge bg-label-primary p-2 rounded"><i class="bx bxs-time bx-sm"></i></span>
-                    <div>
-                        <h5 class="mb-0">                          
-                            {{ $lamaBekerja->y }} Tahun, {{ $lamaBekerja->m }} Bulan
-                        </h5>
-                        <span>Masa Kerja</span>
-                    </div>
-                </div>
-              @endif
-          
-              <div class="d-flex align-items-start mt-3 gap-3">
-                <span class="badge bg-label-primary p-2 rounded"><i class="bx bx-user-pin bx-sm"></i></span>
-                <div>
-                  <h5 class="mb-0">{{$users->detail->jabatan}}</h5>
-                  <span>Jabatan</span>
-                </div>
-              </div>
-            </div>
-            <h5 class="pb-2 border-bottom mb-4">Details</h5>
-            <div class="info-container">
-              <ul class="list-unstyled">
-                <li class="mb-3">
-                  <span class="fw-medium me-2">Username:</span>
-                  <span>{{$users->username}}</span>
-                </li>
-                <li class="mb-3">
-                  <span class="fw-medium me-2">Email:</span>
-                  <span>{{$users->email}}</span>
-                </li>
-                <li class="mb-3">
-                  <span class="fw-medium me-2">Status:</span>
-                  <span class="badge bg-label-success">Active</span>
-                </li>
-                <li class="mb-3">
-                  <span class="fw-medium me-2">Jabatan:</span>
-                  <span>{{$users->detail->jabatan}}</span>
-                </li>
-                <li class="mb-3">
-                  <span class="fw-medium me-2">Whatsapp:</span>
-                  <span>{{$users->detail->jabatan}}</span>
-                </li>                
-              </ul>              
-            </div>
-          </div>
-        </div>
-        <!-- /User Card -->
-        <!-- Plan Card -->
-        @if($cutiSisa)
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <span class="badge bg-label-primary">Sisa Cuti Tahunan</span>
-                    <div class="d-flex justify-content-center">                
-                        <h1 class="display-5 mb-0 text-primary">{{ $cutiSisa->cuti_nsatu + $cutiSisa->cuti_ndua + $cutiSisa->cuti_n }}</h1>
-                        <sub class="fs-6 pricing-duration mt-auto mb-3">&nbsp;Hari</sub>
-                    </div>
-                </div>     
-                
-                @php             
-                    $cutiPercent2024 = ($cutiSisa->cuti_n / 12) * 100;
-                    if ($cutiPercent2024 < 10) {
-                        $progressBarClass2024 = 'bg-danger';
-                    } elseif ($cutiPercent2024 < 30) {
-                        $progressBarClass2024 = 'bg-warning';
-                    } else {
-                        $progressBarClass2024 = 'bg-primary';
-                    }
-                
-                    // Data cuti untuk tahun 2023
-                    $cutiPercent2023 = ($cutiSisa->cuti_nsatu / 12) * 100;
-                    if ($cutiPercent2023 < 10) {
-                        $progressBarClass2023 = 'bg-danger';
-                    } elseif ($cutiPercent2023 < 30) {
-                        $progressBarClass2023 = 'bg-warning';
-                    } else {
-                        $progressBarClass2023 = 'bg-primary';
-                    }
-                
-                    $cutiPercent2022 = ($cutiSisa->cuti_ndua / 12) * 100;
-                    if ($cutiPercent2022 < 10) {
-                        $progressBarClass2022 = 'bg-danger';
-                    } elseif ($cutiPercent2022 < 30) {
-                        $progressBarClass2022 = 'bg-warning';
-                    } else {
-                        $progressBarClass2022 = 'bg-primary';
-                    }
-                @endphp
-                
-                <div class="d-flex justify-content-between align-items-center mb-1 mt-2">
-                    <span>Cuti {{ $tahunIni }}</span>
-                    <span>{{ $cutiSisa->cuti_n }} (Hari Sisa)</span>
-                </div>
-                
-                <div class="progress mb-3" style="height: 8px">
-                    <div
-                        class="progress-bar {{ $progressBarClass2024 }}"
-                        role="progressbar"
-                        style="width: {{ $cutiPercent2024 }}%"
-                        aria-valuenow="{{ $cutiPercent2024 }}"
-                        aria-valuemin="0"
-                        aria-valuemax="100">
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span>Cuti {{ $tahunLalu }}</span>
-                    <span>{{ $cutiSisa->cuti_nsatu }} (Hari Sisa)</span>
-                </div>
-                
-                <div class="progress mb-3" style="height: 8px">
-                    <div
-                        class="progress-bar {{ $progressBarClass2023 }}"
-                        role="progressbar"
-                        style="width: {{ $cutiPercent2023 }}%"
-                        aria-valuenow="{{ $cutiPercent2023 }}"
-                        aria-valuemin="0"
-                        aria-valuemax="100">
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span>Cuti {{ $duaTahunLalu }}</span>
-                    <span>{{ $cutiSisa->cuti_ndua }} (Hari Sisa)</span>
-                </div>
-                
-                <div class="progress mb-3" style="height: 8px">
-                    <div
-                        class="progress-bar {{ $progressBarClass2022 }}"
-                        role="progressbar"
-                        style="width: {{ $cutiPercent2022 }}%"
-                        aria-valuenow="{{ $cutiPercent2022 }}"
-                        aria-valuemin="0"
-                        aria-valuemax="100">
-                    </div>
-                </div>
-                <div class="d-grid w-100 mt-4 pt-2">
-                    <button class="btn btn-primary" data-bs-target="#upgradePlanModal" data-bs-toggle="modal">
-                        Ajukan Cuti
-                    </button>
-                </div>
-            </div>
-        </div>
-        @else
+        <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
           <div class="card mb-4">
-              <div class="card-body text-center">
-                  <p>Data Cuti Anda Belum Di Perbaharui</p>
-                  <div class="d-grid w-100 mt-4 pt-2">
-                      <a href="https://wa.me/6285272401835?text=Permohonan%20Pembaharuan%20Data%20Cuti%20{{ urlencode($users->detail->name) }}" class="btn btn-primary">
-                          Hubungi Kepegawaian
-                      </a>
+            <div class="card-body">
+              <div class="user-avatar-section">
+                <div class="d-flex align-items-center flex-column">
+                  <img
+                    class="img-fluid rounded my-4"
+                    src="{{ asset('assets') }}/img/avatars/{{ $users->detail->image }}"
+                    height="110"
+                    width="110"
+                    alt="User avatar" />
+                  <div class="user-info text-center">
+                    <h4 class="mb-2">{{$users->detail->name}}</h4>
+                    <span class="badge bg-label-secondary">
+                      MS Lhokseumawe
+                  </span>
                   </div>
+                </div>
               </div>
+              <div class="d-flex justify-content-around flex-wrap my-4 py-3">
+                @if ($lamaBekerja)
+                  <div class="d-flex align-items-start me-4 mt-3 gap-3">
+                      <span class="badge bg-label-primary p-2 rounded"><i class="bx bxs-time bx-sm"></i></span>
+                      <div>
+                          <h5 class="mb-0">                          
+                              {{ $lamaBekerja->y }} Tahun, {{ $lamaBekerja->m }} Bulan
+                          </h5>
+                          <span>Masa Kerja</span>
+                      </div>
+                  </div>
+                @endif
+            
+                <div class="d-flex align-items-start mt-3 gap-3">
+                  <span class="badge bg-label-primary p-2 rounded"><i class="bx bx-user-pin bx-sm"></i></span>
+                  <div>
+                    <h5 class="mb-0">{{$users->detail->jabatan}}</h5>
+                    <span>Jabatan</span>
+                  </div>
+                </div>
+              </div>
+              <h5 class="pb-2 border-bottom mb-4">Details</h5>
+              <div class="info-container">
+                <ul class="list-unstyled">
+                  <li class="mb-3">
+                    <span class="fw-medium me-2">Username:</span>
+                    <span>{{$users->username}}</span>
+                  </li>
+                  <li class="mb-3">
+                    <span class="fw-medium me-2">Email:</span>
+                    <span>{{$users->email}}</span>
+                  </li>
+                  <li class="mb-3">
+                    <span class="fw-medium me-2">Status:</span>
+                    <span class="badge bg-label-success">Active</span>
+                  </li>
+                  <li class="mb-3">
+                    <span class="fw-medium me-2">Jabatan:</span>
+                    <span>{{$users->detail->jabatan}}</span>
+                  </li>
+                  <li class="mb-3">
+                    <span class="fw-medium me-2">Whatsapp:</span>
+                    <span>{{$users->detail->jabatan}}</span>
+                  </li>                
+                </ul>              
+              </div>
+            </div>
           </div>
-        @endif
-      
-    
-      </div>
+        
+          @if($cutiSisa)
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="badge bg-label-primary">Sisa Cuti Tahunan</span>
+                        <div class="d-flex justify-content-center">                
+                            <h1 class="display-5 mb-0 text-primary">{{ $cutiSisa->cuti_nsatu + $cutiSisa->cuti_ndua + $cutiSisa->cuti_n }}</h1>
+                            <sub class="fs-6 pricing-duration mt-auto mb-3">&nbsp;Hari</sub>
+                        </div>
+                    </div>     
+                    
+                    @php             
+                        $cutiPercent2024 = ($cutiSisa->cuti_n / 12) * 100;
+                        if ($cutiPercent2024 < 10) {
+                            $progressBarClass2024 = 'bg-danger';
+                        } elseif ($cutiPercent2024 < 30) {
+                            $progressBarClass2024 = 'bg-warning';
+                        } else {
+                            $progressBarClass2024 = 'bg-primary';
+                        }
+                    
+                        // Data cuti untuk tahun 2023
+                        $cutiPercent2023 = ($cutiSisa->cuti_nsatu / 12) * 100;
+                        if ($cutiPercent2023 < 10) {
+                            $progressBarClass2023 = 'bg-danger';
+                        } elseif ($cutiPercent2023 < 30) {
+                            $progressBarClass2023 = 'bg-warning';
+                        } else {
+                            $progressBarClass2023 = 'bg-primary';
+                        }
+                    
+                        $cutiPercent2022 = ($cutiSisa->cuti_ndua / 12) * 100;
+                        if ($cutiPercent2022 < 10) {
+                            $progressBarClass2022 = 'bg-danger';
+                        } elseif ($cutiPercent2022 < 30) {
+                            $progressBarClass2022 = 'bg-warning';
+                        } else {
+                            $progressBarClass2022 = 'bg-primary';
+                        }
+                    @endphp
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-1 mt-2">
+                        <span>Cuti {{ $tahunIni }}</span>
+                        <span>{{ $cutiSisa->cuti_n }} (Hari Sisa)</span>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 8px">
+                        <div
+                            class="progress-bar {{ $progressBarClass2024 }}"
+                            role="progressbar"
+                            style="width: {{ $cutiPercent2024 }}%"
+                            aria-valuenow="{{ $cutiPercent2024 }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Cuti {{ $tahunLalu }}</span>
+                        <span>{{ $cutiSisa->cuti_nsatu }} (Hari Sisa)</span>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 8px">
+                        <div
+                            class="progress-bar {{ $progressBarClass2023 }}"
+                            role="progressbar"
+                            style="width: {{ $cutiPercent2023 }}%"
+                            aria-valuenow="{{ $cutiPercent2023 }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Cuti {{ $duaTahunLalu }}</span>
+                        <span>{{ $cutiSisa->cuti_ndua }} (Hari Sisa)</span>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 8px">
+                        <div
+                            class="progress-bar {{ $progressBarClass2022 }}"
+                            role="progressbar"
+                            style="width: {{ $cutiPercent2022 }}%"
+                            aria-valuenow="{{ $cutiPercent2022 }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+                    <div class="d-grid w-100 mt-4 pt-2">
+                        <button class="btn btn-primary" data-bs-target="#upgradePlanModal" data-bs-toggle="modal">
+                            Ajukan Cuti
+                        </button>
+                    </div>
+                </div>
+            </div>
+          @else
+            <div class="card mb-4">
+              <div class="card-body text-center">
+                <p>Data Cuti Anda Belum Di Perbaharui</p>
+                <div class="d-grid w-100 mt-4 pt-2">
+                  <a href="https://wa.me/6285272401835?text=Permohonan%20Pembaharuan%20Data%20Cuti%20{{ urlencode($users->detail->name) }}" class="btn btn-primary">
+                      Hubungi Kepegawaian
+                  </a>
+                </div>
+              </div>
+            </div>
+          @endif
+        </div>
       <!--/ User Sidebar -->
 
       <!-- User Content -->
@@ -207,19 +203,14 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{ route('user.account.activity') }}"
-              ><i class="bx bxs-timer me-1"></i>Aktifitas</a
-            >
-          </li>
-          {{-- <li class="nav-item">
-            <a class="nav-link" href="app-user-view-security.html"
-              ><i class="bx bx-lock-alt me-1"></i>Security</a
+              ><i class="bx bx-calendar-event me-1"></i>Cuti</a
             >
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="app-user-view-billing.html"
-              ><i class="bx bxs-devices me-1"></i>Device</a
+            <a class="nav-link" href="{{ route('user.account.activity') }}"
+              ><i class="bx bxs-timer me-1"></i>Aktifitas</a
             >
-          </li>           --}}
+          </li>
         </ul>
         <!--/ User Pills -->
 

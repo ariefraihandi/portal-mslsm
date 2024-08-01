@@ -31,6 +31,7 @@ class JabatanSeeder extends Seeder
             'Kasubbag Keuangan / Umum',
             'Kasubbag Perencanaan / IT',
             'Kasubbag Kepegawaian',
+            'Analis Pengelolaan Keuangan APBN Ahli Muda',
             'Juru Sita',
             'Juru Sita Pengganti',
             'Pranata Komputer Ahli Pertama',

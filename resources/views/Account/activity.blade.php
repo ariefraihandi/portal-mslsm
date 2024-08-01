@@ -90,18 +90,13 @@
             <a class="nav-link" href="{{ route('user.account.detil') }}"><i class="bx bx-user me-1"></i>Details</a>          
           </li>
           <li class="nav-item">
-            <a class="nav-link active" href="{{ route('user.account.activity') }}"><i class="bx bxs-timer me-1"></i>Aktifitas</a>
-          </li>
-          {{-- <li class="nav-item">
-            <a class="nav-link" href="app-user-view-security.html"
-              ><i class="bx bx-lock-alt me-1"></i>Security</a
+            <a class="nav-link" href="{{ route('user.account.activity') }}"
+              ><i class="bx bx-calendar-event me-1"></i>Cuti</a
             >
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="app-user-view-billing.html"
-              ><i class="bx bxs-devices me-1"></i>Device</a
-            >
-          </li>           --}}
+            <a class="nav-link active" href="{{ route('user.account.activity') }}"><i class="bx bxs-timer me-1"></i>Aktifitas</a>
+          </li>         
         </ul>
 
         <div class="card mb-4">

@@ -127,6 +127,57 @@ class UserController extends Controller
 
         return view('Account.activity', $data);
     }
+   
+    public function showCuti(Request $request)
+    {
+        $accessMenus        = $request->get('accessMenus');
+        $id                 = $request->session()->get('user_id');
+        $user               = User::with('detail')->find($id); // Mengambil user beserta detailnya
+        $sessions           = Session::where('user_id', $id)->orderBy('last_activity', 'desc')->take(3)->get();
+        $activities         = UserActivity::where('user_id', $id)->orderBy('created_at', 'desc')->take(10)->get();
+        $nip                = $user->detail->nip;
+        $awalKerja          = $user->detail->awal_kerja;
+
+      
+       
+        if (is_null($awalKerja) && $nip == 'default_nip') {
+            $lamaBekerja = null;
+        } else {      
+            if ($awalKerja) {               
+                $tanggalPengangkatanCarbon = Carbon::parse($awalKerja, 'Asia/Jakarta');
+            } else {              
+                $tanggalPengangkatan = substr($nip, 8, 6);
+                $tahunPengangkatan = substr($tanggalPengangkatan, 0, 4);
+                $bulanPengangkatan = substr($tanggalPengangkatan, 4, 2);
+                $tanggalPengangkatanCarbon = Carbon::createFromDate($tahunPengangkatan, $bulanPengangkatan, 1, 'Asia/Jakarta');
+            }
+         
+            $tanggalHariIni = Carbon::now('Asia/Jakarta');
+
+            // Menghitung selisih tahun dan bulan
+            $lamaBekerja = $tanggalPengangkatanCarbon->diff($tanggalHariIni);
+        }
+
+        foreach ($sessions as $session) {
+            $session->deviceIcon = $this->getDeviceIcon($session->user_agent);
+            $session->browserIcon = $this->getBrowserIcon($session->user_agent);
+        }
+
+        foreach ($activities as $activity) {
+            $activity->deviceIcon = $this->getDeviceIcon($activity->device_info);
+            $activity->browserIcon = $this->getBrowserIcon($activity->device_info);
+        }
+
+        $data = [
+            'title' => 'Activity',
+            'subtitle' => 'Portal MS Lhokseumawe',
+            'sidebar' => $accessMenus,
+            'users' => $user,
+         
+        ];
+
+        return view('Account.cuti', $data);
+    }
 
 
     //Editing
