@@ -143,8 +143,10 @@ class AdminController extends Controller
     public function showRole(Request $request)
     {
         $accessMenus = $request->get('accessMenus');          
+        $id                     = $request->session()->get('user_id');
         $roles = Role::where('id', '!=', 1)->with('users')->get();
         $menus = Menu::all();
+        $user                   = User::with('detail')->find($id); 
         $subMenus = MenuSub::all();
         $childMenus = MenuSubChild::all();
     
@@ -152,6 +154,7 @@ class AdminController extends Controller
             'title' => 'Accesses',
             'subtitle' => 'Bilik Hukum',
             'roles' => $roles,
+            'users'             => $user,
             'sidebar' => $accessMenus,
             'menus' => $menus,
             'subMenus' => $subMenus,
