@@ -53,4 +53,15 @@ class UserDetail extends Model
         return $this->hasOne(CutiSisa::class, 'user_id', 'user_id');
     }
 
+    public function atasans()
+    {
+        return $this->hasMany(Atasan::class, 'atasan_id', 'user_id');
+    }
+
+    // Relasi ke Atasan dimana user adalah atasan kedua (jika diperlukan)
+    public function atasansDua()
+    {
+        return $this->hasMany(Atasan::class, 'atasan_dua_id', 'user_id');
+    }
+
 }

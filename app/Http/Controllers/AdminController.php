@@ -21,6 +21,8 @@ class AdminController extends Controller
     public function showMenu(Request $request)
     {
         $accessMenus            = $request->get('accessMenus');
+        $id                     = $request->session()->get('user_id');
+        $user                   = User::with('detail')->find($id); 
         $menus                  = Menu::all();
         $menuSubs               = MenuSub::all();
         $menuSubChildren        = MenuSubChild::all();
@@ -29,6 +31,7 @@ class AdminController extends Controller
         $data = [
             'title'             => 'Menu List',
             'subtitle'          => 'Portal MS Lhokseumawe',
+            'users'             => $user,
             'sidebar'           => $accessMenus,
             'menus'             => $menus,
             'menuSubs'          => $menuSubs,
@@ -42,6 +45,8 @@ class AdminController extends Controller
     public function showsubMenu(Request $request)
     {
         $accessMenus            = $request->get('accessMenus');
+        $id                     = $request->session()->get('user_id');
+        $user                   = User::with('detail')->find($id); 
         $menus                  = Menu::all();
         $menuSubs               = MenuSub::all();
         $menuSubChildren        = MenuSubChild::all();
@@ -50,6 +55,7 @@ class AdminController extends Controller
         $data = [
             'title'             => 'Submenu List',
             'subtitle'          => 'Bilik Hukum',
+            'users'             => $user,
             'sidebar'           => $accessMenus,
             'menus'             => $menus,
             'menuSubs'          => $menuSubs,
@@ -63,6 +69,8 @@ class AdminController extends Controller
     public function showchildMenu(Request $request)
     {
         $accessMenus            = $request->get('accessMenus');
+        $id                     = $request->session()->get('user_id');
+        $user                   = User::with('detail')->find($id); 
         $menus                  = Menu::all();
         $menuSubs               = MenuSub::all();
         $menuSubChildren        = MenuSubChild::all();
@@ -71,6 +79,7 @@ class AdminController extends Controller
         $data = [
             'title'             => 'Child Menu List',
             'subtitle'          => 'Portal MS Lhokseumawe',
+            'users'             => $user,
             'sidebar'           => $accessMenus,
             'menus'             => $menus,
             'menuSubs'          => $menuSubs,
@@ -84,6 +93,8 @@ class AdminController extends Controller
     public function showRoleList(Request $request)
     {
         $accessMenus            = $request->get('accessMenus');
+        $id                     = $request->session()->get('user_id');
+        $user                   = User::with('detail')->find($id); 
         $menus                  = Menu::all();
         $menuSubs               = MenuSub::all();
         $menuSubChildren        = MenuSubChild::all();
@@ -92,6 +103,7 @@ class AdminController extends Controller
         $data = [
             'title'             => 'Role List',
             'subtitle'          => 'Portal MS Lhokseumawe',
+            'users'             => $user,
             'sidebar'           => $accessMenus,
             'menus'             => $menus,
             'menuSubs'          => $menuSubs,
@@ -106,6 +118,8 @@ class AdminController extends Controller
     {
         // Fetch the data with ID 1
         $instansi = Instansi::find(1);
+        $id                     = $request->session()->get('user_id');
+        $user                   = User::with('detail')->find($id); 
     
         // If the data is not found, you might want to handle this case
         if (!$instansi) {
@@ -117,6 +131,7 @@ class AdminController extends Controller
         $data = [
             'title'             => 'Instansi',
             'subtitle'          => 'Portal MS Lhokseumawe',
+            'users'             => $user,
             'sidebar'           => $accessMenus,
             'instansi'          => $instansi, // Add the fetched data here
         ];

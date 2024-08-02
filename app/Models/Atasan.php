@@ -24,4 +24,15 @@ class Atasan extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function atasanDetail()
+    {
+        return $this->belongsTo(UserDetail::class, 'atasan_id', 'user_id');
+    }
+
+    // Relasi ke UserDetail untuk atasan kedua (jika diperlukan)
+    public function atasanDuaDetail()
+    {
+        return $this->belongsTo(UserDetail::class, 'atasan_dua_id', 'user_id');
+    }
 }

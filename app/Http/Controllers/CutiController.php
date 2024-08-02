@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CutiSisa;
 use App\Models\UserDetail;
+use App\Models\User;
 use DataTables;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -14,12 +15,14 @@ class CutiController extends Controller
     public function showCutiSisa(Request $request)
     {
         $accessMenus        = $request->get('accessMenus');
-       
+        $id                 = $request->session()->get('user_id');
+        $user               = User::with('detail')->find($id); 
 
         $data = [
-            'title' => 'Sisa Cuti Pegawai',
-            'subtitle' => 'Portal MS Lhokseumawe',
-            'sidebar' => $accessMenus,
+            'title'         => 'Sisa Cuti Pegawai',
+            'subtitle'      => 'Portal MS Lhokseumawe',
+            'sidebar'       => $accessMenus,
+            'users'         => $user,
         ];
 
         return view('Kepegawaian.cutiSisa', $data);
@@ -27,6 +30,7 @@ class CutiController extends Controller
 
     public function editCutiSisa(Request $request)
     {
+
         $validatedData = $request->validate([
             'user_id' => 'required|exists:users_detail,user_id',
             'cuti_n1' => 'required|integer|min:0',
@@ -118,7 +122,7 @@ class CutiController extends Controller
                 })
                 ->addColumn('action', function ($user) {
                     return '<i class="fas fa-edit" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#sisaCutiModal" 
-                    data-id="' . $user->id . '" 
+                    data-id="' . $user->user_id . '" 
                     data-name="' . e($user->name) . '"
                     data-cutinsatu="' . ($user->cutiSisa->cuti_n ?? 0) . '"
                     data-cutindua="' . ($user->cutiSisa->cuti_nsatu ?? 0) . '"

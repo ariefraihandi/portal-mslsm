@@ -9,6 +9,7 @@ use App\Models\Session;
 use App\Models\CutiSisa;
 use App\Models\UserActivity;
 use App\Models\Atasan;
+use App\Models\Kehadiran;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\WebpEncoder;
@@ -131,56 +132,58 @@ class UserController extends Controller
    
     public function showCuti(Request $request)
     {
-        $accessMenus        = $request->get('accessMenus');
-        $id                 = $request->session()->get('user_id');
-        $user               = User::with('detail')->find($id); // Mengambil user beserta detailnya
-        $sessions           = Session::where('user_id', $id)->orderBy('last_activity', 'desc')->take(3)->get();
-        $activities         = UserActivity::where('user_id', $id)->orderBy('created_at', 'desc')->take(10)->get();
-        $nip                = $user->detail->nip;
-        $awalKerja          = $user->detail->awal_kerja;
-        $cutiSisa           = CutiSisa::where('user_id', $id)->first();
-        $atasan             = Atasan::where('user_id', $id)->first();
-        // dd($atasan);
-      
-        if (is_null($awalKerja) && $nip == 'default_nip') {
-            $lamaBekerja = null;
-        } else {      
-            if ($awalKerja) {               
-                $tanggalPengangkatanCarbon = Carbon::parse($awalKerja, 'Asia/Jakarta');
-            } else {              
-                $tanggalPengangkatan = substr($nip, 8, 6);
-                $tahunPengangkatan = substr($tanggalPengangkatan, 0, 4);
-                $bulanPengangkatan = substr($tanggalPengangkatan, 4, 2);
-                $tanggalPengangkatanCarbon = Carbon::createFromDate($tahunPengangkatan, $bulanPengangkatan, 1, 'Asia/Jakarta');
+        $accessMenus            = $request->get('accessMenus');
+        $id                     = $request->session()->get('user_id');
+        $user                   = User::with('detail')->find($id);
+        $sessions               = Session::where('user_id', $id)->orderBy('last_activity', 'desc')->take(3)->get();
+
+        $nip                    = $user->detail->nip;
+        $awalKerja              = $user->detail->awal_kerja;
+        $cutiSisa               = CutiSisa::where('user_id', $id)->first();        
+        $atasan                 = Atasan::where('user_id', $id)->first();
+        $atasanLainnya          = null;
+        $atasanDetail           = null;
+        $atasanDuaDetail        = null;
+        $atasanDuaCuti          = false;
+        $atasanCuti             = false;
+    
+        if ($atasan) {
+            $atasanUser         = User::find($atasan->atasan_id);
+            $atasanDetail       = $atasanUser ? $atasanUser->detail : null;
+
+            $atasanLainnya      = UserDetail::where('user_id', '!=', $atasan->atasan_id)
+                                ->where('user_id', '!=', $atasan->atasan_dua_id)
+                                ->where('user_id', '!=', $atasan->user_id)
+                                ->where('jabatan', '!=', 'PPNPN')
+                                ->get();
+
+            $atasanDuaUser      = $atasan->atasan_dua_id != 10000 ? User::find($atasan->atasan_dua_id) : null;
+            $atasanDuaDetail    = $atasanDuaUser ? $atasanDuaUser->detail : null;
+    
+            $today              = Carbon::now('Asia/Jakarta')->toDateString();
+    
+            $atasanCuti         = Kehadiran::where('user_id', $atasan->atasan_id)->whereDate('tgl_awal', '<=', $today)->whereDate('tgl_akhir', '>=', $today)->exists();
+            if ($atasanDuaDetail) {
+                $atasanDuaCuti  = Kehadiran::where('user_id', $atasan->atasan_dua_id)->whereDate('tgl_awal', '<=', $today)->whereDate('tgl_akhir', '>=', $today)->exists();
             }
-         
-            $tanggalHariIni = Carbon::now('Asia/Jakarta');
-
-            // Menghitung selisih tahun dan bulan
-            $lamaBekerja = $tanggalPengangkatanCarbon->diff($tanggalHariIni);
-        }
-
-        foreach ($sessions as $session) {
-            $session->deviceIcon = $this->getDeviceIcon($session->user_agent);
-            $session->browserIcon = $this->getBrowserIcon($session->user_agent);
-        }
-
-        foreach ($activities as $activity) {
-            $activity->deviceIcon = $this->getDeviceIcon($activity->device_info);
-            $activity->browserIcon = $this->getBrowserIcon($activity->device_info);
         }
 
         $data = [
-            'title'         => 'Activity',
-            'subtitle'      => 'Portal MS Lhokseumawe',
-            'sidebar'       => $accessMenus,
-            'users'         => $user,
-            'cutiSisa'      => $cutiSisa,
-            
+            'title' => 'Cuti Pegawai',
+            'subtitle' => 'Portal MS Lhokseumawe',
+            'sidebar' => $accessMenus,
+            'users' => $user,
+            'cutiSisa' => $cutiSisa,
+            'atasanDetail' => $atasanDetail,
+            'atasanDuaDetail' => $atasanDuaDetail,
+            'atasanCuti' => $atasanCuti,
+            'atasanDuaCuti' => $atasanDuaCuti,
+            'atasanLainnya' => $atasanLainnya,
         ];
-
+    
         return view('Account.cuti', $data);
     }
+    
 
 
     //Editing

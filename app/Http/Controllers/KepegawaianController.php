@@ -28,6 +28,7 @@ class KepegawaianController extends Controller
         $accessMenus        = $request->get('accessMenus');
         $id                 = $request->session()->get('user_id');
         $roles              = Role::all();
+        $user               = User::with('detail')->find($id); 
         $userDetails        = UserDetail::all();
         $totalData          = $userDetails->count();      
         $atasans            = UserDetail::join('jabatan', 'users_detail.jabatan', '=', 'jabatan.name')
@@ -56,6 +57,7 @@ class KepegawaianController extends Controller
         $data = [
             'title' => 'Pegawai',
             'subtitle' => 'Portal MS Lhokseumawe',
+            'users'         => $user,
             'sidebar' => $accessMenus,
             'atasans' => $atasans,
             'roles' => $roles, 

@@ -299,15 +299,10 @@ id="layout-navbar">
     <!--/ Notification -->
     <!-- User -->
     <li class="nav-item navbar-dropdown dropdown-user dropdown">
-      @php
-        $userId = session('user_id');
-        $user = App\Models\UserDetail::find($userId);
-        $userImage = $user->image ?? 'default.jpg'; // Use default image if no image is found
-
-      @endphp
+  
     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
       <div class="avatar avatar-online">
-          <img src="{{ asset('assets/img/avatars/' . $userImage) }}" alt="{{ $user->name }}" class="avatar-img w-px-40 h-200 rounded-circle" />
+          <img src="{{ asset('assets/img/avatars/' . $users->detail->image) }}" alt="{{ $users->detail->name }}" class="avatar-img w-px-40 h-200 rounded-circle" />
       </div>
   </a>
       <ul class="dropdown-menu dropdown-menu-end">
@@ -316,12 +311,12 @@ id="layout-navbar">
             <div class="d-flex">
               <div class="flex-shrink-0 me-3">
                 <div class="avatar avatar-online">
-                  <img src="{{ asset('assets/img/avatars/' . $userImage) }}" alt="{{ $user->name }}" class="w-px-40 h-200 rounded-circle" />
+                  <img src="{{ asset('assets/img/avatars/' . $users->detail->image) }}" alt="{{ $users->detail->name }}" class="w-px-40 h-200 rounded-circle" />
                 </div>
               </div>
               <div class="flex-grow-1">
-                <span class="fw-medium d-block">{{ $user->name }}</span>
-                <small class="text-muted">{{ $user->jabatan }}</small>
+                <span class="fw-medium d-block">{{ $users->detail->name }}</span>
+                <small class="text-muted">{{ $users->detail->jabatan }}</small>
               </div>
             </div>
           </a>

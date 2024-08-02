@@ -215,31 +215,38 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col mb-3">
-                                <label for="ataslang" class="form-label">Pilih Atasan Langsung</label>
-                                <select name="ataslang" id="ataslang" class="form-control" required>
-                                    <option value="">Atasan Langsung</option>
-                                    <option value="1">Ketua</option>
-                                    <option value="2">Wakil Ketua</option>
-                                    <option value="3">Panitera</option>
-                                    <option value="4">Sekretaris</option>
-                                    <!-- Additional static options can be added here -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col mb-3">
-                                <label for="id_pimpinan" class="form-label">Pilih Pimpinan</label>
-                                <select name="id_pimpinan" id="id_pimpinan" class="form-control" required>
-                                    <option value="">Atasan Pimpinan</option>
-                                    <option value="1">Ketua</option>
-                                    <option value="2">Wakil Ketua</option>
-                                    <option value="3">Panitera</option>
-                                    <option value="4">Sekretaris</option>
-                                    <!-- Additional static options can be added here -->
-                                </select>
-                            </div>
-                        </div>
+                          <div class="col mb-3">
+                              <label for="ataslang" class="form-label">Pilih Atasan 1</label>
+                              <select name="ataslang" id="ataslang" class="form-control" required>
+                                  @if($atasanDetail)
+                                      <option value="{{ $atasanDetail->id }}" @if($atasanCuti) disabled @endif>
+                                          {{ $atasanDetail->name }} @if($atasanCuti) | Cuti @endif
+                                      </option>
+                                  @endif
+                                  @foreach($atasanLainnya as $atasan)
+                                    <option value="{{ $atasan->user_id }}">{{ $atasan->name }}</option>
+                                  @endforeach
+                              </select>
+                          </div>
+                      </div>
+                      <div class="row">
+                          <div class="col mb-3">
+                              <label for="id_pimpinan" class="form-label">Pilih Atasan, Atasan Langsung</label>
+                              <select name="id_pimpinan" id="id_pimpinan" class="form-control" required>
+                                  @if($atasanDuaDetail)
+                                      <option value="{{ $atasanDuaDetail->id }}" @if($atasanDuaCuti) disabled @endif>
+                                          {{ $atasanDuaDetail->name }} @if($atasanDuaCuti) | Cuti @endif
+                                      </option>
+                                           @foreach($atasanLainnya as $atasan)
+                                    <option value="{{ $atasan->user_id }}">{{ $atasan->name }}</option>
+                                  @endforeach
+                                  @else
+                                      <option value="10000">Tidak ada Atasan 2</option>
+                                  @endif
+                             
+                              </select>
+                          </div>
+                      </div>
                         <div class="row g-2">
                             <div class="col mb-0">
                                 <label for="tglawal" class="form-label">Dari Tanggal</label>
