@@ -11,7 +11,7 @@ class CreateUserDevicesTable extends Migration
         Schema::create('user_devices', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('device_token')->unique();
+            $table->string('device_token');
             $table->string('device_info')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();

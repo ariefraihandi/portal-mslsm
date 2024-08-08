@@ -12,6 +12,7 @@
         "kreait/laravel-firebase": "^5.9",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
+        "simplesoftwareio/simple-qrcode": "~4",
         "yajra/laravel-datatables-oracle": "^11.1"
     },
     "require-dev": {

@@ -9,10 +9,8 @@ class CutiDetail extends Model
 {
     use HasFactory;
 
-    // Tentukan tabel yang digunakan oleh model ini
     protected $table = 'cuti_detail';
 
-    // Tentukan kolom-kolom yang bisa diisi (mass assignable)
     protected $fillable = [
         'no_surat',
         'user_id',
@@ -39,24 +37,21 @@ class CutiDetail extends Model
         'cuti_ndua',
     ];
 
-    // Relasi dengan model User
-    public function user()
+    public function userDetails()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(UserDetail::class, 'user_id');
     }
 
-    // Relasi dengan model Atasan
     public function atasan()
     {
-        return $this->belongsTo(Atasan::class, 'atasan_id');
+        return $this->belongsTo(UserDetail::class, 'atasan_id', 'user_id');
     }
 
     public function atasanDua()
     {
-        return $this->belongsTo(Atasan::class, 'atasan_dua_id');
+        return $this->belongsTo(UserDetail::class, 'atasan_dua_id', 'user_id');
     }
 
-    // Relasi dengan model Signature (jika ada)
     public function sign()
     {
         return $this->belongsTo(Signature::class, 'id_sign');

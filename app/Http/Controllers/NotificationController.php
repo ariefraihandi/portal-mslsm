@@ -5,19 +5,31 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\UserDevice;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Jenssegers\Agent\Agent;
 use App\Models\UserActivity;
 use OneSignal;
 
 class NotificationController extends Controller
 {
-    public function checkDivice(Request $request)
+    public function checkDevice(Request $request)
     {
+        // Validate the request data
         $request->validate([
             'device_token' => 'required|string',
         ]);
 
-        $existingDevice = UserDevice::where('device_token', $request->device_token)->first();
+        // Get the authenticated user
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        // Find the device associated with the authenticated user and the provided device token
+        $existingDevice = UserDevice::where('user_id', $user->id)
+                                    ->where('device_token', $request->device_token)
+                                    ->first();
 
         if ($existingDevice) {
             return response()->json(['success' => true, 'player_id' => $existingDevice->id], 200);
@@ -31,8 +43,23 @@ class NotificationController extends Controller
         Log::info('storeDeviceToken called', ['request' => $request->all()]);
 
         $validated = $request->validate([
-            'device_token' => 'required|string|unique:user_devices',
+            'device_token' => 'required|string',
         ]);
+
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        // Check if the combination of user_id and device_token already exists
+        $existingDevice = UserDevice::where('user_id', $user->id)
+                                    ->where('device_token', $request->device_token)
+                                    ->first();
+
+        if ($existingDevice) {
+            return response()->json(['success' => false, 'message' => 'Device token already exists for this user'], 400);
+        }
 
         $agent = new Agent();
         $userAgent = $request->header('User-Agent');
@@ -63,7 +90,7 @@ class NotificationController extends Controller
         }
 
         $userDevice = UserDevice::create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'device_token' => $request->device_token,
             'device_info' => json_encode([
                 'browser' => $browser,
@@ -90,7 +117,7 @@ class NotificationController extends Controller
 
         // Menambahkan aktivitas pengguna
         UserActivity::create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'ip_address' => $request->ip(),
             'activity' => 'Penambahan Perangkat',
             'description' => 'Perangkat ' . $device . ' berhasil ditambahkan',

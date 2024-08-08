@@ -31,11 +31,14 @@ Route::get('/whatsapp/verify',                  [AuthController::class, 'verifyW
 Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(function () {
     Route::get('/kepegawaian/pegawai/list',         [KepegawaianController::class, 'showPegawaiList'])->name('kepegawaian.pegawai.list');
     Route::get('/kepegawaian/cuti/sisa',            [CutiController::class, 'showCutiSisa'])->name('kepegawaian.cuti.sisa');
+    Route::get('/kepegawaian/cuti/permohonan',      [CutiController::class, 'showCutiPermohonan'])->name('kepegawaian.cuti.permohonan');
+    Route::get('/kepegawaian/cuti/detail',          [CutiController::class, 'showCutiDetail'])->name('kepegawaian.cuti.detail');
     
 
     Route::get('/user/account/detil',               [UserController::class, 'showAccount'])->name('user.account.detil');
     Route::get('/user/account/activity',            [UserController::class, 'showActivity'])->name('user.account.activity');
     Route::get('/user/account/cuti',                [UserController::class, 'showCuti'])->name('user.account.cuti');
+    Route::get('/user/account/cuti/perizinan',      [UserController::class, 'showCuti'])->name('user.account.cuti');
     
     Route::get('/admin/user/access',                [AdminController::class, 'showRole'])->name('admin.user.access');
     Route::get('/admin/menu/menulist',              [AdminController::class, 'showMenu'])->name('admin.menu.menulist');
@@ -65,7 +68,12 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/awalkerja/update',                [KepegawaianController::class, 'updateAwalKerja'])->name('awalkerja.update');
     
     Route::post('/edit-cuti-sisa',                  [CutiController::class, 'editCutiSisa'])->name('editCutiSisa');
-    Route::post('/edit-cuti-sisa',                  [CutiController::class, 'editCutiSisa'])->name('editCutiSisa');
+    Route::post('/submit-cutitahunan',              [CutiController::class, 'submitCutiTahunan'])->name('submit-cutiTahunan');
+    Route::post('/submit-cutiapprove',              [CutiController::class, 'cutiApprove'])->name('cuti.approve');
+    Route::post('/submit-cutiperubahan',            [CutiController::class, 'cutiPerubahan'])->name('cuti.perubahan');
+    Route::post('/submit-cutipenanguhan',           [CutiController::class, 'cutiPenanguhan'])->name('cuti.penanguhan');
+    Route::post('/submit-cutitolak',                [CutiController::class, 'cutiTolak'])->name('cuti.tolak');
+    Route::get('/qr',                               [CutiController::class, 'generateQrCodeWithLogo'])->name('qr');
     Route::post('/hitung-hari-cuti',                [CutiController::class, 'hitungHariCuti']);
     //Move
         Route::post('/move-menu',                   [AdminController::class, 'moveMenu'])->name('move.menu');
@@ -73,7 +81,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         Route::post('/move-childsubmenu',           [AdminController::class, 'moveChildSubmenu'])->name('moveChildSubmenu');
     //!Move
     Route::post('/store-device-token',              [NotificationController::class, 'storeDeviceToken']);
-    Route::post('/check-divice',                    [NotificationController::class, 'checkDivice']);
+    Route::post('/check-device',                    [NotificationController::class, 'checkDevice']);
     Route::post('/send-notification/{userId}', [NotificationController::class, 'sendNotificationToUser']);
     Route::get('/test-notif', function () {return view('test-notif');});    
     
@@ -87,6 +95,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/getdata/rolelist',                 [AdminController::class, 'getDataRoleList'])->name('roleList.getData');
     Route::get('/getdata/pegawai',                  [KepegawaianController::class, 'pegawaiGetData'])->name('pegawai.getData');
     Route::get('/getdata/cutisisa',                 [CutiController::class, 'sisaCutigetData'])->name('cutis.getData');
+    Route::get('/getdata/cuti/permohonan',          [CutiController::class, 'permohonanCutigetData'])->name('cutis.permohonangetData');
 });
 
 

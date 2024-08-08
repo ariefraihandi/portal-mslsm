@@ -1,13 +1,13 @@
 @extends('IndexPortal.app')
 
 @push('head-script')
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/typeahead-js/typeahead.css" />
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css" />
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/css/pages/page-profile.css" />
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/sweetalert2/sweetalert2.css" /> 
+<link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+<link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/typeahead-js/typeahead.css" />
+<link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
+<link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
+<link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css" />
+<link rel="stylesheet" href="{{ asset('assets') }}/vendor/css/pages/page-profile.css" />
+<link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/sweetalert2/sweetalert2.css" /> 
 @endpush
 
 @section('content')
@@ -17,26 +17,42 @@
     <h4 class="py-3 mb-4"><span class="text-muted fw-light">Kepegawaian /</span> Cuti / {{$title}}</h4>    
 
     <!--/ Card Border Shadow -->
-    <div class="row">
+    <div class="row g-4">
       <!-- Vehicles overview -->
-        <div class="col-xxl-12 mb-4 order-5 order-xxl-0">      
-            <div class="card-datatable table-responsive">
-                <table id="pegawai-table" class="datatables-users table border-top">              
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Pegawai</th>
-                            <th>C. N1</th>                                                    
-                            <th>C. N2</th>                            
-                            <th>C. N3</th>
-                            <th>C. Sakit</th>
-                            <th>CAP</th>       
-                            <th>CB</th>       
-                            <th>CM</th>    
-                            <th>Action</th>       
-                        </tr>
-                    </thead>
-                </table>
+      <div class="col-xl-12 col-lg-12 col-md-12 order-0 order-md-1">
+            <ul class="nav nav-pills flex-column flex-md-row mb-3">
+                <li class="nav-item col-3">
+                    <a class="nav-link active" href="{{ route('kepegawaian.cuti.sisa') }}"><i class="bx bx-menu-alt-left me-1"></i>Sisa Cuti</a>
+                </li>
+                <li class="nav-item col-3">
+                    <a class="nav-link" href="/kepegawaian.cuti.permohonan"><i class="bx bx-menu me-1"></i>Permohonan Cuti</a>
+                </li>
+                <li class="nav-item col-3">
+                    <a class="nav-link" href="/admin/menu/childmenulist"><i class="bx bx-menu-alt-right me-1"></i>Child Menu</a>
+                </li>
+                <li class="nav-item col-3">
+                    <a class="nav-link" href="/admin/menu/role"><i class="bx bx-lock-open-alt me-1"></i>Role</a>
+                </li>
+            </ul>             
+            <div class="card">    
+                <div class="card-datatable table-responsive">
+                    <table id="sisaCuti-table" class="datatables-users table border-top">                
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Pegawai</th>
+                                <th>C. N1</th>                                                    
+                                <th>C. N2</th>                            
+                                <th>C. N3</th>
+                                <th>C. Sakit</th>
+                                <th>CAP</th>       
+                                <th>CB</th>       
+                                <th>CM</th>    
+                                <th>Action</th>       
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -100,7 +116,7 @@
 @push('footer-Sec-script')
 <script type="text/javascript">
     $(document).ready(function() {
-        $('#pegawai-table').DataTable({
+        $('#sisaCuti-table').DataTable({
             processing: true,
             serverSide: true,
             ajax: '{!! route('cutis.getData') !!}',

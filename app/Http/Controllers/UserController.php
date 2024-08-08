@@ -132,42 +132,61 @@ class UserController extends Controller
    
     public function showCuti(Request $request)
     {
-        $accessMenus            = $request->get('accessMenus');
-        $id                     = $request->session()->get('user_id');
-        $user                   = User::with('detail')->find($id);
-        $sessions               = Session::where('user_id', $id)->orderBy('last_activity', 'desc')->take(3)->get();
-
-        $nip                    = $user->detail->nip;
-        $awalKerja              = $user->detail->awal_kerja;
-        $cutiSisa               = CutiSisa::where('user_id', $id)->first();        
-        $atasan                 = Atasan::where('user_id', $id)->first();
-        $atasanLainnya          = null;
-        $atasanDetail           = null;
-        $atasanDuaDetail        = null;
-        $atasanDuaCuti          = false;
-        $atasanCuti             = false;
+        $accessMenus = $request->get('accessMenus');
+        $id = $request->session()->get('user_id');
+        $user = User::with('detail')->find($id);
+        $sessions = Session::where('user_id', $id)->orderBy('last_activity', 'desc')->take(3)->get();
+    
+        $nip = $user->detail->nip;
+        $awalKerja = $user->detail->awal_kerja;
+        $cutiSisa = CutiSisa::where('user_id', $id)->first();
+    
+        // Check if cutiSisa is null
+        if (is_null($cutiSisa)) {
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => false,
+                    'title' => 'Gagal.!',
+                    'message' => 'Data Cuti Belum Diperbaharui',
+                ],
+            ]);
+        }
+    
+        $atasan = Atasan::where('user_id', $id)->first();
+        $atasanLainnya = null;
+        $atasanDetail = null;
+        $atasanDuaDetail = null;
+        $atasanDuaCuti = false;
+        $atasanCuti = false;
     
         if ($atasan) {
-            $atasanUser         = User::find($atasan->atasan_id);
-            $atasanDetail       = $atasanUser ? $atasanUser->detail : null;
-
-            $atasanLainnya      = UserDetail::where('user_id', '!=', $atasan->atasan_id)
-                                ->where('user_id', '!=', $atasan->atasan_dua_id)
-                                ->where('user_id', '!=', $atasan->user_id)
-                                ->where('jabatan', '!=', 'PPNPN')
-                                ->get();
-
-            $atasanDuaUser      = $atasan->atasan_dua_id != 10000 ? User::find($atasan->atasan_dua_id) : null;
-            $atasanDuaDetail    = $atasanDuaUser ? $atasanDuaUser->detail : null;
+            $atasanUser = User::find($atasan->atasan_id);
+            $atasanDetail = $atasanUser ? $atasanUser->detail : null;
     
-            $today              = Carbon::now('Asia/Jakarta')->toDateString();
+            $atasanLainnya = UserDetail::where('user_id', '!=', $atasan->atasan_id)
+                ->where('user_id', '!=', $atasan->atasan_dua_id)
+                ->where('user_id', '!=', $atasan->user_id)
+                ->where('jabatan', '!=', 'PPNPN')
+                ->get();
     
-            $atasanCuti         = Kehadiran::where('user_id', $atasan->atasan_id)->whereDate('tgl_awal', '<=', $today)->whereDate('tgl_akhir', '>=', $today)->exists();
+            $atasanDuaUser = $atasan->atasan_dua_id != 10000 ? User::find($atasan->atasan_dua_id) : null;
+            $atasanDuaDetail = $atasanDuaUser ? $atasanDuaUser->detail : null;
+    
+            $today = Carbon::now('Asia/Jakarta')->toDateString();
+    
+            $atasanCuti = Kehadiran::where('user_id', $atasan->atasan_id)
+                ->whereDate('tgl_awal', '<=', $today)
+                ->whereDate('tgl_akhir', '>=', $today)
+                ->exists();
+    
             if ($atasanDuaDetail) {
-                $atasanDuaCuti  = Kehadiran::where('user_id', $atasan->atasan_dua_id)->whereDate('tgl_awal', '<=', $today)->whereDate('tgl_akhir', '>=', $today)->exists();
+                $atasanDuaCuti = Kehadiran::where('user_id', $atasan->atasan_dua_id)
+                    ->whereDate('tgl_awal', '<=', $today)
+                    ->whereDate('tgl_akhir', '>=', $today)
+                    ->exists();
             }
         }
-
+    
         $data = [
             'title' => 'Cuti Pegawai',
             'subtitle' => 'Portal MS Lhokseumawe',
@@ -183,6 +202,7 @@ class UserController extends Controller
     
         return view('Account.cuti', $data);
     }
+    
     
 
 
