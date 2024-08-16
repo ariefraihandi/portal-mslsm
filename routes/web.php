@@ -59,7 +59,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/add-submenu',                     [AdminController::class, 'addSubmenu'])->name('add.submenu');
     Route::post('/add-childsubmenu',                [AdminController::class, 'addChildSubmenu'])->name('add.ChildSubmenu');
     Route::get('/delete/menu',                      [AdminController::class, 'deleteMenu'])->name('delete.menu');
-    Route::get('/delete/childsubmenu',              [AdminController::class, 'deleteChildSubMenu']);
+    Route::get('/delete/childsubmenu',              [AdminController::class, 'deleteChildSubMenu'])->name('delete.ChildSubmenu');
 
     Route::post('/role/add',                        [AdminController::class, 'addRole'])->name('role.add');
     Route::post('/role/edit',                       [AdminController::class, 'editRole'])->name('role.edit');

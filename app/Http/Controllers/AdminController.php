@@ -483,39 +483,39 @@ class AdminController extends Controller
         }
 
         public function deleteChildSubMenu(Request $request)
-    {
-        $subMenuChildId = $request->input('id');
-        
-        try {
-            // Hapus AccessSubChild yang terkait dengan childsubmenu_id
-            AccessSubChild::where('childsubmenu_id', $subMenuChildId)->delete();
-            Log::info('Deleted access sub child records for sub menu child ID: ' . $subMenuChildId);
+        {
+            $subMenuChildId = $request->input('id');
+            
+            try {
+                // Hapus AccessSubChild yang terkait dengan childsubmenu_id
+                AccessSubChild::where('childsubmenu_id', $subMenuChildId)->delete();
+                Log::info('Deleted access sub child records for sub menu child ID: ' . $subMenuChildId);
 
-            // Hapus MenuSubChild dengan ID yang diberikan
-            MenuSubChild::where('id', $subMenuChildId)->delete();
+                // Hapus MenuSubChild dengan ID yang diberikan
+                MenuSubChild::where('id', $subMenuChildId)->delete();
 
-            // Jika berhasil, kembalikan response sukses
-            return redirect()->route('admin.menu.childmenulist')->with([
-                'response' => [
-                    'success' => true,
-                    'title' => 'Success',
-                    'message' => 'Sub menu child successfully deleted!',
-                ],
-            ]);
-        } catch (\Exception $e) {
-            // Log error jika terjadi kesalahan
-            Log::error('Error deleting sub menu child: ' . $e->getMessage());
+                // Jika berhasil, kembalikan response sukses
+                return redirect()->route('admin.menu.childmenulist')->with([
+                    'response' => [
+                        'success' => true,
+                        'title' => 'Success',
+                        'message' => 'Sub menu child successfully deleted!',
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                // Log error jika terjadi kesalahan
+                Log::error('Error deleting sub menu child: ' . $e->getMessage());
 
-            // Kembalikan response error jika terjadi kegagalan
-            return redirect()->route('admin.menu.childmenulist')->with([
-                'response' => [
-                    'success' => false,
-                    'title' => 'Error',
-                    'message' => $errorMessage,
-                ],
-            ]);
+                // Kembalikan response error jika terjadi kegagalan
+                return redirect()->route('admin.menu.childmenulist')->with([
+                    'response' => [
+                        'success' => false,
+                        'title' => 'Error',
+                        'message' => $errorMessage,
+                    ],
+                ]);
+            }
         }
-    }
 
         public function deleteRole(Request $request)
         {
