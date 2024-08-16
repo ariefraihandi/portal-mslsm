@@ -118,7 +118,7 @@
     <!--/ Card Border Shadow -->
     <div class="row">
       <!-- Vehicles overview -->
-      <div class="col-xxl-6 mb-4 order-5 order-xxl-0">
+      <div class="col-xxl-12 mb-4 order-5 order-xxl-0">
         <div class="card h-100">
           <div class="card-header">
             <div class="card-title mb-3">
@@ -336,7 +336,7 @@
                             <label for="atasanSelect" class="form-label">Pilih Atasan</label>
                             <select id="atasanSelect" name="atasan_id" class="form-control">
                                 @foreach($atasans as $atasan)
-                                    <option value="{{ $atasan->id }}">{{ $atasan->name }} | {{ $atasan->jabatan }}</option>
+                                    <option value="{{ $atasan->user_id }}">{{ $atasan->name }} | {{ $atasan->jabatan }}</option>
                                 @endforeach
                                 <option value="10000">Tidak Ada</option>
                             </select>

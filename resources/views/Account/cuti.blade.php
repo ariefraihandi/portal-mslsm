@@ -172,7 +172,25 @@
         <div class="card mb-4">
             <h5 class="card-header">Daftar Cuti</h5>
             <div class="card-body">
-              
+              <div class="card-datatable table-responsive">
+                <table id="daftarCuti-table" class="datatables-users table border-top">                
+                    <thead>
+                        <tr>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama</th>
+                                <th>Atasan</th>
+                                <th>Nomor Surat</th>
+                                <th>Jenis</th>
+                                <th>Tanggal Awal</th>
+                                <th>Tanggal Akhir</th>                                
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>    
+                        </tr>
+                    </thead>
+                </table>
+              </div>
             </div>
           </div>
           
@@ -301,11 +319,99 @@
     <script src="{{ asset('assets') }}/js/app-ecommerce-customer-detail-overview.js"></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
+      function showSweetAlert(response) {
+          Swal.fire({
+              icon: response.success ? 'success' : 'error',
+              title: response.title,
+              text: response.message,
+          });
+      }
+      
+      document.addEventListener('DOMContentLoaded', function() {
+          @if(session('response'))
+              var response = @json(session('response'));
+              showSweetAlert(response);
+          @endif
+      });
+    </script> 
+    <script type="text/javascript">
+      $(document).ready(function() {
+          var table = $('#daftarCuti-table').DataTable({
+              processing: true,
+              serverSide: true,
+              ajax: '{!! route('cutis.daftarCutidetData') !!}',
+              columns: [
+                  {data: 'no', name: 'no'},
+                  {data: 'user_name', name: 'user_name'},
+                  {data: 'atasan_name', name: 'atasan_name'},
+                  {data: 'no_surat', name: 'no_surat'},
+                  {data: 'jenis', name: 'jenis'},
+                  {data: 'tglawal', name: 'tglawal'},
+                  {data: 'tglakhir', name: 'tglakhir'},
+                  {data: 'status', name: 'status'},
+                  {data: 'action', name: 'action', orderable: false, searchable: false},
+              ]
+          });
+  
+          // Handle action button click
+          $('#permohonanCuti-table').on('click', '.edit', function () {
+              var data = table.row($(this).parents('tr')).data();
+              $('#id').val(data.id);
+              $('#jenisCuti').val(data.jenis);
+              $('#name').val(data.user_name);
+              $('#tglAwal').val(data.tglawal);
+              $('#tglAkhir').val(data.tglakhir);
+              $('#alasan').val(data.alasan); // Assuming you have an 'alasan' field in your data
+              $('#permohonanCuti').modal('show');
+          });
+  
+          // Handle Perubahan button click
+          $('#btnPerubahan').on('click', function () {
+              $('#permohonanCuti').modal('hide');
+              $('#idPerubahan').val($('#id').val());
+              $('#perubahanModal').modal('show');
+          });
+  
+          // Handle Penanguhan button click
+          $('#btnPenanguhan').on('click', function () {
+              $('#permohonanCuti').modal('hide');
+              $('#idPenanguhan').val($('#id').val());
+              $('#penanguhanModal').modal('show');
+          });
+  
+          // Handle Tolak button click
+          $('#btnTolak').on('click', function () {
+              $('#permohonanCuti').modal('hide');
+              $('#idTolak').val($('#id').val());
+              $('#tolakModal').modal('show');
+          });
+  
+          // Handle Back button click in Perubahan modal
+          $('#backToMainModal1').on('click', function () {
+              $('#perubahanModal').modal('hide');
+              $('#permohonanCuti').modal('show');
+          });
+  
+          // Handle Back button click in Penanguhan modal
+          $('#backToMainModal2').on('click', function () {
+              $('#penanguhanModal').modal('hide');
+              $('#permohonanCuti').modal('show');
+          });
+  
+          // Handle Back button click in Tolak modal
+          $('#backToMainModal3').on('click', function () {
+              $('#tolakModal').modal('hide');
+              $('#permohonanCuti').modal('show');
+          });
+      });
+    </script>
+
+    <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
-          // appId: "c058f61a-07ba-4a97-ae80-5620ef410850",
+          // appId: "1bcbea20-e5e8-4378-8873-136dc3a7b87c",
+          appId: "c058f61a-07ba-4a97-ae80-5620ef410850",
         });
     
         let deviceToken = OneSignal.User.PushSubscription.id;
@@ -376,8 +482,8 @@
           });
         }
       }
-    </script>
-                                          
+    </script>   
+
     <script>
       
         function checkNotificationPermission() {
@@ -396,93 +502,73 @@
         }
         monitorNotificationPermission();
     </script>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const tglAwalInput = document.getElementById('tglawal');
-        const tglAkhirInput = document.getElementById('tglakhir');
-        const saldoCutiInput = document.getElementById('saldo_cuti');
-        const saldoCutiRow = document.getElementById('saldo_cuti_row');
-
-        // Ambil data sisa cuti dari PHP
-        const sisaCuti = @json($cutiSisa->cuti_n + $cutiSisa->cuti_nsatu + $cutiSisa->cuti_ndua);
-
-        tglAwalInput.addEventListener('change', calculateLeaveDays);
-        tglAkhirInput.addEventListener('change', calculateLeaveDays);
-
-        async function calculateLeaveDays() {
-            const tglAwal = tglAwalInput.value;
-            const tglAkhir = tglAkhirInput.value;
-
-            if (!tglAwal || !tglAkhir) {
-                return;
-            }
-
-            const startDate = new Date(tglAwal);
-            const endDate = new Date(tglAkhir);
-
-            if (startDate > endDate) {
-                saldoCutiInput.value = 'Tanggal awal tidak boleh lebih besar dari tanggal akhir.';
-                saldoCutiRow.style.display = 'block';
-                return;
-            }
-
-            let totalHari = 0;
-            let hariLibur = [];
-            let currentDate = new Date(startDate);
-
-            while (currentDate <= endDate) {
-                const dayOfWeek = currentDate.getDay();
-                if (dayOfWeek !== 6 && dayOfWeek !== 0) { // Exclude Saturdays (6) and Sundays (0)
-                    totalHari++;
-                }
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-
-            let currentYear = startDate.getFullYear();
-            while (currentYear <= endDate.getFullYear()) {
-                let response = await fetch(`https://api-harilibur.vercel.app/api?year=${currentYear}`);
-                let data = await response.json();
-                hariLibur = hariLibur.concat(data.filter(libur => libur.is_national_holiday));
-                currentYear++;
-            }
-
-            const hariLiburDalamRentang = hariLibur.filter(libur => {
-                const tanggalLibur = new Date(libur.holiday_date);
-                return tanggalLibur >= startDate && tanggalLibur <= endDate;
-            });
-
-            const jumlahHariLibur = hariLiburDalamRentang.length;
-            const jumlahHariCuti = totalHari - jumlahHariLibur;
-            const sisaCutiAkhir = sisaCuti - jumlahHariCuti;
-            const sisaCutiMessage = sisaCutiAkhir < 0 ? " | Sisa Cuti Anda Tidak Mencukupi" : "";
-
-            saldoCutiInput.value = `Jumlah Hari Cuti: ${jumlahHariCuti} | Sisa Cuti: ${sisaCutiAkhir}${sisaCutiMessage}`;
-            saldoCutiRow.style.display = 'block';
-        }
-    });
-</script>
-
+    
     <script>
-      document.getElementById('upload').addEventListener('change', function() {
-          document.getElementById('uploadForm').submit();
-      });
+      document.addEventListener('DOMContentLoaded', function () {
+          const tglAwalInput = document.getElementById('tglawal');
+          const tglAkhirInput = document.getElementById('tglakhir');
+          const saldoCutiInput = document.getElementById('saldo_cuti');
+          const saldoCutiRow = document.getElementById('saldo_cuti_row');
 
-      function showSweetAlert(response) {
-          Swal.fire({
-              icon: response.success ? 'success' : 'error',
-              title: response.title,
-              text: response.message,
-          });
-      }
+          // Ambil data sisa cuti dari PHP
+          const sisaCuti = @json($cutiSisa->cuti_n + $cutiSisa->cuti_nsatu + $cutiSisa->cuti_ndua);
 
-      document.addEventListener('DOMContentLoaded', function() {
-          @if(session('response'))
-              var response = @json(session('response'));
-              showSweetAlert(response);
-          @endif
+          tglAwalInput.addEventListener('change', calculateLeaveDays);
+          tglAkhirInput.addEventListener('change', calculateLeaveDays);
+
+          async function calculateLeaveDays() {
+              const tglAwal = tglAwalInput.value;
+              const tglAkhir = tglAkhirInput.value;
+
+              if (!tglAwal || !tglAkhir) {
+                  return;
+              }
+
+              const startDate = new Date(tglAwal);
+              const endDate = new Date(tglAkhir);
+
+              if (startDate > endDate) {
+                  saldoCutiInput.value = 'Tanggal awal tidak boleh lebih besar dari tanggal akhir.';
+                  saldoCutiRow.style.display = 'block';
+                  return;
+              }
+
+              let totalHari = 0;
+              let hariLibur = [];
+              let currentDate = new Date(startDate);
+
+              while (currentDate <= endDate) {
+                  const dayOfWeek = currentDate.getDay();
+                  if (dayOfWeek !== 6 && dayOfWeek !== 0) { // Exclude Saturdays (6) and Sundays (0)
+                      totalHari++;
+                  }
+                  currentDate.setDate(currentDate.getDate() + 1);
+              }
+
+              let currentYear = startDate.getFullYear();
+              while (currentYear <= endDate.getFullYear()) {
+                  let response = await fetch(`https://api-harilibur.vercel.app/api?year=${currentYear}`);
+                  let data = await response.json();
+                  hariLibur = hariLibur.concat(data.filter(libur => libur.is_national_holiday));
+                  currentYear++;
+              }
+
+              const hariLiburDalamRentang = hariLibur.filter(libur => {
+                  const tanggalLibur = new Date(libur.holiday_date);
+                  return tanggalLibur >= startDate && tanggalLibur <= endDate;
+              });
+
+              const jumlahHariLibur = hariLiburDalamRentang.length;
+              const jumlahHariCuti = totalHari - jumlahHariLibur;
+              const sisaCutiAkhir = sisaCuti - jumlahHariCuti;
+              const sisaCutiMessage = sisaCutiAkhir < 0 ? " | Sisa Cuti Anda Tidak Mencukupi" : "";
+
+              saldoCutiInput.value = `Jumlah Hari Cuti: ${jumlahHariCuti} | Sisa Cuti: ${sisaCutiAkhir}${sisaCutiMessage}`;
+              saldoCutiRow.style.display = 'block';
+          }
       });
     </script>
+    
+   
     
 @endpush

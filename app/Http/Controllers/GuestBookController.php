@@ -16,7 +16,8 @@ class GuestBookController extends Controller
     public function showBukuTamu()
     {
         $data = [
-            'title' => 'Buku Tamu',
+            'title' => 'Buku Tamu MS Lhokseumawe',
+            'text' => 'Silakan isi buku tamu digital ini untuk bergabung dengan komunitas kami.',
             'subtitle' => 'Portal MS Lhokseumawe',
             'meta_description' => 'Halaman Buku Tamu MS Lhokseumawe Portal.',
             'meta_keywords' => 'buku tamu, portal, MS Lhokseumawe'

@@ -10,35 +10,29 @@ class Sign extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'message'];
+    // Tentukan kunci utama sebagai UUID
+    protected $keyType = 'string';
+    public $incrementing = false;
 
-    // Override the boot method to generate UUID
+    protected $fillable = [
+        'id',
+        'user_id',
+        'message',
+    ];
+
     protected static function boot()
     {
         parent::boot();
 
+        // Generate UUID saat membuat model baru
         static::creating(function ($model) {
-            if (empty($model->id)) {
-                $model->id = (string) Str::uuid();
-            }
+            $model->id = (string) Str::uuid();
         });
     }
 
-    // Specify that the primary key is not an incrementing integer
-    public $incrementing = false;
-
-    // Specify the primary key type
-    protected $keyType = 'uuid';
-
-    // Relasi dengan model User
+    // Relasi ke model User
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id', 'id');
-    }
-
-    // Relasi dengan model UserDetail
-    public function userDetail()
-    {
-        return $this->belongsTo(UserDetail::class, 'user_id', 'user_id');
+        return $this->belongsTo(User::class);
     }
 }

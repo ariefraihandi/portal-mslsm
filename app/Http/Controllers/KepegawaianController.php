@@ -329,13 +329,13 @@ class KepegawaianController extends Controller
             'atasan_type' => 'required|in:atasan1,atasan2',
             'atasan_id' => 'required',
         ]);
+        
 
         // Cek apakah user_id tidak sama dengan atasan_id
         if ($request->user_id == $request->atasan_id) {
             return response()->json(['message' => 'Pegawai Tidak Boleh Sama Dengan Atasan'], 422);
         }
-
-        // Cek apakah entri untuk user_id sudah ada
+     
         $atasan = Atasan::where('user_id', $request->user_id)->first();
 
         if ($atasan) {
@@ -357,7 +357,7 @@ class KepegawaianController extends Controller
         }
 
         // Ambil nama pengguna berdasarkan user_id
-        $userName = UserDetail::find($request->user_id)->name;
+        $userName = UserDetail::where('user_id', $request->user_id)->value('name');
 
         return response()->json(['message' => 'Atasan updated successfully', 'userName' => $userName]);
     }
@@ -406,9 +406,12 @@ class KepegawaianController extends Controller
                 ])
                 ->join('jabatan', 'users_detail.jabatan', '=', 'jabatan.name')
                 ->leftJoin('atasans', 'users_detail.user_id', '=', 'atasans.user_id')
+                ->leftJoin('users as atasan1', 'atasans.atasan_id', '=', 'atasan1.id')
+                ->leftJoin('users as atasan2', 'atasans.atasan_dua_id', '=', 'atasan2.id')
                 ->leftJoin('users', 'users_detail.user_id', '=', 'users.id')
                 ->orderBy('jabatan.id', 'asc')
                 ->get();
+                
         
                 return Datatables::of($data)
                     ->addColumn('pegawai', function ($user) {
@@ -434,46 +437,36 @@ class KepegawaianController extends Controller
                         return $output;
                     })
                     ->addColumn('atasan', function ($user) {
-                        // Inisialisasi variabel nama atasan
-                        $atasan1 = null;
-                        $atasan2 = null;
-                    
-                        // Cek apakah atasan_id tidak sama dengan 10000
-                        if ($user->atasan_id != 10000) {
-                            $atasan1 = UserDetail::find($user->atasan_id)->name ?? null;
-                        }
-                    
-                        // Cek apakah atasan_dua_id tidak sama dengan 10000
-                        if ($user->atasan_dua_id != 10000) {
-                            $atasan2 = UserDetail::find($user->atasan_dua_id)->name ?? null;
-                        }
-                    
+                        // Ambil data atasan berdasarkan user_id dari tabel Atasan
+                        $atasan = Atasan::where('user_id', $user->user_id)->first(); // Mengambil record atasan berdasarkan user_id
+                        
                         $output = '';
                     
-                        // Hanya tambahkan Atasan 1 jika valid
-                        if ($atasan1 || $user->atasan_id != 10000) {
-                            $output .= '<strong>Atasan 1:<br></strong> ';
-                            if ($atasan1) {
-                                $output .= e($atasan1) . ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan1\', \'' . e($user->name) . '\')"></i><br>';
-                            } else {
-                                // Tombol hanya ditampilkan jika atasan_id bukan 10000 dan tidak ada nama atasan
-                                $output .= '<button type="button" class="btn btn-primary btn-sm" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan1\', \'' . e($user->name) . '\')">Pilih Atasan</button><br><br>';
+                        // Cek apakah ada data atasan
+                        if ($atasan) {
+                            // Ambil nama dari UserDetail berdasarkan atasan_id dan atasan_dua_id
+                            $atasan1 = UserDetail::where('user_id', $atasan->atasan_id)->pluck('name')->first();
+                            $atasan2 = UserDetail::where('user_id', $atasan->atasan_dua_id)->pluck('name')->first();
+                            
+                            // Tampilkan Nama Atasan 1 jika ID atasan valid (tidak 10000)
+                            if ($atasan->atasan_id != 10000) {
+                                $output .= '<strong>Atasan 1:</strong> ' . e($atasan1 ? $atasan1 : 'Tidak Diketahui');
+                                $output .= ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan1\', \'' . e($user->name) . '\')"></i><br>';
                             }
-                        }
                     
-                        // Hanya tambahkan Atasan 2 jika valid
-                        if ($atasan2 || $user->atasan_dua_id != 10000) {
-                            $output .= '<strong>Atasan 2:<br></strong> ';
-                            if ($atasan2) {
-                                $output .= e($atasan2) . ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan2\', \'' . e($user->name) . '\')"></i><br>';
-                            } else {
-                                // Tombol hanya ditampilkan jika atasan_dua_id bukan 10000 dan tidak ada nama atasan
-                                $output .= '<button type="button" class="btn btn-primary btn-sm" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan2\', \'' . e($user->name) . '\')">Pilih Atasan</button>';
+                            // Tampilkan Nama Atasan 2 jika ID atasan valid (tidak 10000)
+                            if ($atasan->atasan_dua_id != 10000) {
+                                $output .= '<strong>Atasan 2:</strong> ' . e($atasan2 ? $atasan2 : 'Tidak Diketahui');
+                                $output .= ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan2\', \'' . e($user->name) . '\')"></i><br>';
                             }
+                        } else {
+                            $output .= ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan1\', \'' . e($user->name) . '\')"></i><br>';
+                            $output .= ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan2\', \'' . e($user->name) . '\')"></i><br>';
                         }
                     
                         return $output;
                     })
+                    
                     
                     ->addColumn('kontak', function ($user) {
                         $whatsapp = $user->whatsapp ? e($user->whatsapp) : 'Tidak ada';

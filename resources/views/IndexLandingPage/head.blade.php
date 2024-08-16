@@ -36,11 +36,11 @@
     
     <!-- Stack Scripts -->
     @stack('head-script')
-  
+    
     <!-- Helpers and Template Customizer -->
     <script src="{{ asset('assets') }}/vendor/js/helpers.js"></script>
     <script src="{{ asset('assets') }}/vendor/js/template-customizer.js"></script>
     <script src="{{ asset('assets') }}/js/front-config.js"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
   </head>
-  
+  @stack('style-head')

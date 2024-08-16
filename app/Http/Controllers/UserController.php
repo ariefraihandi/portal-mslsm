@@ -10,6 +10,7 @@ use App\Models\CutiSisa;
 use App\Models\UserActivity;
 use App\Models\Atasan;
 use App\Models\Kehadiran;
+use App\Models\Notification;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\WebpEncoder;
@@ -141,6 +142,28 @@ class UserController extends Controller
         $awalKerja = $user->detail->awal_kerja;
         $cutiSisa = CutiSisa::where('user_id', $id)->first();
     
+        // Periksa jika ada message_id dan type dalam query string
+        $message_id = $request->query('message_id');
+        $type = $request->query('type');
+    
+        if ($message_id && $type) {
+            $notification = Notification::where('message_id', $message_id)->first();
+    
+            if ($notification) {
+                // Perbarui status is_read berdasarkan tipe
+                if ($type === 'whatsapp') {
+                    $notification->is_read_wa = true;
+                } elseif ($type === 'email') {
+                    $notification->is_read_email = true;
+                } elseif ($type === 'onesignal') {
+                    $notification->is_read_onesignal = true;
+                }
+    
+                // Simpan perubahan ke database
+                $notification->save();
+            }
+        }
+    
         // Check if cutiSisa is null
         if (is_null($cutiSisa)) {
             return redirect()->back()->with([
@@ -202,6 +225,7 @@ class UserController extends Controller
     
         return view('Account.cuti', $data);
     }
+    
     
     
 

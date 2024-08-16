@@ -19,16 +19,21 @@ class CreateNotificationsTable extends Migration
             $table->string('whatsapp')->nullable();
             $table->boolean('is_sent_wa')->default(false);
             $table->boolean('is_read_wa')->default(false);
-            $table->string('eror_wa')->default(''); // Ensure eror_wa has a default value
+            $table->string('eror_wa')->default('');
+            $table->string('count_sent_wa')->nullable();
             $table->string('email')->nullable();
             $table->boolean('is_sent_email')->default(false);
             $table->boolean('is_read_email')->default(false);
-            $table->string('eror_email')->default(''); // Ensure eror_email has a default value
+            $table->string('eror_email')->default(''); 
+            $table->string('count_sent_email')->nullable();
             $table->string('onesignal')->nullable();
             $table->boolean('is_sent_onesignal')->default(false);
             $table->boolean('is_read_onesignal')->default(false);
-            $table->string('eror_onesignal')->default(''); // Ensure eror_onesignal has a default value
+            $table->string('eror_onesignal')->default('');
+            $table->string('count_sent_onesignal')->nullable();
             $table->timestamp('read_at')->nullable();
+            $table->timestamp('last_message_sent')->nullable(); // Menambahkan kolom last_message_sent
+            $table->string('target_url')->nullable();
             $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();

@@ -11,6 +11,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KepegawaianController;
+use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\CutiController;
 
 Route::get('/',                                 [MaintenanceController::class, 'index'])->name('index');
@@ -38,7 +39,6 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
     Route::get('/user/account/detil',               [UserController::class, 'showAccount'])->name('user.account.detil');
     Route::get('/user/account/activity',            [UserController::class, 'showActivity'])->name('user.account.activity');
     Route::get('/user/account/cuti',                [UserController::class, 'showCuti'])->name('user.account.cuti');
-    Route::get('/user/account/cuti/perizinan',      [UserController::class, 'showCuti'])->name('user.account.cuti');
     
     Route::get('/admin/user/access',                [AdminController::class, 'showRole'])->name('admin.user.access');
     Route::get('/admin/menu/menulist',              [AdminController::class, 'showMenu'])->name('admin.menu.menulist');
@@ -50,6 +50,10 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
         
         
 Route::middleware([AuthMiddleware::class])->group(function () {
+    Route::get('/kepegawaian/cuti/atasan',          [CutiController::class, 'showCutiDetailAtasanLangsung'])->name('kepegawaian.cuti.atasan');
+    Route::get('/kepegawaian/cuti/pejabat',         [CutiController::class, 'showCutiDetailpejabat'])->name('kepegawaian.cuti.pejabat');
+    Route::get('/kepegawaian/cuti/penomoran',       [CutiController::class, 'showCutiDetailPenomoran'])->name('kepegawaian.cuti.penomoran');
+
     Route::post('/admin/user/changeaccess',         [AdminController::class, 'changeAccess'])->name('admin.user.changeaccess');    
     Route::post('/menu',                            [AdminController::class, 'addMenu'])->name('menu.add');
     Route::post('/add-submenu',                     [AdminController::class, 'addSubmenu'])->name('add.submenu');
@@ -73,6 +77,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/submit-cutiperubahan',            [CutiController::class, 'cutiPerubahan'])->name('cuti.perubahan');
     Route::post('/submit-cutipenanguhan',           [CutiController::class, 'cutiPenanguhan'])->name('cuti.penanguhan');
     Route::post('/submit-cutitolak',                [CutiController::class, 'cutiTolak'])->name('cuti.tolak');
+    Route::post('/submit-penomoran',                [CutiController::class, 'penomoranStore'])->name('penomoran.store');
     Route::get('/qr',                               [CutiController::class, 'generateQrCodeWithLogo'])->name('qr');
     Route::post('/hitung-hari-cuti',                [CutiController::class, 'hitungHariCuti']);
     //Move
@@ -87,6 +92,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     
     
 
+    Route::post('/send/cuti/notif',                [CutiController::class, 'sendCutiNotifications'])->name('sendCutiNotifications');
     
 
     Route::get('/getdata/menu',                     [AdminController::class, 'getDataMenu'])->name('menu.getData');
@@ -96,6 +102,9 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/getdata/pegawai',                  [KepegawaianController::class, 'pegawaiGetData'])->name('pegawai.getData');
     Route::get('/getdata/cutisisa',                 [CutiController::class, 'sisaCutigetData'])->name('cutis.getData');
     Route::get('/getdata/cuti/permohonan',          [CutiController::class, 'permohonanCutigetData'])->name('cutis.permohonangetData');
+    Route::get('/getdata/cuti/list',                [CutiController::class, 'daftarCutigetData'])->name('cutis.daftarCutidetData');
 });
 
 
+Route::get('/cetak/cuti/{id}',                      [CutiController::class, 'cetakCuti'])->name('cetakCuti');
+Route::get('/barcode/scan',                         [BarcodeController::class, 'scan'])->name('barcode.scan');

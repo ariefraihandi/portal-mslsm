@@ -43,7 +43,7 @@
                                     <th>ID</th>
                                     <th>Nama</th>
                                     <th>Atasan</th>
-                                    <th>Atasan Dua</th>
+                                    <th>No Surat</th>
                                     <th>Jenis</th>
                                     <th>Tanggal Awal</th>
                                     <th>Tanggal Akhir</th>                                
@@ -72,10 +72,9 @@
                     @csrf
                     <!-- Tambahkan elemen form sesuai kebutuhan -->
                     <div class="mb-3">
-                        <label for="name" class="form-label">Nama User</label>
+                        <label for="name" class="form-label">Nama Pegawai</label>
                         <input type="text" class="form-control" id="name" name="name" readonly>
                     </div>
-                    
                     <div class="mb-3">
                         <label for="jenisCuti" class="form-label">Jenis Cuti</label>
                         <input type="text" class="form-control" id="jenisCuti" name="jenisCuti" readonly>
@@ -93,6 +92,10 @@
                     <div class="mb-3">
                         <label for="alasan" class="form-label">Alasan Cuti</label>
                         <input type="text" class="form-control" id="alasan" name="alasan" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="alamat" class="form-label">Alamat Selama Cuti</label>
+                        <input type="text" class="form-control" id="alamat" name="alamat" readonly>
                     </div>
                     <input type="hidden" id="id" name="id" readonly>
                     
@@ -206,6 +209,33 @@
         </div>
     </div>
 </div>
+
+<!-- Modal for Penomoran -->
+<div class="modal fade" id="penomoranModal" tabindex="-1" aria-labelledby="penomoranModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="penomoranModalLabel">Penomoran Surat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="penomoranForm" action="{{ route('penomoran.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" id="id" name="id">
+                    <div class="mb-3">
+                        <label for="nomorSurat" class="form-label">Nomor Surat</label>
+                        <input type="text" class="form-control" id="nomorSurat" name="nomorSurat" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('footer-script')            
@@ -225,7 +255,7 @@
                 {data: 'no', name: 'no'},
                 {data: 'user_name', name: 'user_name'},
                 {data: 'atasan_name', name: 'atasan_name'},
-                {data: 'atasan_dua_name', name: 'atasan_dua_name'},
+                {data: 'no_surat', name: 'no_surat'},
                 {data: 'jenis', name: 'jenis'},
                 {data: 'tglawal', name: 'tglawal'},
                 {data: 'tglakhir', name: 'tglakhir'},
@@ -242,7 +272,8 @@
             $('#name').val(data.user_name);
             $('#tglAwal').val(data.tglawal);
             $('#tglAkhir').val(data.tglakhir);
-            $('#alasan').val(data.alasan); // Assuming you have an 'alasan' field in your data
+            $('#alasan').val(data.alasan); 
+            $('#alamat').val(data.alamat); 
             $('#permohonanCuti').modal('show');
         });
 
@@ -284,6 +315,19 @@
             $('#tolakModal').modal('hide');
             $('#permohonanCuti').modal('show');
         });
+
+        $('#permohonanCuti-table').on('click', '.nomor', function () {
+        var data = table.row($(this).parents('tr')).data();
+        var id = data.id; // Retrieve the id from the data
+        
+        // Set the hidden input value in the modal and display it in a readable format
+        $('#penomoranModal').find('#id').val(id);
+        $('#penomoranModal').find('#displayId').text('ID: ' + id);
+        
+        // Show the modal
+        $('#penomoranModal').modal('show');
+    });    
+
     });
 </script>
 

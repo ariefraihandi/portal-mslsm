@@ -57,6 +57,30 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'role', 'name');
     }
 
+    public function scopeAdmin($query)
+    {
+        // Ambil ID role berdasarkan nama 'administrasi'
+        $adminRoleId = Role::where('name', 'administrasi')->value('id');
+
+        if ($adminRoleId) {
+            return $query->where('role', $adminRoleId);
+        }
+
+        return $query;
+    }
+
+    public function scopeKepegawaian($query)
+    {
+        $kepegawaianRoleId = Role::where('name', 'kepegawaian')->value('id');
+
+        if ($kepegawaianRoleId) {
+            return $query->where('role', $kepegawaianRoleId);
+        }
+
+        return $query;
+    }
+
+
     public function devices()
     {
         return $this->hasMany(UserDevice::class);

@@ -17,7 +17,7 @@
           <!-- Mobile menu toggle: End-->
           <a href="landing-page.html" class="app-brand-link">
             <span class="app-brand-logo demo">
-              <svg
+              {{-- <svg
                 width="25"
                 viewBox="0 0 25 42"
                 version="1.1"
@@ -63,7 +63,7 @@
                     </g>
                   </g>
                 </g>
-              </svg>
+              </svg> --}}
             </span>
             <span class="app-brand-text demo menu-text fw-bold ms-2 ps-1">MS LSM</span>
           </a>
@@ -335,39 +335,21 @@
         <!-- Menu wrapper: End -->
         <!-- Toolbar: Start -->
         <ul class="navbar-nav flex-row align-items-center ms-auto">
-          <!-- Style Switcher -->
-          <li class="nav-item dropdown-style-switcher dropdown me-2 me-xl-0">
-            <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-              <i class="bx bx-sm"></i>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end dropdown-styles">
-              <li>
-                <a class="dropdown-item" href="javascript:void(0);" data-theme="light">
-                  <span class="align-middle"><i class="bx bx-sun me-2"></i>Light</span>
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item" href="javascript:void(0);" data-theme="dark">
-                  <span class="align-middle"><i class="bx bx-moon me-2"></i>Dark</span>
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item" href="javascript:void(0);" data-theme="system">
-                  <span class="align-middle"><i class="bx bx-desktop me-2"></i>System</span>
-                </a>
-              </li>
-            </ul>
-          </li>
-          <!-- / Style Switcher-->
-
+          
           <!-- navbar button: Start -->
           <li>
-            <a href="{{ route('login.view') }}" class="btn btn-primary" target="_blank">
-                <span class="tf-icons bx bx-user me-md-1"></span>
-                <span class="d-none d-md-block">Login/Register</span>
-            </a>
+            @auth
+                <a href="{{ route('user.account.detil') }}" class="btn btn-primary" target="_blank">
+                    <span class="tf-icons bx bx-home me-md-1"></span>
+                    <span class="d-none d-md-block">Dashboard</span>
+                </a>
+            @else
+                <a href="{{ route('login.view') }}" class="btn btn-primary" target="_blank">
+                    <span class="tf-icons bx bx-user me-md-1"></span>
+                    <span class="d-none d-md-block">Login/Register</span>
+                </a>
+            @endauth
         </li>
-        
           <!-- navbar button: End -->
         </ul>
         <!-- Toolbar: End -->

@@ -15,19 +15,15 @@
         <div id="landingHero" class="section-py landing-hero position-relative">
           <div class="container">
             <div class="hero-text-box text-center">
-              <h1 class="text-primary hero-title display-8 fw-bold">Buku Tamu MS Lhokseumawe</h1>
-              <p class="text-muted">Silakan isi buku tamu di bawah ini untuk bergabung dengan komunitas kami.</p>              
+              <h1 class="text-primary hero-title display-8 fw-bold">{{$title}}</h1>
+              <p class="text-muted">{{$text}}</p>              
             </div>
-         
           </div>
         </div>        
       </section>
-      <!-- Hero: End -->
-
-      <!-- Contact Us: Start -->
+          
       <section id="landingContact" class="section-py landing-contact">
         <div class="container">
-          
           <div class="row gy-4">
             <div class="col-lg-12">
               <div class="card">
@@ -108,7 +104,7 @@
           </div>
         </div>
       </section>
-      <!-- Contact Us: End -->
+      
     </div>
 @endsection
 
