@@ -4,11 +4,11 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Notification;
-use App\Models\UserDevice;
-use OneSignal;
-use Exception;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Exception;
+use Carbon\Carbon;
+use OneSignal;
+use Illuminate\Support\Facades\Log;
 
 class ResendNotifications extends Command
 {
@@ -22,133 +22,148 @@ class ResendNotifications extends Command
 
     public function handle()
     {
-        // 1. Ambil semua notifikasi
-        $notifications = Notification::orderBy('priority', 'desc')->orderBy('created_at', 'asc')->get();
-
+        // Dapatkan waktu saat ini
+        $currentHour = Carbon::now()->format('H');
+    
+        // Jika jam di luar jam kerja (08:00 - 18:00), hentikan proses
+        if ($currentHour < 8 || $currentHour >= 18) {
+            $this->info('Notification processing skipped outside of working hours.');
+            return;
+        }
+    
+        // Ambil semua notifikasi yang belum dibaca di salah satu channel
+        $notifications = Notification::where(function ($query) {
+            $query->where('is_read_wa', 0)
+                ->orWhere('is_read_email', 0)
+                ->orWhere('is_read_onesignal', 0);
+        })
+        ->orderBy('priority', 'desc')
+        ->orderBy('created_at', 'asc')
+        ->get();
+    
         foreach ($notifications as $notification) {
-            // Low Priority: Kirim sekali saja, jika sudah kirim WhatsApp, lanjutkan ke OneSignal, lalu ke email.
-            if ($notification->priority == 'low') {
-                $this->processLowPriority($notification);
-            }
-
-            // Medium Priority: Kirim hingga dua kali, jika semua metode sudah dikirim dan belum dibaca.
-            if ($notification->priority == 'medium') {
-                $this->processMediumPriority($notification);
-            }
-
-            // High Priority: Kirim terus menerus hingga dibaca di salah satu metode.
-            if ($notification->priority == 'high') {
-                $this->processHighPriority($notification);
+            if ($notification->whatsapp || $notification->email || $notification->onesignal) {
+                if (in_array($notification->priority, ['low', 'medium'])) {
+                    $this->processLowMediumPriority($notification);
+                    sleep(5); // Tunda 5 detik antar notifikasi
+                } elseif ($notification->priority == 'high') {
+                    $this->processHighPriority($notification);
+                    sleep(5); // Tunda 5 detik antar notifikasi
+                }
             }
         }
-
-        $this->info('Resend notifications command completed.');
-    }
-
-    private function processLowPriority($notification)
-    {
-        // Send WhatsApp notification if not sent yet
-        if (!$notification->is_sent_wa) {
-            $this->sendWhatsAppNotification($notification);
-            $notification->update([
-                'is_sent_wa' => true,
-                'last_message_sent' => now()
-            ]);
-            $this->info("Low Priority - Sent via WhatsApp: Notification ID {$notification->id}");
-        }
     
-        // Send OneSignal notification if not sent yet
-        if (!$notification->is_sent_onesignal) {
-            $this->sendOneSignalNotification($notification);
-            $notification->update([
-                'is_sent_onesignal' => true,
-                'last_message_sent' => now()
-            ]);
-            $this->info("Low Priority - Sent via OneSignal: Notification ID {$notification->id}");
-        }
-    
-        // Send Email notification if not sent yet
-        if (!$notification->is_sent_email) {
-            $this->sendEmailNotification($notification);
-            $notification->update([
-                'is_sent_email' => true,
-                'last_message_sent' => now()
-            ]);
-            $this->info("Low Priority - Sent via Email: Notification ID {$notification->id}");
-        }
+        $this->info('Notification processing completed.');
     }
     
-    private function processMediumPriority($notification)
-    {
-        if ((!$notification->is_sent_wa || $notification->count_sent_wa < 2) && !$this->isAnyChannelRead($notification)) {
-            $this->sendWhatsAppNotification($notification);
-            $notification->update([
-                'is_sent_wa' => true,
-                'count_sent_wa' => $notification->count_sent_wa + 1,
-                'last_message_sent' => now()
-            ]);
-            $this->info("Medium Priority - Sent via WhatsApp: Notification ID {$notification->id}");
-        } elseif ((!$notification->is_sent_onesignal || $notification->count_sent_onesignal < 2) && !$this->isAnyChannelRead($notification)) {
-            $this->sendOneSignalNotification($notification);
-            $notification->update([
-                'is_sent_onesignal' => true,
-                'count_sent_onesignal' => $notification->count_sent_onesignal + 1,
-                'last_message_sent' => now()
-            ]);
-            $this->info("Medium Priority - Sent via OneSignal: Notification ID {$notification->id}");
-        } elseif ((!$notification->is_sent_email || $notification->count_sent_email < 2) && !$this->isAnyChannelRead($notification)) {
-            $this->sendEmailNotification($notification);
-            $notification->update([
-                'is_sent_email' => true,
-                'count_sent_email' => $notification->count_sent_email + 1,
-                'last_message_sent' => now()
-            ]);
-            $this->info("Medium Priority - Sent via Email: Notification ID {$notification->id}");
-        }
-    }
 
-    private function processHighPriority($notification)
-    {
-        // Kirim ulang terus menerus sampai dibaca di salah satu metode.
-        if (!$this->isAnyChannelRead($notification)) {
-            if ($notification->count_sent_wa <= $notification->count_sent_onesignal && $notification->count_sent_wa <= $notification->count_sent_email) {
-                // Kirim WhatsApp jika belum dikirim sebanyak OneSignal dan Email
+    protected function processLowMediumPriority($notification)
+    {            
+        // Jika last_message_sent null, kirim WhatsApp terlebih dahulu
+        if (is_null($notification->last_message_sent)) {
+            $now = Carbon::now();
+        
+            if (!is_null($notification->whatsapp)) {
                 $this->sendWhatsAppNotification($notification);
-                $notification->update([
-                    'is_sent_wa' => true,
-                    'count_sent_wa' => $notification->count_sent_wa + 1,
-                    'last_message_sent' => now()
-                ]);
-                $this->info("High Priority - Sent via WhatsApp: Notification ID {$notification->id}");
-            } elseif ($notification->count_sent_onesignal <= $notification->count_sent_email) {
-                // Kirim OneSignal jika belum dikirim sebanyak WhatsApp dan Email
-                $this->sendOneSignalNotification($notification);
-                $notification->update([
-                    'is_sent_onesignal' => true,
-                    'count_sent_onesignal' => $notification->count_sent_onesignal + 1,
-                    'last_message_sent' => now()
-                ]);
-                $this->info("High Priority - Sent via OneSignal: Notification ID {$notification->id}");
-            } else {
-                // Kirim Email jika belum dikirim sebanyak WhatsApp dan OneSignal
+            }
+        
+            // Cek apakah email tersedia, jika ada kirim Email
+            if (!is_null($notification->email)) {
                 $this->sendEmailNotification($notification);
-                $notification->update([
-                    'is_sent_email' => true,
-                    'count_sent_email' => $notification->count_sent_email + 1,
-                    'last_message_sent' => now()
-                ]);
-                $this->info("High Priority - Sent via Email: Notification ID {$notification->id}");
+            }
+        
+            // Update waktu pengiriman terakhir setelah pengiriman pesan
+            $notification->update(['last_message_sent' => $now]);
+        } else {
+            // Cek apakah pesan belum dibaca di semua kanal
+            if (!$this->isRead($notification)) {
+                $now = Carbon::now();
+                $lastMessageSent = $notification->last_message_sent;
+                
+                // Konversi waktu sekarang dan waktu `last_message_sent` ke timestamp (detik sejak epoch)
+                $nowTimestamp = $now->getTimestamp();
+                $lastMessageTimestamp = $lastMessageSent->getTimestamp();
+                
+                // Hitung selisih waktu dalam detik
+                $timeDifferenceInSeconds = $nowTimestamp - $lastMessageTimestamp;
+                    
+                // Konversi selisih waktu ke menit
+                $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;                
+
+                // Jika waktu yang telah berlalu lebih dari 1 menit
+                if ($timeDifferenceInMinutes >= 60) {
+                    if ($notification->is_sent_wa == 1 && $notification->is_sent_onesignal == 0 && $notification->is_sent_email == 0) {
+                        // Kirim OneSignal jika WA sudah dikirim tetapi OneSignal belum
+                        $this->sendOneSignalNotification($notification);
+                        $notification->update(['is_sent_onesignal' => 1, 'last_message_sent' => $now]);
+                    } elseif ($notification->is_sent_wa == 1 && $notification->is_sent_onesignal == 1 && $notification->is_sent_email == 0) {
+                        // Kirim Email jika WA dan OneSignal sudah dikirim tetapi Email belum
+                        $this->sendEmailNotification($notification);
+                        $notification->update(['is_sent_email' => 1, 'last_message_sent' => $now]);
+                    }
+                }
             }
         }
     }
+    
+    protected function processHighPriority($notification)
+    {            
+        if (is_null($notification->last_message_sent)) {
+            $now = Carbon::now();
+        
+            if (!is_null($notification->whatsapp)) {
+                $this->sendWhatsAppNotification($notification);
+            }
+            
+            if (!is_null($notification->email)) {
+                $this->sendEmailNotification($notification);
+            }
+        
+            $notification->update(['last_message_sent' => $now]);
+        } else {
+            // Cek apakah pesan belum dibaca di semua kanal
+            if (!$this->isRead($notification)) {
+                $now = Carbon::now();
+                $lastMessageSent = $notification->last_message_sent;
+                
+                // Konversi waktu sekarang dan waktu `last_message_sent` ke timestamp (detik sejak epoch)
+                $nowTimestamp = $now->getTimestamp();
+                $lastMessageTimestamp = $lastMessageSent->getTimestamp();
+                
+                // Hitung selisih waktu dalam detik
+                $timeDifferenceInSeconds = $nowTimestamp - $lastMessageTimestamp;
+                    
+                // Konversi selisih waktu ke menit
+                $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;                
 
+                // Jika waktu yang telah berlalu lebih dari 1 menit
+                if ($timeDifferenceInMinutes >= 60) {
+                    if ($notification->is_sent_wa == 1 && $notification->is_sent_onesignal == 0 && $notification->is_sent_email == 0) {
+                        // Kirim OneSignal jika WA sudah dikirim tetapi OneSignal belum
+                        $this->sendOneSignalNotification($notification);
+                        $notification->update(['is_sent_onesignal' => 1, 'last_message_sent' => $now]);
+                    } elseif ($notification->is_sent_wa == 1 && $notification->is_sent_onesignal == 1 && $notification->is_sent_email == 0) {
+                        // Kirim Email jika WA dan OneSignal sudah dikirim tetapi Email belum
+                        $this->sendEmailNotification($notification);
+                        $notification->update(['is_sent_email' => 1, 'last_message_sent' => $now]);
+                    }
+                }
+            }
+        }
+    }
+    
 
+    
     private function sendWhatsAppNotification($notification)
     {
+        // Pastikan nomor WhatsApp ada
+        if (empty($notification->whatsapp)) {
+            $notification->update(['eror_wa' => 'WhatsApp number not available']);
+            return;
+        }
+
         $device_id = env('DEVICE_ID', 'somedefaultvalue');
         $number = $notification->whatsapp;
-        
-        // Tambahkan target URL ke dalam pesan
         $message = $notification->message . "\n\nTautan Aksi: " . $notification->target_url . "message_id=" . $notification->message_id . "&type=whatsapp";
 
         $curl = curl_init();
@@ -175,6 +190,7 @@ class ResendNotifications extends Command
             if (curl_errno($curl)) {
                 $error_msg = curl_error($curl);
                 $notification->update(['eror_wa' => $error_msg]);
+                $this->sendEmergencyEmail($notification, $error_msg);
                 throw new Exception($error_msg);
             }
 
@@ -182,6 +198,7 @@ class ResendNotifications extends Command
             if ($http_status !== 200) {
                 $error_msg = "Failed to send WhatsApp message";
                 $notification->update(['eror_wa' => $error_msg]);
+                $this->sendEmergencyEmail($notification, $error_msg);
                 throw new Exception($error_msg);
             }
 
@@ -190,12 +207,19 @@ class ResendNotifications extends Command
             if (!isset($response_data['status']) || $response_data['status'] !== true) {
                 $error_msg = "Failed to send WhatsApp message: " . $response_data['message'];
                 $notification->update(['eror_wa' => $error_msg]);
+                $this->sendEmergencyEmail($notification, $error_msg);
                 throw new Exception($error_msg);
             }
+
+            // Jika berhasil, update status dan jumlah pengiriman
+            $notification->update([
+                'is_sent_wa' => 1,
+                'count_sent_wa' => $notification->count_sent_wa + 1
+            ]);
         } catch (Exception $e) {
-            // Tangkap error dan simpan ke database
             $notification->update(['eror_wa' => $e->getMessage()]);
-            throw $e; // Rethrow exception to handle it outside
+            $this->sendEmergencyEmail($notification, $e->getMessage());
+            throw $e;
         } finally {
             curl_close($curl);
         }
@@ -203,6 +227,11 @@ class ResendNotifications extends Command
 
     private function sendOneSignalNotification($notification)
     {
+        if (empty($notification->onesignal)) {
+            $notification->update(['eror_onesignal' => 'OneSignal ID not available']);
+            return;
+        }
+
         $deviceTokens = [$notification->onesignal];
         $url = $notification->target_url . "message_id=" . $notification->message_id . "&type=onesignal";
 
@@ -223,6 +252,8 @@ class ResendNotifications extends Command
             if ($response->getStatusCode() !== 200) {
                 $error_msg = "Failed to send OneSignal notification";
                 $notification->update(['eror_onesignal' => $error_msg]);
+                $this->sendEmergencyEmail($notification, $error_msg);
+                Log::error("OneSignal Error: HTTP Status Code: {$response->getStatusCode()}");
                 throw new Exception($error_msg);
             }
 
@@ -231,17 +262,33 @@ class ResendNotifications extends Command
             if (isset($response_data['errors'])) {
                 $error_msg = "Failed to send OneSignal notification: " . json_encode($response_data['errors']);
                 $notification->update(['eror_onesignal' => $error_msg]);
+                $this->sendEmergencyEmail($notification, $error_msg);
+                Log::error("OneSignal Error: " . json_encode($response_data['errors']));
                 throw new Exception($error_msg);
             }
+
+            // Jika berhasil, update status dan jumlah pengiriman
+            $notification->update([
+                'is_sent_onesignal' => 1,
+                'count_sent_onesignal' => $notification->count_sent_onesignal + 1
+            ]);
         } catch (Exception $e) {
             $notification->update(['eror_onesignal' => $e->getMessage()]);
+            $this->sendEmergencyEmail($notification, $e->getMessage());
+            Log::error("Failed to send OneSignal notification.", ['error' => $e->getMessage()]);
             throw $e;
         }
     }
 
     private function sendEmailNotification($notification)
     {
-        $url = $notification->target_url . "?message_id=" . $notification->message_id . "&type=email";
+        // Pastikan alamat email ada
+        if (empty($notification->email)) {
+            $notification->update(['eror_email' => 'Email address not available']);
+            return;
+        }
+
+        $url = $notification->target_url . "message_id=" . $notification->message_id . "&type=email";
 
         $data = [
             'emailMessage' => $notification->message,
@@ -251,11 +298,17 @@ class ResendNotifications extends Command
         try {
             Mail::send('emails.notification', $data, function ($message) use ($notification) {
                 $message->to($notification->email)
-                        ->subject('Unread Notification Reminder');
+                    ->subject('Unread Notification Reminder');
             });
+
+            // Jika berhasil, update status dan jumlah pengiriman
+            $notification->update([
+                'is_sent_email' => 1,
+                'count_sent_email' => $notification->count_sent_email + 1
+            ]);
         } catch (Exception $e) {
-            // Menangkap dan menangani kesalahan
             $notification->update(['eror_email' => $e->getMessage()]);
+            $this->sendEmergencyEmail($notification, $e->getMessage());
             throw $e;
         }
     }
@@ -264,6 +317,7 @@ class ResendNotifications extends Command
     {
         $data = [
             'errorMessage' => $errorMessage,
+            'notification' => $notification,
         ];
 
         try {
@@ -280,8 +334,8 @@ class ResendNotifications extends Command
         }
     }
 
-    private function isAnyChannelRead($notification)
+    protected function isRead($notification)
     {
-        return $notification->is_read_wa || $notification->is_read_onesignal || $notification->is_read_email;
+        return $notification->is_read_wa && $notification->is_read_onesignal && $notification->is_read_email;
     }
 }

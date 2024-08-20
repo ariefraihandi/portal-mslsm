@@ -1687,7 +1687,6 @@ class CutiController extends Controller
             }
         }
         
-        
         public function penomoranStore(Request $request)
         {
             
