@@ -29,15 +29,6 @@ use Illuminate\Support\Facades\Http;
 
 class CutiController extends Controller
 {    
-    public function generateQrCodeWithLogo()
-    {
-        {
-            return QrCode::generate(
-                'Hello, World!',
-            );
-        }
-    }
-
     public function showCutiSisa(Request $request)
     {
         $accessMenus        = $request->get('accessMenus');
@@ -392,7 +383,79 @@ class CutiController extends Controller
             ]);
         }
     }
-  
+
+    public function destroy(Request $request)
+    {
+        try {
+            $id = $request->query('id');
+    
+            if (!$id) {
+                return redirect()->back()->with('error', 'ID tidak ditemukan di URL.');
+            }
+    
+            // Ambil data cuti berdasarkan ID
+            $cutiDetail = CutiDetail::findOrFail($id);
+    
+            $userId = $cutiDetail->user_id;
+    
+            // Ambil data cuti dan pindahkan ke cuti_sisa
+            $cutiN = $cutiDetail->cuti_n;
+            $cutiNSatu = $cutiDetail->cuti_nsatu;
+            $cutiNDua = $cutiDetail->cuti_ndua;
+    
+            $cutiSisa = CutiSisa::where('user_id', $userId)->first();
+    
+            if (!$cutiSisa) {
+                CutiSisa::create([
+                    'user_id' => $userId,
+                    'cuti_n' => $cutiN,
+                    'cuti_nsatu' => $cutiNSatu,
+                    'cuti_ndua' => $cutiNDua,
+                ]);
+            } else {
+                $cutiSisa->update([
+                    'cuti_n' => $cutiN,
+                    'cuti_nsatu' => $cutiNSatu,
+                    'cuti_ndua' => $cutiNDua,
+                ]);
+            }
+    
+            // Hapus data dari notifications di mana cuti_id ada di kolom JSON data
+            Notification::whereJsonContains('data->cuti_id', $id)->delete();
+    
+            // Ambil dan hapus tanda tangan atasan dari cuti_detail
+            $idSignAtasan = $cutiDetail->id_sign_atasan;
+            $idSignAtasanDua = $cutiDetail->id_sign_atasan_dua;
+    
+            if ($idSignAtasan) {
+                Sign::where('id', $idSignAtasan)->delete();
+            }
+    
+            if ($idSignAtasanDua) {
+                Sign::where('id', $idSignAtasanDua)->delete();
+            }
+    
+            // Hapus data cuti_detail
+            $cutiDetail->delete();
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => true,
+                    'title' => 'Berhasil',
+                    'message' => 'Data cuti berhasil dihapus.',
+                ],
+            ]);        
+    
+        } catch (\Exception $e) {
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => false,
+                    'title' => 'Gagal',
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                ],
+            ]);
+        }
+    }
+    
     
     //Action Cuti
         public function cutiApprove(Request $request)
@@ -2402,12 +2465,10 @@ class CutiController extends Controller
         
             
         }
-        // return $pdf->download('cuti_pimpinan.pdf');
     //!Cetak Cuti
     
     public function editCutiSisa(Request $request)
     {
-
         $validatedData = $request->validate([
             'user_id' => 'required|exists:users_detail,user_id',
             'cuti_n1' => 'required|integer|min:0',
@@ -2606,7 +2667,8 @@ class CutiController extends Controller
                     $roleId = $user->role;       
                     $roleName = Role::where('id', $roleId)->value('name');
                     if ($roleName === 'kepegawaian') {                       
-                        $btn = '<a href="' . route('cetakCuti', ['id' => $row->id]) . '" target="_blank" class="btn btn-info btn-sm">Download</a>';
+                        $btn = '<a href="' . route('cetakCuti', ['id' => $row->id]) . '" target="_blank" class="btn btn-info btn-sm mb-3">Download</a>';
+                        $btn .= '<br><a href="javascript:void(0)" class="btn btn-danger btn-sm delete-cuti" data-id="'.$row->id.'">Hapus</a>';
                     }elseif ($roleName === 'administrasi'){
                         $btn = '<a href="javascript:void(0)" class="nomor btn btn-warning btn-sm mb-2" 
                                     data-id="'.$row->id.'"

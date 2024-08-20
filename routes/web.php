@@ -53,6 +53,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/kepegawaian/cuti/atasan',          [CutiController::class, 'showCutiDetailAtasanLangsung'])->name('kepegawaian.cuti.atasan');
     Route::get('/kepegawaian/cuti/pejabat',         [CutiController::class, 'showCutiDetailpejabat'])->name('kepegawaian.cuti.pejabat');
     Route::get('/kepegawaian/cuti/penomoran',       [CutiController::class, 'showCutiDetailPenomoran'])->name('kepegawaian.cuti.penomoran');
+    Route::get('/cuti/delete',                      [CutiController::class, 'destroy'])->name('cuti.delete');
 
     Route::post('/admin/user/changeaccess',         [AdminController::class, 'changeAccess'])->name('admin.user.changeaccess');    
     Route::post('/menu',                            [AdminController::class, 'addMenu'])->name('menu.add');
@@ -85,8 +86,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/cuti/tangguh/pejabat',            [CutiController::class, 'tangguhPejabat'])->name('cuti.tangguh.pejabat');
     Route::post('/cuti/penanguhan/update',          [CutiController::class, 'updatePenanguhan'])->name('cuti.penanguhan.update');
 
-    Route::post('/submit-penomoran',                [CutiController::class, 'penomoranStore'])->name('penomoran.store');
-    Route::get('/qr',                               [CutiController::class, 'generateQrCodeWithLogo'])->name('qr');
+    Route::post('/submit-penomoran',                [CutiController::class, 'penomoranStore'])->name('penomoran.store');    
     Route::post('/hitung-hari-cuti',                [CutiController::class, 'hitungHariCuti']);
     //Move
         Route::post('/move-menu',                   [AdminController::class, 'moveMenu'])->name('move.menu');

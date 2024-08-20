@@ -332,7 +332,7 @@
 </script>
 
 
-  <script>
+<script>
    function showDeleteConfirmation(url, message) {
         Swal.fire({
             title: 'Apakah Anda yakin?',
@@ -365,5 +365,28 @@
             showSweetAlert(response);
         @endif
     });
-  </script>
+
+    $(document).on('click', '.delete-cuti', function() {
+        var cutiId = $(this).data('id');
+
+        // Gunakan SweetAlert untuk konfirmasi
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Data cuti akan dihapus secara permanen!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Arahkan browser ke URL penghapusan
+                window.location.href = '/cuti/delete?id=' + cutiId;
+            }
+        });
+    });
+
+
+</script>
 @endpush
