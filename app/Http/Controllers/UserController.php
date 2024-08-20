@@ -9,6 +9,7 @@ use App\Models\Session;
 use App\Models\CutiSisa;
 use App\Models\UserActivity;
 use App\Models\Atasan;
+use App\Models\Instansi;
 use App\Models\Kehadiran;
 use App\Models\Notification;
 use Intervention\Image\ImageManager;
@@ -36,6 +37,15 @@ class UserController extends Controller
         $tahunIni       = Carbon::now()->year;
         $tahunLalu      = Carbon::now()->subYear()->year;
         $duaTahunLalu   = Carbon::now()->subYears(2)->year;
+        $instansiId     = $user->detail->instansi;
+
+        if ($instansiId == 1) {
+            $instansi = Instansi::where('id', $instansiId)->first();
+            $instansiName = $instansi ? $instansi->igusername : null;
+        } else {
+            $instansi = Instansi::where('id', $instansiId)->first();
+            $instansiName = $instansi ? $instansi->name : null;
+        }
 
         if (is_null($awalKerja) && $nip == 'default_nip') {
             $lamaBekerja = null;
@@ -59,6 +69,8 @@ class UserController extends Controller
             'subtitle' => 'Portal MS Lhokseumawe',
             'sidebar' => $accessMenus,
             'users' => $user,
+            'instansiId' => $instansiId,
+            'instansiName' => $instansiName,
             'sessions' => $sessions,
             'lamaBekerja' => $lamaBekerja,
             'tanggalAwalKerja' => $tanggalAwalKerja,
@@ -80,6 +92,16 @@ class UserController extends Controller
         $activities         = UserActivity::where('user_id', $id)->orderBy('created_at', 'desc')->take(10)->get();
         $nip                = $user->detail->nip;
         $awalKerja          = $user->detail->awal_kerja;
+        $instansiId         = $user->detail->instansi;
+
+        if ($instansiId == 1) {
+            $instansi = Instansi::where('id', $instansiId)->first();
+            $instansiName = $instansi ? $instansi->igusername : null;
+        } else {
+            $instansi = Instansi::where('id', $instansiId)->first();
+            $instansiName = $instansi ? $instansi->name : null;
+        }
+        
 
         // Debugging: Check the detail of the user's awal_kerja and nip
        
@@ -123,6 +145,8 @@ class UserController extends Controller
             'subtitle' => 'Portal MS Lhokseumawe',
             'sidebar' => $accessMenus,
             'users' => $user,
+            'instansiId' => $instansiId,
+            'instansiName' => $instansiName,
             'sessions' => $sessions,
             'activities' => $activities,
             'lamaBekerja' => $lamaBekerja,

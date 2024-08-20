@@ -8,6 +8,7 @@ use App\Models\UserDetail;
 use App\Models\UserActivity;
 use App\Models\Atasan;
 use App\Models\Kehadiran;
+use App\Models\Instansi;
 use App\Models\WhatsappVerificationToken;
 use App\Models\EmailVerificationToken;
 use Illuminate\Http\Request;
@@ -28,6 +29,7 @@ class KepegawaianController extends Controller
         $accessMenus        = $request->get('accessMenus');
         $id                 = $request->session()->get('user_id');
         $roles              = Role::all();
+        $instansi           = Instansi::all();
         $user               = User::with('detail')->find($id); 
         $userDetails        = UserDetail::all();
         $totalData          = $userDetails->count();      
@@ -69,6 +71,7 @@ class KepegawaianController extends Controller
             'ppnpnCount' => $ppnpnCount,
             'magangCount' => $magangCount,
             'hakimCakimPercentage' => $hakimCakimPercentage,
+            'instansi' => $instansi,
             'pegawaiCpnsPercentage' => $pegawaiCpnsPercentage,
             'ppnpnPercentage' => $ppnpnPercentage,
             'magangPercentage' => $magangPercentage,

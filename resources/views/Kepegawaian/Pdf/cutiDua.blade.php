@@ -187,11 +187,9 @@
         </tr>
     </table> 
     <br/>
- 
-
     <table style="width: 100%; border: 1px solid black; border-collapse: collapse;">
         <tr>
-            <td colspan="5" style="border: 1px solid black;"><strong>&nbsp;VII. KEPUTUSAN PEJABAT YANG BERWENANG MEMBERIKAN CUTI*</strong></td>
+            <td colspan="5" style="border: 1px solid black;"><strong>&nbsp;VII. PERTIMBANGAN ATASAN LANGSUNG**</strong></td>
         </tr>
         <tr>
             <td style="width:16%; border: 1px solid black;">&nbsp;DISETUJUI</td>
@@ -207,19 +205,43 @@
             </td>
             <td style="width:16%; border: 1px solid black; text-align: center;"></td>
             <td style="width:18%; border: 1px solid black; text-align: center;"></td>
-            <td colspan="2" style="width:50%; border: 1px solid black; text-align: center;">
-                @if ($data['status'] === '13')
+            <td colspan="2" style="width:50%; border: 1px solid black; text-align: center;"></td>
+        </tr>
+        <tr>
+            <td colspan="3" style="border: 1px solid black width:50%;"></td>            
+            <td style="border: 1px solid black; width:30%;">&nbsp;{{ $data['jabatantas'] }},<br><br><em>&nbsp;(e-Sign)</em><br><strong>&nbsp;{{ $data['nametas'] }}</strong><br><strong>&nbsp;NIP. {{ $data['niptas'] }}</strong></td>
+            <td style="width:20%; border: 1px solid black; text-align: center;">
+                
+                <img src="data:image/png;base64, {!! $data['qrCodeAtasan'] !!}">
+            </td> 
+        </tr>
+    </table> 
+    <br>
+    <table style="width: 100%; border: 1px solid black; border-collapse: collapse;">
+        <tr>
+            <td colspan="5" style="border: 1px solid black;"><strong>&nbsp;VIII. KEPUTUSAN PEJABAT YANG BERWENANG MEMBERIKAN CUTI*</strong></td>
+        </tr>
+        <tr>
+            <td style="width:16%; border: 1px solid black;">&nbsp;DISETUJUI</td>
+            <td style="width:16%; border: 1px solid black;">&nbsp;PERUBAHAN</td>
+            <td style="width:18%; border: 1px solid black;">&nbsp;DITANGGUHKAN</td>
+            <td colspan="2" style="width:50%; border: 1px solid black;">&nbsp;TIDAK DISETUJUI</td>       
+        </tr>
+        <tr>
+            <td style="width:16%; border: 1px solid black; text-align: center;">
+                @if ($data['status'] === '10')
                     V
                 @endif
             </td>
+            <td style="width:16%; border: 1px solid black; text-align: center;"></td>
+            <td style="width:18%; border: 1px solid black; text-align: center;"></td>
+            <td colspan="2" style="width:50%; border: 1px solid black; text-align: center;"></td>
         </tr>
         <tr>
-            <td colspan="3" style="border: 1px solid black width:50%; padding: 4px;">
-                @if ($data['status'] === '13')
-                    {{ $data['ket_atasan_dua'] }}
-                @endif</td>            
+            <td colspan="3" style="border: 1px solid black width:50%;"></td>            
             <td style="border: 1px solid black; width:30%;">&nbsp;{{ $data['jabatanpim'] }},<br><br><em>&nbsp;(e-Sign)</em><br><strong>&nbsp;{{ $data['namepim'] }}</strong><br><strong>&nbsp;NIP. {{ $data['nippim'] }}</strong></td>
             <td style="width:20%; border: 1px solid black; text-align: center;">
+                
                 <img src="data:image/png;base64, {!! $data['qrCodePejabat'] !!}">
             </td> 
         </tr>

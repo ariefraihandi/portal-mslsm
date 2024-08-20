@@ -38,8 +38,13 @@
                                 <li class="list-inline-item fw-medium"><i class="bx bx-envelope"></i> {{$instansi->email}}</li>                    
                             </ul>
                             </div>               
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahInstansiModal">
+                                Tambah Instansi
+                            </button>
                         </div>
                     </div>
+                    
+                    
                 </div>
             </div>
         </div>
@@ -54,9 +59,7 @@
                 <div class="card-header align-items-center">
                     <h5 class="card-action-title mb-0"><i class="bx bx-list-ul me-2"></i>Detail Instansi</h5>
                 </div>        
-                <div class="card-body">
-                    <form id="formChangePassword" method="POST" action="{{ route('account.update') }}" enctype="multipart/form-data">                        
-                        @csrf                        
+                <div class="card-body">                                      
                     <div class="row g-3">                      
                         <div class="col-sm-6">
                             <label class="form-label" for="name">Nama</label>
@@ -89,6 +92,69 @@
     </div>
     <!--/ User Profile Content -->
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="tambahInstansiModal" tabindex="-1" aria-labelledby="tambahInstansiModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tambahInstansiModalLabel">Tambah Instansi</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form action="{{ route('instansi.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+            <div class="mb-3">
+              <label for="namaInstansi" class="form-label">Nama Instansi</label>
+              <input type="text" class="form-control" id="namaInstansi" name="name" required>
+            </div>
+            <div class="mb-3">
+              <label for="surnameInstansi" class="form-label">Surname Instansi</label>
+              <input type="text" class="form-control" id="surnameInstansi" name="surname" required>
+            </div>
+            <div class="mb-3">
+              <label for="logoInstansi" class="form-label">Logo Instansi</label>
+              <input type="file" class="form-control" id="logoInstansi" name="logo" required>
+            </div>
+            <div class="mb-3">
+              <label for="alamatInstansi" class="form-label">Alamat Instansi</label>
+              <input type="text" class="form-control" id="alamatInstansi" name="alamat" required>
+            </div>
+            <div class="mb-3">
+              <label for="profilInstansi" class="form-label">Profil Instansi</label>
+              <textarea class="form-control" id="profilInstansi" name="profil" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="emailInstansi" class="form-label">Email Instansi</label>
+              <input type="email" class="form-control" id="emailInstansi" name="email" required>
+            </div>
+            <div class="mb-3">
+              <label for="teleponInstansi" class="form-label">Telepon Instansi</label>
+              <input type="text" class="form-control" id="teleponInstansi" name="telp" required>
+            </div>
+            <div class="mb-3">
+              <label for="igUsername" class="form-label">Instagram Username</label>
+              <input type="text" class="form-control" id="igUsername" name="igusername" required>
+            </div>
+            <div class="mb-3">
+              <label for="tiktokUsername" class="form-label">Tiktok Username</label>
+              <input type="text" class="form-control" id="tiktokUsername" name="tiktokusername">
+            </div>
+            <div class="mb-3">
+              <label for="fbUsername" class="form-label">Facebook Username</label>
+              <input type="text" class="form-control" id="fbUsername" name="fbusername">
+            </div>
+            <!-- Tambahkan input lainnya sesuai kebutuhan -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
 @endsection
 
 @push('footer-script')            

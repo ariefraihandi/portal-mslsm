@@ -10,6 +10,7 @@ use App\Jobs\SendCutiNotifications;
 use App\Models\UserDevice;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Instansi;
 use App\Models\Kehadiran;
 use App\Models\Cuti;
 use App\Models\Notification;
@@ -433,24 +434,23 @@ class CutiController extends Controller
                         $cutiDetail->status = 9;
                         $cutiDetail->save();
 
-                     // Tanda tangan untuk atasan pertama
-                        $signMessageAtasan = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Telah Disetujui Oleh Atasan Pertama.";
-                        $signAtasan = Sign::create([
-                            'user_id' => $atasan->id,
-                            'message' => $signMessageAtasan,
-                        ]);
+                        // Sign Generate
+                            $signMessageAtasan = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Telah Disetujui Oleh Atasan Pertama.";
+                            $signAtasan = Sign::create([
+                                'user_id' => $atasan->id,
+                                'message' => $signMessageAtasan,
+                            ]);
 
-                        // Tanda tangan untuk atasan kedua
-                        $signMessageAtasanDua = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Telah Disetujui Oleh Pejabat Yang Berwenang Memberikan Cuti.";
-                        $signAtasanDua = Sign::create([
-                            'user_id' => $atasanDua->id,
-                            'message' => $signMessageAtasanDua,
-                        ]);
+                            $signMessageAtasanDua = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Telah Disetujui Oleh Pejabat Yang Berwenang Memberikan Cuti.";
+                            $signAtasanDua = Sign::create([
+                                'user_id' => $atasanDua->id,
+                                'message' => $signMessageAtasanDua,
+                            ]);
 
-                        // Menyimpan ID tanda tangan pada cutiDetail
-                        $cutiDetail->id_sign_atasan = $signAtasan->id;
-                        $cutiDetail->id_sign_atasan_dua = $signAtasanDua->id;
-                        $cutiDetail->save();
+                            $cutiDetail->id_sign_atasan = $signAtasan->id;
+                            $cutiDetail->id_sign_atasan_dua = $signAtasanDua->id;
+                            $cutiDetail->save();
+                        // !Sign Generate
 
                         // Sisa Cuti Update
                             $sisaCuti = CutiSisa::where('user_id', $user->id)->first();
@@ -559,128 +559,214 @@ class CutiController extends Controller
                         throw new \Exception('Cuti Sudah Pernah Disetujui');
                     }
                 } else {
-                    // Update Cuti Detail Status
-                        $cutiDetail->status = 9;
-                        $cutiDetail->save();
-                    //! Update Cuti Detail Status
+                    if ($cutiDetail->status == 1) {
+                        if ($cutiDetail->atasan_id != $cutiDetail->atasan_dua_id) {
+                            // Update Cuti Detail Status
+                                $cutiDetail->status = 2;
+                                $cutiDetail->save();
+                            //! Update Cuti Detail Status
               
-                    // Sign Create & Update Cuti Detail
-                        $signMessageAtasanDua = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Telah Disetujui Oleh Pejabat Yang Berwenang Memberikan Cuti.";
-                        $signAtasanDua = Sign::create([
-                            'user_id' => $atasanDua->id,
-                            'message' => $signMessageAtasanDua,
-                        ]);
+                            // Sign Create & Update Cuti Detail
+                                $signMessageAtasan = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Telah Disetujui Oleh Atasan Pertama.";
+                                $signAtasan = Sign::create([
+                                    'user_id' => $atasan->id,
+                                    'message' => $signMessageAtasan,
+                                ]);
+                                
+                                $cutiDetail->id_sign_atasan = $signAtasan->id;
+                                $cutiDetail->save();
+                            //! Sign Create & Update Cuti Detail                 
+
+                            //Create Message For User
+                                $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                                $messageIdPegawai = (string) Str::uuid();
+                                $urlOneSignalPegawai = route('user.account.cuti') . "?";
+                                
+                                $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                                $pesanUser .= "Status: Cuti Anda sudah disetujui oleh atasan, menunggu Penyetujuan Pejabat Yang Berwenang.";
+                
+                                Notification::create([
+                                    'message_id' => $messageIdPegawai,
+                                    'user_id' => $user->id,
+                                    'message' => $pesanUser,
+                                    'type' => $cutiDetail->jenis,
+                                    'data' => [
+                                        'cuti_id' => $cutiDetail->id,
+                                        'user_id' => $cutiDetail->user_id,
+                                        'atasan_id' => $cutiDetail->atasan_id,
+                                    ],
+                                    'whatsapp' => $user->detail->whatsapp,
+                                    'is_sent_wa' => false,
+                                    'eror_wa' => '',
+                                    'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                                    'eror_onesignal' => '',
+                                    'email' => $user->email,
+                                    'is_sent_email' => false,
+                                    'eror_email' => '',
+                                    'priority' => 'low',
+                                    'created_by' => $cutiDetail->user_id,
+                                    'target_url' => $urlOneSignalPegawai,
+                                ]);
+                            //!Create Message For User
+                          
+                            //Create Message For Pejabat
+                                $sapaanPejabat = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                                $messageIdPejabat = (string) Str::uuid();
+                                $urlOneSignalPejabat = route('kepegawaian.cuti.pejabat') . "?";
+                                
+                                $pesanPejabat = "Assalamualaikum $sapaanPejabat " . $atasanDua->detail->name . ",\n\n";
+                                $pesanPejabat .= "Status: Cuti Pegawai *" . $user->detail->name . "* sudah disetujui oleh atasan,\n\nMenunggu Penyetujuan Pejabat Yang Berwenang.";
+
+                                Notification::create([
+                                    'message_id' => $messageIdPejabat,
+                                    'user_id' => $atasanDua->id,
+                                    'message' => $pesanPejabat,
+                                    'type' => $cutiDetail->jenis,
+                                    'data' => [
+                                        'cuti_id' => $cutiDetail->id,
+                                        'user_id' => $cutiDetail->user_id,
+                                        'atasan_id' => $cutiDetail->atasan_id,
+                                    ],
+                                    'whatsapp' => $atasanDua->detail->whatsapp,
+                                    'is_sent_wa' => false,
+                                    'eror_wa' => '',
+                                    'onesignal' => optional($atasanDua->devices)->pluck('device_token')->first(),
+                                    'eror_onesignal' => '',
+                                    'email' => $atasanDua->email,
+                                    'is_sent_email' => false,
+                                    'eror_email' => '',
+                                    'priority' => 'high',
+                                    'created_by' => $cutiDetail->user_id,
+                                    'target_url' => $urlOneSignalPejabat,
+                                ]);
+                            //!Create Message For Pejabat
+                        } 
+                    } else {
+                         // Update Cuti Detail Status
+                            $cutiDetail->status = 9;
+                            $cutiDetail->save();
+                        //! Update Cuti Detail Status
+                
+                        // Sign Create & Update Cuti Detail
+                            $signMessageAtasanDua = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Telah Disetujui Oleh Pejabat Yang Berwenang Memberikan Cuti.";
+                            $signAtasanDua = Sign::create([
+                                'user_id' => $atasanDua->id,
+                                'message' => $signMessageAtasanDua,
+                            ]);
+                            
+                            $cutiDetail->id_sign_atasan_dua = $signAtasanDua->id;
+                            $cutiDetail->save();
+                        //! Sign Create & Update Cuti Detail
                         
-                        $cutiDetail->id_sign_atasan_dua = $signAtasanDua->id;
-                        $cutiDetail->save();
-                    //! Sign Create & Update Cuti Detail
-                    
-                     // Sisa Cuti Update
-                        $sisaCuti = CutiSisa::where('user_id', $user->id)->first();
-                                    
-                        $remainingLeave = $jumlahHariCuti;
-            
-                        if ($sisaCuti->cuti_ndua >= $remainingLeave) {
-                            $sisaCuti->cuti_ndua -= $remainingLeave;
-                        } else {
-                            $remainingLeave -= $sisaCuti->cuti_ndua;
-                            $sisaCuti->cuti_ndua = 0;
-            
-                            if ($sisaCuti->cuti_nsatu >= $remainingLeave) {
-                                $sisaCuti->cuti_nsatu -= $remainingLeave;
+                        // Sisa Cuti Update
+                            $sisaCuti = CutiSisa::where('user_id', $user->id)->first();
+                                        
+                            $remainingLeave = $jumlahHariCuti;
+                
+                            if ($sisaCuti->cuti_ndua >= $remainingLeave) {
+                                $sisaCuti->cuti_ndua -= $remainingLeave;
                             } else {
-                                $remainingLeave -= $sisaCuti->cuti_nsatu;
-                                $sisaCuti->cuti_nsatu = 0;
-            
-                                if ($sisaCuti->cuti_n >= $remainingLeave) {
-                                    $sisaCuti->cuti_n -= $remainingLeave;
+                                $remainingLeave -= $sisaCuti->cuti_ndua;
+                                $sisaCuti->cuti_ndua = 0;
+                
+                                if ($sisaCuti->cuti_nsatu >= $remainingLeave) {
+                                    $sisaCuti->cuti_nsatu -= $remainingLeave;
                                 } else {
-                                    return response()->json(['error' => 'Insufficient leave balance'], 400);
+                                    $remainingLeave -= $sisaCuti->cuti_nsatu;
+                                    $sisaCuti->cuti_nsatu = 0;
+                
+                                    if ($sisaCuti->cuti_n >= $remainingLeave) {
+                                        $sisaCuti->cuti_n -= $remainingLeave;
+                                    } else {
+                                        return response()->json(['error' => 'Insufficient leave balance'], 400);
+                                    }
                                 }
                             }
-                        }
+                
+                            $sisaCuti->save();
+                        //! Sisa Cuti Update
+    
+                        //Create Message For User
+                            $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                            $messageIdPegawai = (string) Str::uuid();
+                            $urlOneSignalPegawai = route('user.account.cuti') . "?";
+                            
+                            $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                            $pesanUser .= "Status: Cuti Anda sudah disetujui oleh atasan, menunggu penomoran surat.";
             
-                        $sisaCuti->save();
-                    //! Sisa Cuti Update
-
-                    //Create Message For User
-                        $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
-                        $messageIdPegawai = (string) Str::uuid();
-                        $urlOneSignalPegawai = route('user.account.cuti') . "?";
-                        
-                        $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
-                        $pesanUser .= "Status: Cuti Anda sudah disetujui oleh atasan, menunggu penomoran surat.";
-        
-                        Notification::create([
-                            'message_id' => $messageIdPegawai,
-                            'user_id' => $user->id,
-                            'message' => $pesanUser,
-                            'type' => $cutiDetail->jenis,
-                            'data' => [
-                                'cuti_id' => $cutiDetail->id,
-                                'user_id' => $cutiDetail->user_id,
-                                'atasan_id' => $cutiDetail->atasan_id,
-                            ],
-                            'whatsapp' => $user->detail->whatsapp,
-                            'is_sent_wa' => false,
-                            'eror_wa' => '',
-                            'onesignal' => optional($user->devices)->pluck('device_token')->first(),
-                            'eror_onesignal' => '',
-                            'email' => $user->email,
-                            'is_sent_email' => false,
-                            'eror_email' => '',
-                            'priority' => 'low',
-                            'created_by' => $cutiDetail->user_id,
-                            'target_url' => $urlOneSignalPegawai,
-                        ]);
-                    //!Create Message For User
-                    
-                    //Update Kehadiran
-                        Kehadiran::create([
-                            'user_id'    => $user->id,
-                            'tgl_awal'   => $cutiDetail->tglawal,
-                            'tgl_akhir'  => $cutiDetail->tglakhir,
-                            'jenis'      => $cutiDetail->jenis,
-                            'keterangan' => $cutiDetail->alasan,
-                        ]);
-                    //!Update Kehadiran
-
-                    //Create Message For Administrasi                       
-                        $usersWithAdminRole = User::admin()->with(['detail', 'devices'])->get();
-            
-                        foreach ($usersWithAdminRole as $adminUser) {
-                            $sapaanAdmin = $adminUser->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
-                            $pesan = "Assalamualaikum $sapaanAdmin *" . $adminUser->detail->name . "*\n\n";
-                            $pesan .= "Cuti Atas Nama *" . $user->detail->name . "* Menunggu Penomoran Surat.\n\n";
-                    
-                            $messageIdAdministrator = (string) Str::uuid();
-                            $urlOneSignaladministrasi = route('kepegawaian.cuti.penomoran') . "?";
-                            $email = User::find($adminUser->id)->email ?? '';
-                    
                             Notification::create([
-                                'message_id' => $messageIdAdministrator,
-                                'user_id' => $adminUser->id,
-                                'message' => $pesan,
+                                'message_id' => $messageIdPegawai,
+                                'user_id' => $user->id,
+                                'message' => $pesanUser,
                                 'type' => $cutiDetail->jenis,
                                 'data' => [
                                     'cuti_id' => $cutiDetail->id,
                                     'user_id' => $cutiDetail->user_id,
                                     'atasan_id' => $cutiDetail->atasan_id,
                                 ],
-                                'whatsapp' => $adminUser->detail->whatsapp,
+                                'whatsapp' => $user->detail->whatsapp,
                                 'is_sent_wa' => false,
                                 'eror_wa' => '',
-                                'onesignal' => optional($adminUser->devices)->pluck('device_token')->first(),
+                                'onesignal' => optional($user->devices)->pluck('device_token')->first(),
                                 'eror_onesignal' => '',
-                                'email' => $email,
+                                'email' => $user->email,
                                 'is_sent_email' => false,
                                 'eror_email' => '',
-                                'priority' => 'high',
+                                'priority' => 'low',
                                 'created_by' => $cutiDetail->user_id,
-                                'target_url' => $urlOneSignaladministrasi,
+                                'target_url' => $urlOneSignalPegawai,
                             ]);
-                        }
-                    //!Create Message For Administrasi
+                        //!Create Message For User
+                        
+                        //Update Kehadiran
+                            Kehadiran::create([
+                                'user_id'    => $user->id,
+                                'tgl_awal'   => $cutiDetail->tglawal,
+                                'tgl_akhir'  => $cutiDetail->tglakhir,
+                                'jenis'      => $cutiDetail->jenis,
+                                'keterangan' => $cutiDetail->alasan,
+                            ]);
+                        //!Update Kehadiran
+    
+                        //Create Message For Administrasi                       
+                            $usersWithAdminRole = User::admin()->with(['detail', 'devices'])->get();
+                
+                            foreach ($usersWithAdminRole as $adminUser) {
+                                $sapaanAdmin = $adminUser->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                                $pesan = "Assalamualaikum $sapaanAdmin *" . $adminUser->detail->name . "*\n\n";
+                                $pesan .= "Cuti Atas Nama *" . $user->detail->name . "* Menunggu Penomoran Surat.\n\n";
+                        
+                                $messageIdAdministrator = (string) Str::uuid();
+                                $urlOneSignaladministrasi = route('kepegawaian.cuti.penomoran') . "?";
+                                $email = User::find($adminUser->id)->email ?? '';
+                        
+                                Notification::create([
+                                    'message_id' => $messageIdAdministrator,
+                                    'user_id' => $adminUser->id,
+                                    'message' => $pesan,
+                                    'type' => $cutiDetail->jenis,
+                                    'data' => [
+                                        'cuti_id' => $cutiDetail->id,
+                                        'user_id' => $cutiDetail->user_id,
+                                        'atasan_id' => $cutiDetail->atasan_id,
+                                    ],
+                                    'whatsapp' => $adminUser->detail->whatsapp,
+                                    'is_sent_wa' => false,
+                                    'eror_wa' => '',
+                                    'onesignal' => optional($adminUser->devices)->pluck('device_token')->first(),
+                                    'eror_onesignal' => '',
+                                    'email' => $email,
+                                    'is_sent_email' => false,
+                                    'eror_email' => '',
+                                    'priority' => 'high',
+                                    'created_by' => $cutiDetail->user_id,
+                                    'target_url' => $urlOneSignaladministrasi,
+                                ]);
+                            }
+                        //!Create Message For Administrasi
+                    }
+                    
+                   
                 }
         
                 DB::commit();
@@ -706,6 +792,902 @@ class CutiController extends Controller
             }
         }   
         
+        public function cutiTolak(Request $request)
+        {
+            try {
+                // Mulai transaksi database
+                DB::beginTransaction();
+
+                // Validasi input
+                $validatedData = $request->validate([
+                    'penanguhanComment' => 'string|max:255',
+                    'id' => 'required|uuid',
+                    'user_id' => 'required|integer',
+                ]);
+
+                // Cari data cuti berdasarkan id yang tervalidasi
+                $cutiDetail = CutiDetail::find($validatedData['id']);
+
+                // Jika data cuti tidak ditemukan
+                if (!$cutiDetail) {
+                    return response()->json(['error' => 'Data cuti tidak ditemukan.'], 404);
+                }
+
+                $user = User::with(['detail', 'devices'])->find($cutiDetail->user_id);
+                $atasan = User::with(['detail', 'devices'])->find($cutiDetail->atasan_id);
+                $atasanDua = User::with(['detail', 'devices'])->find($cutiDetail->atasan_dua_id);
+
+                // Cek apakah user_id cocok dengan atasan_id dan atasan_dua_id
+                if ($validatedData['user_id'] == $cutiDetail->atasan_id && $validatedData['user_id'] == $cutiDetail->atasan_dua_id) {
+                    // Update status dan komentar
+                        $cutiDetail->status = 12;
+                        $cutiDetail->keterangan_atasan_dua = $validatedData['penanguhanComment'];
+                        $cutiDetail->save();
+                    // Update status dan komentar
+
+                    // Sign Generate
+                        $signMessageAtasan = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Tidak Disetujui Oleh Atasan.";
+                        $signAtasan = Sign::create([
+                            'user_id' => $atasan->id,
+                            'message' => $signMessageAtasan,
+                        ]);
+
+                        $signMessageAtasanDua = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Tidak Disetujui Oleh Pejabat Yang Berwenang Memberikan Cuti.";
+                        $signAtasanDua = Sign::create([
+                            'user_id' => $atasanDua->id,
+                            'message' => $signMessageAtasanDua,
+                        ]);
+                        $cutiDetail->id_sign_atasan = $signAtasan->id;
+                        $cutiDetail->id_sign_atasan_dua = $signAtasanDua->id;
+                        $cutiDetail->save();
+                    // Sign Generate
+
+                    // Mesage Generate User
+                        $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                        $messageIdPegawai = (string) Str::uuid();
+                        $urlOneSignalPegawai = route('user.account.cuti') . "?";
+
+                        $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                        $pesanUser .= "Status: Cuti Anda *Tidak Disetujui* oleh atasan, menunggu penomoran surat.";
+
+                        Notification::create([
+                            'message_id' => $messageIdPegawai,
+                            'user_id' => $user->id,
+                            'message' => $pesanUser,
+                            'type' => $cutiDetail->jenis,
+                            'data' => [
+                                'cuti_id' => $cutiDetail->id,
+                                'user_id' => $cutiDetail->user_id,
+                                'atasan_id' => $cutiDetail->atasan_id,
+                            ],
+                            'whatsapp' => $user->detail->whatsapp,
+                            'is_sent_wa' => false,
+                            'eror_wa' => '',
+                            'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                            'eror_onesignal' => '',
+                            'email' => $user->email,
+                            'is_sent_email' => false,
+                            'eror_email' => '',
+                            'priority' => 'low',
+                            'created_by' => $cutiDetail->user_id,
+                            'target_url' => $urlOneSignalPegawai,
+                        ]);                    
+                    //! Mesage Generate User
+
+                    // Mesage Generate Admin
+                        $usersWithAdminRole = User::admin()->with(['detail', 'devices'])->get();
+
+                        foreach ($usersWithAdminRole as $adminUser) {
+                            $sapaanAdmin = $adminUser->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                            $pesan = "Assalamualaikum $sapaanAdmin *" . $adminUser->detail->name . "*\n\n";
+                            $pesan .= "Cuti Atas Nama *" . $user->detail->name . "* Menunggu Penomoran Surat.\n\n";
+
+                            $messageIdAdministrator = (string) Str::uuid();
+                            $urlOneSignalAdministrasi = route('kepegawaian.cuti.penomoran') . "?";
+                            $email = User::find($adminUser->id)->email ?? '';
+
+                            Notification::create([
+                                'message_id' => $messageIdAdministrator,
+                                'user_id' => $adminUser->id,
+                                'message' => $pesan,
+                                'type' => $cutiDetail->jenis,
+                                'data' => [
+                                    'cuti_id' => $cutiDetail->id,
+                                    'user_id' => $cutiDetail->user_id,
+                                    'atasan_id' => $cutiDetail->atasan_id,
+                                ],
+                                'whatsapp' => $adminUser->detail->whatsapp,
+                                'is_sent_wa' => false,
+                                'eror_wa' => '',
+                                'onesignal' => optional($adminUser->devices)->pluck('device_token')->first(),
+                                'eror_onesignal' => '',
+                                'email' => $email,
+                                'is_sent_email' => false,
+                                'eror_email' => '',
+                                'priority' => 'high',
+                                'created_by' => $cutiDetail->user_id,
+                                'target_url' => $urlOneSignalAdministrasi,
+                            ]);
+                        }
+                    // Mesage Generate Admin
+                } elseif ($validatedData['user_id'] == $cutiDetail->atasan_id && $validatedData['user_id'] != $cutiDetail->atasan_dua_id) {
+                    // Update status dan komentar
+                        $cutiDetail->status = 11;
+                        $cutiDetail->keterangan_atasan = $validatedData['penanguhanComment'];
+                        $cutiDetail->save();
+                    // Update status dan komentar
+
+                    // Sign Generate
+                        $signMessageAtasan = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Tidak Disetujui Oleh Atasan.";
+                        $signAtasan = Sign::create([
+                            'user_id' => $atasan->id,
+                            'message' => $signMessageAtasan,
+                        ]);
+
+                        $cutiDetail->id_sign_atasan = $signAtasan->id;                        
+                        $cutiDetail->save();
+                    // Sign Generate
+
+                    // Mesage Generate User
+                        $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                        $messageIdPegawai = (string) Str::uuid();
+                        $urlOneSignalPegawai = route('user.account.cuti') . "?";
+
+                        $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                        $pesanUser .= "Status: Cuti Anda *Tidak Disetujui* oleh atasan, menunggu konfirmasi atasan selanjutnya.";
+
+                        Notification::create([
+                            'message_id' => $messageIdPegawai,
+                            'user_id' => $user->id,
+                            'message' => $pesanUser,
+                            'type' => $cutiDetail->jenis,
+                            'data' => [
+                                'cuti_id' => $cutiDetail->id,
+                                'user_id' => $cutiDetail->user_id,
+                                'atasan_id' => $cutiDetail->atasan_id,
+                            ],
+                            'whatsapp' => $user->detail->whatsapp,
+                            'is_sent_wa' => false,
+                            'eror_wa' => '',
+                            'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                            'eror_onesignal' => '',
+                            'email' => $user->email,
+                            'is_sent_email' => false,
+                            'eror_email' => '',
+                            'priority' => 'low',
+                            'created_by' => $cutiDetail->user_id,
+                            'target_url' => $urlOneSignalPegawai,
+                        ]);
+                    // !Mesage Generate User
+
+                     //Create Message For Pejabat
+                        $sapaanPejabat = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                        $messageIdPejabat = (string) Str::uuid();
+                        $urlOneSignalPejabat = route('kepegawaian.cuti.pejabat') . "?";
+                        
+                        $pesanPejabat = "Assalamualaikum $sapaanPejabat " . $atasanDua->detail->name . ",\n\n";
+                        $pesanPejabat .= "Status: Cuti Pegawai *" . $user->detail->name . "* *Tidak Disetujui* oleh atasan,\n\nMenunggu Konfirmasi Pejabat Yang Berwenang.";
+
+                        Notification::create([
+                            'message_id' => $messageIdPejabat,
+                            'user_id' => $atasanDua->id,
+                            'message' => $pesanPejabat,
+                            'type' => $cutiDetail->jenis,
+                            'data' => [
+                                'cuti_id' => $cutiDetail->id,
+                                'user_id' => $cutiDetail->user_id,
+                                'atasan_id' => $cutiDetail->atasan_id,
+                            ],
+                            'whatsapp' => $atasanDua->detail->whatsapp,
+                            'is_sent_wa' => false,
+                            'eror_wa' => '',
+                            'onesignal' => optional($atasanDua->devices)->pluck('device_token')->first(),
+                            'eror_onesignal' => '',
+                            'email' => $atasanDua->email,
+                            'is_sent_email' => false,
+                            'eror_email' => '',
+                            'priority' => 'high',
+                            'created_by' => $cutiDetail->user_id,
+                            'target_url' => $urlOneSignalPejabat,
+                        ]);
+                    //!Create Message For Pejabat
+                } elseif ($validatedData['user_id'] != $cutiDetail->atasan_id && $validatedData['user_id'] == $cutiDetail->atasan_dua_id) {
+                    // Update status dan komentar
+                        $cutiDetail->status = 12;                        
+                        $cutiDetail->save();
+                    // Update status dan komentar
+
+                    // Sign Generate                   
+                        $signMessageAtasanDua = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Tidak Disetujui Oleh Pejabat Yang Berwenang Memberikan Cuti.";
+                        $signAtasanDua = Sign::create([
+                            'user_id' => $atasanDua->id,
+                            'message' => $signMessageAtasanDua,
+                        ]);
+
+                        $cutiDetail->id_sign_atasan_dua = $signAtasanDua->id;
+                        $cutiDetail->save();
+                    // Sign Generate
+
+                    // Mesage Generate User
+                        $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                        $messageIdPegawai = (string) Str::uuid();
+                        $urlOneSignalPegawai = route('user.account.cuti') . "?";
+
+                        $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                        $pesanUser .= "Status: Cuti Anda *Tidak Disetujui* oleh Pejabat Yang Berwenang, menunggu penomoran surat.";
+
+                        Notification::create([
+                            'message_id' => $messageIdPegawai,
+                            'user_id' => $user->id,
+                            'message' => $pesanUser,
+                            'type' => $cutiDetail->jenis,
+                            'data' => [
+                                'cuti_id' => $cutiDetail->id,
+                                'user_id' => $cutiDetail->user_id,
+                                'atasan_id' => $cutiDetail->atasan_id,
+                            ],
+                            'whatsapp' => $user->detail->whatsapp,
+                            'is_sent_wa' => false,
+                            'eror_wa' => '',
+                            'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                            'eror_onesignal' => '',
+                            'email' => $user->email,
+                            'is_sent_email' => false,
+                            'eror_email' => '',
+                            'priority' => 'low',
+                            'created_by' => $cutiDetail->user_id,
+                            'target_url' => $urlOneSignalPegawai,
+                        ]);                    
+                    //! Mesage Generate User
+
+                    // Mesage Generate Admin
+                        $usersWithAdminRole = User::admin()->with(['detail', 'devices'])->get();
+
+                        foreach ($usersWithAdminRole as $adminUser) {
+                            $sapaanAdmin = $adminUser->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                            $pesan = "Assalamualaikum $sapaanAdmin *" . $adminUser->detail->name . "*\n\n";
+                            $pesan .= "Cuti Atas Nama *" . $user->detail->name . "* Menunggu Penomoran Surat.\n\n";
+
+                            $messageIdAdministrator = (string) Str::uuid();
+                            $urlOneSignalAdministrasi = route('kepegawaian.cuti.penomoran') . "?";
+                            $email = User::find($adminUser->id)->email ?? '';
+
+                            Notification::create([
+                                'message_id' => $messageIdAdministrator,
+                                'user_id' => $adminUser->id,
+                                'message' => $pesan,
+                                'type' => $cutiDetail->jenis,
+                                'data' => [
+                                    'cuti_id' => $cutiDetail->id,
+                                    'user_id' => $cutiDetail->user_id,
+                                    'atasan_id' => $cutiDetail->atasan_id,
+                                ],
+                                'whatsapp' => $adminUser->detail->whatsapp,
+                                'is_sent_wa' => false,
+                                'eror_wa' => '',
+                                'onesignal' => optional($adminUser->devices)->pluck('device_token')->first(),
+                                'eror_onesignal' => '',
+                                'email' => $email,
+                                'is_sent_email' => false,
+                                'eror_email' => '',
+                                'priority' => 'high',
+                                'created_by' => $cutiDetail->user_id,
+                                'target_url' => $urlOneSignalAdministrasi,
+                            ]);
+                        }
+                    // Mesage Generate Admin
+                } else {
+                    return response()->json(['error' => 'Anda tidak berhak menolak cuti ini.'], 403);
+                }
+
+                DB::commit();
+
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'title' => 'Berhasil',
+                        'message' => 'Cuti ditolak.',
+                    ]);
+                }
+
+                return redirect()->back()->with([
+                    'response' => [
+                        'success' => true,
+                        'title' => 'Berhasil',
+                        'message' => 'Cuti ditolak.',
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                // Rollback jika terjadi error
+                DB::rollback();
+                $errorMessage = $request->ajax() ? 
+                    response()->json([
+                        'success' => false,
+                        'title' => 'Gagal',
+                        'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                    ]) :
+                    redirect()->back()->with([
+                        'response' => [
+                            'success' => false,
+                            'title' => 'Gagal',
+                            'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                        ],
+                    ]);
+
+                return $errorMessage;
+            }
+        }
+
+        public function cutiTolakPejabat(Request $request)
+        {
+            try {
+                // Validasi input
+                $validatedData = $request->validate([                
+                    'id' => 'required|uuid',
+                    'user_id' => 'required|integer',
+                ]);
+
+                // Cari data cuti berdasarkan id yang tervalidasi
+                $cutiDetail = CutiDetail::find($validatedData['id']);
+
+                // Jika data cuti tidak ditemukan
+                if (!$cutiDetail) {
+                    return response()->json(['error' => 'Data cuti tidak ditemukan.'], 404);
+                }
+
+                $user = User::with(['detail', 'devices'])->find($cutiDetail->user_id);
+                $atasan = User::with(['detail', 'devices'])->find($cutiDetail->atasan_id);
+                $atasanDua = User::with(['detail', 'devices'])->find($cutiDetail->atasan_dua_id);
+
+                // Update status dan komentar
+                $cutiDetail->status = 12;                       
+                $cutiDetail->keterangan_atasan_dua = $cutiDetail->keterangan_atasan;                        
+                $cutiDetail->save();
+
+                // Sign Generate                   
+                $signMessageAtasanDua = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Tidak Disetujui Oleh Pejabat Yang Berwenang Memberikan Cuti.";
+                $signAtasanDua = Sign::create([
+                    'user_id' => $atasanDua->id,
+                    'message' => $signMessageAtasanDua,
+                ]);
+
+                $cutiDetail->id_sign_atasan_dua = $signAtasanDua->id;
+                $cutiDetail->save();
+
+                // Mesage Generate User
+                $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                $messageIdPegawai = (string) Str::uuid();
+                $urlOneSignalPegawai = route('user.account.cuti') . "?";
+
+                $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                $pesanUser .= "Status: Cuti Anda *Tidak Disetujui* oleh Pejabat Yang Berwenang, menunggu penomoran surat.";
+
+                Notification::create([
+                    'message_id' => $messageIdPegawai,
+                    'user_id' => $user->id,
+                    'message' => $pesanUser,
+                    'type' => $cutiDetail->jenis,
+                    'data' => [
+                        'cuti_id' => $cutiDetail->id,
+                        'user_id' => $cutiDetail->user_id,
+                        'atasan_id' => $cutiDetail->atasan_id,
+                    ],
+                    'whatsapp' => $user->detail->whatsapp,
+                    'is_sent_wa' => false,
+                    'eror_wa' => '',
+                    'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                    'eror_onesignal' => '',
+                    'email' => $user->email,
+                    'is_sent_email' => false,
+                    'eror_email' => '',
+                    'priority' => 'low',
+                    'created_by' => $cutiDetail->user_id,
+                    'target_url' => $urlOneSignalPegawai,
+                ]);                    
+
+                // Mesage Generate Admin
+                $usersWithAdminRole = User::admin()->with(['detail', 'devices'])->get();
+
+                foreach ($usersWithAdminRole as $adminUser) {
+                    $sapaanAdmin = $adminUser->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                    $pesan = "Assalamualaikum $sapaanAdmin *" . $adminUser->detail->name . "*\n\n";
+                    $pesan .= "Cuti Atas Nama *" . $user->detail->name . "* Menunggu Penomoran Surat.\n\n";
+
+                    $messageIdAdministrator = (string) Str::uuid();
+                    $urlOneSignalAdministrasi = route('kepegawaian.cuti.penomoran') . "?";
+                    $email = User::find($adminUser->id)->email ?? '';
+
+                    Notification::create([
+                        'message_id' => $messageIdAdministrator,
+                        'user_id' => $adminUser->id,
+                        'message' => $pesan,
+                        'type' => $cutiDetail->jenis,
+                        'data' => [
+                            'cuti_id' => $cutiDetail->id,
+                            'user_id' => $cutiDetail->user_id,
+                            'atasan_id' => $cutiDetail->atasan_id,
+                        ],
+                        'whatsapp' => $adminUser->detail->whatsapp,
+                        'is_sent_wa' => false,
+                        'eror_wa' => '',
+                        'onesignal' => optional($adminUser->devices)->pluck('device_token')->first(),
+                        'eror_onesignal' => '',
+                        'email' => $email,
+                        'is_sent_email' => false,
+                        'eror_email' => '',
+                        'priority' => 'high',
+                        'created_by' => $cutiDetail->user_id,
+                        'target_url' => $urlOneSignalAdministrasi,
+                    ]);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'title' => 'Berhasil',
+                    'message' => 'Cuti ditolak oleh pejabat.',
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollback();                
+                return response()->json([
+                    'success' => false,
+                    'title' => 'Gagal',
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                ]);
+            }
+        }
+
+        public function cutiPenanguhan(Request $request)
+        {
+            $validatedData = $request->validate([
+                'penanguhanComment' => 'string|max:255',
+                'id' => 'required|uuid',
+                'user_id' => 'required|integer',
+                'tglAwalBaruPenanguhan' => 'nullable|date',
+                'tglAkhirBaruPenanguhan' => 'nullable|date',
+            ]);
+            
+
+            DB::beginTransaction();
+
+            try {
+                $cutiDetail = CutiDetail::find($validatedData['id']);
+
+                if (!$cutiDetail) {
+                    return response()->json(['error' => 'Data cuti tidak ditemukan.'], 404);
+                }
+
+                $user = User::with(['detail', 'devices'])->find($cutiDetail->user_id);
+                $atasan = User::with(['detail', 'devices'])->find($cutiDetail->atasan_id);
+                $atasanDua = User::with(['detail', 'devices'])->find($cutiDetail->atasan_dua_id);
+
+                if ($validatedData['user_id'] == $cutiDetail->atasan_id && $validatedData['user_id'] == $cutiDetail->atasan_dua_id) {
+                    // Update status dan komentar
+                        $cutiDetail->status = 22;
+                        $cutiDetail->keterangan_atasan = $validatedData['penanguhanComment'];
+                        $cutiDetail->keterangan_atasan_dua = $validatedData['penanguhanComment'];
+                        $cutiDetail->tglawal_per_atasan = $validatedData['tglAwalBaruPenanguhan'];
+                        $cutiDetail->tglakhir_per_atasan = $validatedData['tglAkhirBaruPenanguhan'];
+                        $cutiDetail->tglawal_per_atasan_dua = $validatedData['tglAwalBaruPenanguhan'];
+                        $cutiDetail->tglakhir_per_atasan_dua = $validatedData['tglAkhirBaruPenanguhan'];
+                        $cutiDetail->keterangan_atasan_dua = $validatedData['penanguhanComment'];
+                        $cutiDetail->save();
+
+                        // Sign Generate
+                        $signMessageAtasan = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Ditangguhkan Oleh Atasan.";
+                        $signAtasan = Sign::create([
+                            'user_id' => $atasan->id,
+                            'message' => $signMessageAtasan,
+                        ]);
+
+                    $signMessageAtasanDua = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Ditangguhkan Oleh Pejabat Yang Berwenang Memberikan Cuti.";
+                    $signAtasanDua = Sign::create([
+                        'user_id' => $atasanDua->id,
+                        'message' => $signMessageAtasanDua,
+                    ]);
+
+                    $cutiDetail->id_sign_atasan = $signAtasan->id;
+                    $cutiDetail->id_sign_atasan_dua = $signAtasanDua->id;
+                    $cutiDetail->save();
+
+                    // Mesage Generate User
+                    $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                    $messageIdPegawai = (string) Str::uuid();
+                    $urlOneSignalPegawai = route('user.account.cuti') . "?";
+
+                    $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                    $pesanUser .= "Status: Cuti Anda *Ditangguhkan* oleh Pejabat Yang Berwenang Memberikan Cuti, menunggu penomoran surat.";
+
+                    Notification::create([
+                        'message_id' => $messageIdPegawai,
+                        'user_id' => $user->id,
+                        'message' => $pesanUser,
+                        'type' => $cutiDetail->jenis,
+                        'data' => [
+                            'cuti_id' => $cutiDetail->id,
+                            'user_id' => $cutiDetail->user_id,
+                            'atasan_id' => $cutiDetail->atasan_id,
+                        ],
+                        'whatsapp' => $user->detail->whatsapp,
+                        'is_sent_wa' => false,
+                        'eror_wa' => '',
+                        'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                        'eror_onesignal' => '',
+                        'email' => $user->email,
+                        'is_sent_email' => false,
+                        'eror_email' => '',
+                        'priority' => 'low',
+                        'created_by' => $cutiDetail->user_id,
+                        'target_url' => $urlOneSignalPegawai,
+                    ]);
+
+                    // Mesage Generate Admin
+                    $usersWithAdminRole = User::admin()->with(['detail', 'devices'])->get();
+
+                    foreach ($usersWithAdminRole as $adminUser) {
+                        $sapaanAdmin = $adminUser->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                        $pesan = "Assalamualaikum $sapaanAdmin *" . $adminUser->detail->name . "*\n\n";
+                        $pesan .= "Cuti Atas Nama *" . $user->detail->name . "* Menunggu Penomoran Surat.\n\n";
+
+                        $messageIdAdministrator = (string) Str::uuid();
+                        $urlOneSignalAdministrasi = route('kepegawaian.cuti.penomoran') . "?";
+                        $email = $adminUser->email ?? '';
+
+                        Notification::create([
+                            'message_id' => $messageIdAdministrator,
+                            'user_id' => $adminUser->id,
+                            'message' => $pesan,
+                            'type' => $cutiDetail->jenis,
+                            'data' => [
+                                'cuti_id' => $cutiDetail->id,
+                                'user_id' => $cutiDetail->user_id,
+                                'atasan_id' => $cutiDetail->atasan_id,
+                            ],
+                            'whatsapp' => $adminUser->detail->whatsapp,
+                            'is_sent_wa' => false,
+                            'eror_wa' => '',
+                            'onesignal' => optional($adminUser->devices)->pluck('device_token')->first(),
+                            'eror_onesignal' => '',
+                            'email' => $email,
+                            'is_sent_email' => false,
+                            'eror_email' => '',
+                            'priority' => 'high',
+                            'created_by' => $cutiDetail->user_id,
+                            'target_url' => $urlOneSignalAdministrasi,
+                        ]);
+                    }
+                } elseif ($validatedData['user_id'] == $cutiDetail->atasan_id && $validatedData['user_id'] != $cutiDetail->atasan_dua_id) {
+                    // Update status dan komentar
+                    $cutiDetail->status = 21;
+                    $cutiDetail->keterangan_atasan = $validatedData['penanguhanComment'];
+                    $cutiDetail->tglawal_per_atasan = $validatedData['tglAwalBaruPenanguhan'];
+                    $cutiDetail->tglakhir_per_atasan = $validatedData['tglAkhirBaruPenanguhan'];
+                    $cutiDetail->save();
+
+                    // Sign Generate
+                    $signMessageAtasan = "Surat Permohonan Cuti Atas Nama " . $user->detail->name . " Ditangguhkan Oleh Atasan.";
+                    $signAtasan = Sign::create([
+                        'user_id' => $atasan->id,
+                        'message' => $signMessageAtasan,
+                    ]);
+
+                    $cutiDetail->id_sign_atasan = $signAtasan->id;
+                    $cutiDetail->save();
+
+                    // Mesage Generate User
+                    $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                    $messageIdPegawai = (string) Str::uuid();
+                    $urlOneSignalPegawai = route('user.account.cuti') . "?";
+
+                    $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                    $pesanUser .= "Status: Cuti Anda *Ditangguhkan* oleh atasan, menunggu konfirmasi atasan selanjutnya.";
+
+                    Notification::create([
+                        'message_id' => $messageIdPegawai,
+                        'user_id' => $user->id,
+                        'message' => $pesanUser,
+                        'type' => $cutiDetail->jenis,
+                        'data' => [
+                            'cuti_id' => $cutiDetail->id,
+                            'user_id' => $cutiDetail->user_id,
+                            'atasan_id' => $cutiDetail->atasan_id,
+                        ],
+                        'whatsapp' => $user->detail->whatsapp,
+                        'is_sent_wa' => false,
+                        'eror_wa' => '',
+                        'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                        'eror_onesignal' => '',
+                        'email' => $user->email,
+                        'is_sent_email' => false,
+                        'eror_email' => '',
+                        'priority' => 'low',
+                        'created_by' => $cutiDetail->user_id,
+                        'target_url' => $urlOneSignalPegawai,
+                    ]);
+
+                    // Create Message For Pejabat
+                    $sapaanPejabat = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                    $messageIdPejabat = (string) Str::uuid();
+                    $urlOneSignalPejabat = route('kepegawaian.cuti.pejabat') . "?";
+
+                    $pesanPejabat = "Assalamualaikum $sapaanPejabat " . $atasanDua->detail->name . ",\n\n";
+                    $pesanPejabat .= "Status: Cuti Pegawai *" . $user->detail->name . "* *Ditangguhkan* oleh atasan,\n\nMenunggu Konfirmasi Pejabat Yang Berwenang.";
+
+                    Notification::create([
+                        'message_id' => $messageIdPejabat,
+                        'user_id' => $atasanDua->id,
+                        'message' => $pesanPejabat,
+                        'type' => $cutiDetail->jenis,
+                        'data' => [
+                            'cuti_id' => $cutiDetail->id,
+                            'user_id' => $cutiDetail->user_id,
+                            'atasan_id' => $cutiDetail->atasan_id,
+                        ],
+                        'whatsapp' => $atasanDua->detail->whatsapp,
+                        'is_sent_wa' => false,
+                        'eror_wa' => '',
+                        'onesignal' => optional($atasanDua->devices)->pluck('device_token')->first(),
+                        'eror_onesignal' => '',
+                        'email' => $atasanDua->email,
+                        'is_sent_email' => false,
+                        'eror_email' => '',
+                        'priority' => 'high',
+                        'created_by' => $cutiDetail->user_id,
+                        'target_url' => $urlOneSignalPejabat,
+                    ]);
+                }
+
+                DB::commit();
+
+                return redirect()->back()->with([
+                    'response' => [
+                        'success' => true,
+                        'title' => 'Berhasil',
+                        'message' => 'Cuti ditangguhkan.',
+                    ],
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error in cutiPenanguhan: ' . $e->getMessage());
+                return redirect()->back()->with([
+                    'response' => [
+                        'success' => false,
+                        'title' => 'Gagal',
+                        'message' => 'Terjadi kesalahan saat menangguhkan cuti.',
+                    ],
+                ]);
+            }
+        }
+
+        public function tangguhPejabat(Request $request)
+        {
+            // Validasi data yang diterima
+            $validatedData = $request->validate([
+                'id' => 'required|uuid',
+                'user_id' => 'required|integer',
+            ]);
+
+            try {
+                // Ambil cuti detail berdasarkan ID
+                $cutiDetail = CutiDetail::find($validatedData['id']);
+
+                if (!$cutiDetail) {
+                    return response()->json(['error' => 'Data cuti tidak ditemukan.'], 404);
+                }
+
+                // Pindahkan data dari atasan pertama ke atasan kedua
+                $cutiDetail->tglawal_per_atasan_dua = $cutiDetail->tglawal_per_atasan;
+                $cutiDetail->tglakhir_per_atasan_dua = $cutiDetail->tglakhir_per_atasan;
+                $cutiDetail->keterangan_atasan_dua = $cutiDetail->keterangan_atasan;
+
+                // Ubah status menjadi 22 (ditangguhkan oleh pejabat yang berwenang)
+                $cutiDetail->status = 22;
+                $cutiDetail->save();
+
+                // Dapatkan informasi user, atasan, dan admin
+                $user = User::with(['detail', 'devices'])->find($cutiDetail->user_id);
+                $usersWithAdminRole = User::admin()->with(['detail', 'devices'])->get();
+
+                // Mesage Generate User
+                $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                $messageIdPegawai = (string) Str::uuid();
+                $urlOneSignalPegawai = route('user.account.cuti') . "?";
+
+                $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                $pesanUser .= "Status: Cuti Anda *Ditangguhkan* oleh Pejabat Yang Berwenang Memberikan Cuti, menunggu penomoran surat.";
+
+                Notification::create([
+                    'message_id' => $messageIdPegawai,
+                    'user_id' => $user->id,
+                    'message' => $pesanUser,
+                    'type' => $cutiDetail->jenis,
+                    'data' => [
+                        'cuti_id' => $cutiDetail->id,
+                        'user_id' => $cutiDetail->user_id,
+                        'atasan_id' => $cutiDetail->atasan_id,
+                    ],
+                    'whatsapp' => $user->detail->whatsapp,
+                    'is_sent_wa' => false,
+                    'eror_wa' => '',
+                    'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                    'eror_onesignal' => '',
+                    'email' => $user->email,
+                    'is_sent_email' => false,
+                    'eror_email' => '',
+                    'priority' => 'low',
+                    'created_by' => $cutiDetail->user_id,
+                    'target_url' => $urlOneSignalPegawai,
+                ]);
+
+                // Mesage Generate Admin
+                foreach ($usersWithAdminRole as $adminUser) {
+                    $sapaanAdmin = $adminUser->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                    $pesan = "Assalamualaikum $sapaanAdmin *" . $adminUser->detail->name . "*\n\n";
+                    $pesan .= "Cuti Atas Nama *" . $user->detail->name . "* Menunggu Penomoran Surat.\n\n";
+
+                    $messageIdAdministrator = (string) Str::uuid();
+                    $urlOneSignalAdministrasi = route('kepegawaian.cuti.penomoran') . "?";
+                    $email = $adminUser->email ?? '';
+
+                    Notification::create([
+                        'message_id' => $messageIdAdministrator,
+                        'user_id' => $adminUser->id,
+                        'message' => $pesan,
+                        'type' => $cutiDetail->jenis,
+                        'data' => [
+                            'cuti_id' => $cutiDetail->id,
+                            'user_id' => $cutiDetail->user_id,
+                            'atasan_id' => $cutiDetail->atasan_id,
+                        ],
+                        'whatsapp' => $adminUser->detail->whatsapp,
+                        'is_sent_wa' => false,
+                        'eror_wa' => '',
+                        'onesignal' => optional($adminUser->devices)->pluck('device_token')->first(),
+                        'eror_onesignal' => '',
+                        'email' => $email,
+                        'is_sent_email' => false,
+                        'eror_email' => '',
+                        'priority' => 'high',
+                        'created_by' => $cutiDetail->user_id,
+                        'target_url' => $urlOneSignalAdministrasi,
+                    ]);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Penangguhan Cuti Disetujui.'
+                ]);
+
+            } catch (\Exception $e) {
+                // Handle error dan rollback jika ada kesalahan
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat memproses penangguhan.'
+                ], 500);
+            }
+        }
+
+        public function updatePenanguhan(Request $request)
+        {
+            // Validasi data yang diterima
+            $validatedData = $request->validate([
+                'tglAwalBaruPenanguhan' => 'nullable|date',
+                'tglAkhirBaruPenanguhan' => 'nullable|date',
+                'penanguhanComment' => 'string|max:255',
+                'id' => 'required|uuid',
+                'user_id' => 'required|integer',
+            ]);
+        
+            try {
+                // Mulai transaksi
+                DB::beginTransaction();
+        
+                // Ambil cuti detail berdasarkan ID
+                $cutiDetail = CutiDetail::find($validatedData['id']);
+        
+                if (!$cutiDetail) {
+                    return redirect()->back()->withErrors(['error' => 'Data cuti tidak ditemukan.']);
+                }
+        
+                // Update data penangguhan
+                $cutiDetail->tglawal_per_atasan_dua = $validatedData['tglAwalBaruPenanguhan'];
+                $cutiDetail->tglakhir_per_atasan_dua = $validatedData['tglAkhirBaruPenanguhan'];
+                $cutiDetail->keterangan_atasan_dua = $validatedData['penanguhanComment'];
+                $cutiDetail->status = 22; // Ubah status menjadi 22 (ditangguhkan oleh pejabat yang berwenang)
+                $cutiDetail->save();
+        
+                // Dapatkan informasi user dan admin untuk mengirim notifikasi
+                $user = User::with(['detail', 'devices'])->find($cutiDetail->user_id);
+                $usersWithAdminRole = User::admin()->with(['detail', 'devices'])->get();
+        
+                // Kirim notifikasi ke user
+                $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                $messageIdPegawai = (string) Str::uuid();
+                $urlOneSignalPegawai = route('user.account.cuti') . "?";
+        
+                $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                $pesanUser .= "Status: Cuti Anda *Ditangguhkan* oleh Pejabat Yang Berwenang Memberikan Cuti, menunggu penomoran surat.";
+        
+                Notification::create([
+                    'message_id' => $messageIdPegawai,
+                    'user_id' => $user->id,
+                    'message' => $pesanUser,
+                    'type' => $cutiDetail->jenis,
+                    'data' => [
+                        'cuti_id' => $cutiDetail->id,
+                        'user_id' => $cutiDetail->user_id,
+                        'atasan_id' => $cutiDetail->atasan_id,
+                    ],
+                    'whatsapp' => $user->detail->whatsapp,
+                    'is_sent_wa' => false,
+                    'eror_wa' => '',
+                    'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                    'eror_onesignal' => '',
+                    'email' => $user->email,
+                    'is_sent_email' => false,
+                    'eror_email' => '',
+                    'priority' => 'low',
+                    'created_by' => $cutiDetail->user_id,
+                    'target_url' => $urlOneSignalPegawai,
+                ]);
+        
+                // Kirim notifikasi ke admin
+                foreach ($usersWithAdminRole as $adminUser) {
+                    $sapaanAdmin = $adminUser->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                    $pesan = "Assalamualaikum $sapaanAdmin *" . $adminUser->detail->name . "*\n\n";
+                    $pesan .= "Cuti Atas Nama *" . $user->detail->name . "* Menunggu Penomoran Surat.\n\n";
+        
+                    $messageIdAdministrator = (string) Str::uuid();
+                    $urlOneSignalAdministrasi = route('kepegawaian.cuti.penomoran') . "?";
+                    $email = $adminUser->email ?? '';
+        
+                    Notification::create([
+                        'message_id' => $messageIdAdministrator,
+                        'user_id' => $adminUser->id,
+                        'message' => $pesan,
+                        'type' => $cutiDetail->jenis,
+                        'data' => [
+                            'cuti_id' => $cutiDetail->id,
+                            'user_id' => $cutiDetail->user_id,
+                            'atasan_id' => $cutiDetail->atasan_id,
+                        ],
+                        'whatsapp' => $adminUser->detail->whatsapp,
+                        'is_sent_wa' => false,
+                        'eror_wa' => '',
+                        'onesignal' => optional($adminUser->devices)->pluck('device_token')->first(),
+                        'eror_onesignal' => '',
+                        'email' => $email,
+                        'is_sent_email' => false,
+                        'eror_email' => '',
+                        'priority' => 'high',
+                        'created_by' => $cutiDetail->user_id,
+                        'target_url' => $urlOneSignalAdministrasi,
+                    ]);
+                }
+        
+                // Commit transaksi jika semua berhasil
+                DB::commit();
+        
+                return redirect()->back()->with([
+                    'response' => [
+                        'success' => true,
+                        'title' => 'Berhasil',
+                        'message' => 'Penangguhan Cuti Berhasil Diperbaharui.',
+                    ],
+                ]);
+        
+            } catch (\Exception $e) {
+                // Rollback transaksi jika terjadi kesalahan
+                DB::rollBack();
+        
+                return redirect()->back()->withErrors([
+                    'error' => 'Terjadi kesalahan saat memproses penangguhan: ' . $e->getMessage(),
+                ]);
+            }
+        }
+        
+        
         public function penomoranStore(Request $request)
         {
             
@@ -726,52 +1708,154 @@ class CutiController extends Controller
                     return response()->json(['error' => 'Data not found.'], 404);
                 }
 
-                // Update the no_surat field in CutiDetail
-                $cutiDetail->no_surat = $request->nomorSurat;
-                $cutiDetail->status = 10;
-                $cutiDetail->save();
+                if ($cutiDetail->status == 9) {
+                     // Update the no_surat field in CutiDetail
+                        $cutiDetail->no_surat = $request->nomorSurat;
+                        $cutiDetail->status = 10;
+                        $cutiDetail->save();
+                    // Update the no_surat field in CutiDetail
+    
+                    // Create the notification message
+                        $user = User::find($cutiDetail->user_id);
+    
+                        // Check if User was found
+                        if (!$user) {
+                            return response()->json(['error' => 'User not found.'], 404);
+                        }
+    
+                        $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                        $messageIdPegawai = (string) Str::uuid();
+                        $urlOneSignalPegawai = route('user.account.cuti') . "?";
+                        
+                        $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                        $pesanUser .= "Status: Cuti Anda sudah diberikan nomor surat: " . $request->nomorSurat . ".\n\n";                
+                        $pesanUser .= "Selamat melaksanakan Cuti, Semoga Kita Semua Selalu Dalam Lindungan Allah SWT.\n\n";                
+                        $pesanUser .= "-Salam Hangat, *Dek Linda*";                
+    
+                        // Create the notification
+                        Notification::create([
+                            'message_id' => $messageIdPegawai,
+                            'user_id' => $user->id,
+                            'message' => $pesanUser,
+                            'type' => $cutiDetail->jenis,
+                            'data' => [
+                                'cuti_id' => $cutiDetail->id,
+                                'user_id' => $cutiDetail->user_id,
+                                'atasan_id' => $cutiDetail->atasan_id,
+                            ],
+                            'whatsapp' => $user->detail->whatsapp,
+                            'is_sent_wa' => false,
+                            'eror_wa' => '',
+                            'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                            'eror_onesignal' => '',
+                            'email' => $user->email,
+                            'is_sent_email' => false,
+                            'eror_email' => '',
+                            'priority' => 'high',
+                            'created_by' => $cutiDetail->user_id,
+                            'target_url' => $urlOneSignalPegawai,
+                        ]);
+                    // Create the notification message
+                } elseif ($cutiDetail->status == 12) {
+                    // Update the no_surat field in CutiDetail
+                        $cutiDetail->no_surat = $request->nomorSurat;
+                        $cutiDetail->status = 13;
+                        $cutiDetail->save();
+                    // Update the no_surat field in CutiDetail
 
-                // Fetch the user associated with the CutiDetail
-                $user = User::find($cutiDetail->user_id);
+                    // Create the notification message
+                        $user = User::find($cutiDetail->user_id);
 
-                // Check if User was found
-                if (!$user) {
-                    return response()->json(['error' => 'User not found.'], 404);
+                        // Check if User was found
+                        if (!$user) {
+                            return response()->json(['error' => 'User not found.'], 404);
+                        }
+
+                        $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                        $messageIdPegawai = (string) Str::uuid();
+                        $urlOneSignalPegawai = route('user.account.cuti') . "?";
+                        
+                        $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                        $pesanUser .= "Status: Cuti Anda sudah diberikan nomor surat: " . $request->nomorSurat . ".\n\n";                
+                        $pesanUser .= "Mohon Maaf Permohonan Cuti *Ditolak*.\n\n";                
+                        $pesanUser .= "-Salam Hangat, *Dek Linda*";                
+
+                        // Create the notification
+                        Notification::create([
+                            'message_id' => $messageIdPegawai,
+                            'user_id' => $user->id,
+                            'message' => $pesanUser,
+                            'type' => $cutiDetail->jenis,
+                            'data' => [
+                                'cuti_id' => $cutiDetail->id,
+                                'user_id' => $cutiDetail->user_id,
+                                'atasan_id' => $cutiDetail->atasan_id,
+                            ],
+                            'whatsapp' => $user->detail->whatsapp,
+                            'is_sent_wa' => false,
+                            'eror_wa' => '',
+                            'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                            'eror_onesignal' => '',
+                            'email' => $user->email,
+                            'is_sent_email' => false,
+                            'eror_email' => '',
+                            'priority' => 'high',
+                            'created_by' => $cutiDetail->user_id,
+                            'target_url' => $urlOneSignalPegawai,
+                        ]);
+                    // Create the notification message
+                } elseif ($cutiDetail->status == 22) {
+                    // Update the no_surat field in CutiDetail
+                        $cutiDetail->no_surat = $request->nomorSurat;
+                        $cutiDetail->status = 23;
+                        $cutiDetail->save();
+                    // Update the no_surat field in CutiDetail
+
+                     // Create the notification message
+                     $user = User::find($cutiDetail->user_id);
+
+                     // Check if User was found
+                     if (!$user) {
+                         return response()->json(['error' => 'User not found.'], 404);
+                     }
+
+                     $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
+                     $messageIdPegawai = (string) Str::uuid();
+                     $urlOneSignalPegawai = route('user.account.cuti') . "?";
+                     
+                     $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
+                     $pesanUser .= "Status: Cuti Anda sudah diberikan nomor surat: " . $request->nomorSurat . ".\n\n";                
+                     $pesanUser .= " Permohonan Cuti *Ditangguhkan*.\n\n";                
+                     $pesanUser .= "-Salam Hangat, *Dek Linda*";                
+
+                     // Create the notification
+                     Notification::create([
+                         'message_id' => $messageIdPegawai,
+                         'user_id' => $user->id,
+                         'message' => $pesanUser,
+                         'type' => $cutiDetail->jenis,
+                         'data' => [
+                             'cuti_id' => $cutiDetail->id,
+                             'user_id' => $cutiDetail->user_id,
+                             'atasan_id' => $cutiDetail->atasan_id,
+                         ],
+                         'whatsapp' => $user->detail->whatsapp,
+                         'is_sent_wa' => false,
+                         'eror_wa' => '',
+                         'onesignal' => optional($user->devices)->pluck('device_token')->first(),
+                         'eror_onesignal' => '',
+                         'email' => $user->email,
+                         'is_sent_email' => false,
+                         'eror_email' => '',
+                         'priority' => 'high',
+                         'created_by' => $cutiDetail->user_id,
+                         'target_url' => $urlOneSignalPegawai,
+                     ]);
+                 // Create the notification message
+
                 }
-
-                // Create the notification message
-                $sapaanUser = $user->detail->kelamin == 'P' ? 'Ibu' : 'Bapak';
-                $messageIdPegawai = (string) Str::uuid();
-                $urlOneSignalPegawai = route('user.account.cuti') . "?";
                 
-                $pesanUser = "Assalamualaikum $sapaanUser " . $user->detail->name . ",\n\n";
-                $pesanUser .= "Status: Cuti Anda sudah diberikan nomor surat: " . $request->nomorSurat . ".\n\n";                
-                $pesanUser .= "Selamat melaksanakan Cuti, Semoga Kita Semua Selalu Dalam Lindungan Allah SWT.\n\n";                
-                $pesanUser .= "-Salam Hangat, *Dek Linda*";                
-
-                // Create the notification
-                Notification::create([
-                    'message_id' => $messageIdPegawai,
-                    'user_id' => $user->id,
-                    'message' => $pesanUser,
-                    'type' => $cutiDetail->jenis,
-                    'data' => [
-                        'cuti_id' => $cutiDetail->id,
-                        'user_id' => $cutiDetail->user_id,
-                        'atasan_id' => $cutiDetail->atasan_id,
-                    ],
-                    'whatsapp' => $user->detail->whatsapp,
-                    'is_sent_wa' => false,
-                    'eror_wa' => '',
-                    'onesignal' => optional($user->devices)->pluck('device_token')->first(),
-                    'eror_onesignal' => '',
-                    'email' => $user->email,
-                    'is_sent_email' => false,
-                    'eror_email' => '',
-                    'priority' => 'high',
-                    'created_by' => $cutiDetail->user_id,
-                    'target_url' => $urlOneSignalPegawai,
-                ]);
+               
 
                 // Commit the transaction
                 DB::commit();
@@ -845,13 +1929,15 @@ class CutiController extends Controller
                                                 ->generate($urlToBarcodeKPA));
                    
                     $data = [
+                        'title' => 'Cuti ' . $cutiDetail->userDetails->name,
                         'name' => $cutiDetail->userDetails->name ?? 'N/A',
                         'nip' => $cutiDetail->userDetails->nip ?? 'N/A',
                         'jabatan' => $cutiDetail->userDetails->jabatan ?? 'N/A',
                         'alasan' => $cutiDetail->alasan ?? '-',
                         'bulan' => $cutiDetail->userDetails->bulan ?? 'N/A',
                         'instansi' => "Mahkamah Syar'iyah Lhokseumawe",
-                        'no_surat' => $cutiDetail->userDetails->no_surat ?? 'N/A',
+                        'no_surat' => $cutiDetail->no_surat ?? 'N/A',
+                        'ket_atasan_dua' => $cutiDetail->keterangan_atasan_dua ?? 'N/A',
                         'jumlahHariCuti' => $jumlahHariCuti ?? 'N/A',
                         'cutiTerbilang' => $jumlahHariCutiTerbilang ?? 'N/A',
                         'jenis' => $cutiDetail->jenis ?? 'N/A',
@@ -863,6 +1949,7 @@ class CutiController extends Controller
                         'sisan' => $cutiDetail->sisan ?? 'N/A',
                         'alamat' => $cutiDetail->alamat ?? 'N/A',
                         'whatsapp' => $cutiDetail->userDetails->whatsapp ?? 'N/A',
+                        'status' => $cutiDetail->status ?? 'N/A',
                         'statuspim' => $cutiDetail->statuspim ?? 'N/A',
                         'kettas' => $cutiDetail->kettas ?? 'N/A',
                         'jappim' => $cutiDetail->jappim ?? 'N/A',
@@ -878,30 +1965,244 @@ class CutiController extends Controller
                     $pdf = PDF::loadView('Kepegawaian.Pdf.cutiPpnpn', compact('data'));
                     return $pdf->stream('cuti_pimpinan.pdf');
                 } elseif ($cutiDetail->atasan_id == $cutiDetail->atasan_dua_id) {
-                    $formattedDate              = $cutiDetail->created_at? Carbon::parse($cutiDetail->created_at)->translatedFormat('d F Y'): 'N/A';
-                    $tglAwal                    = $cutiDetail->tglawal;
-                    $tglAkhir                   = $cutiDetail->tglakhir;
-
-                    if ($tglAwal !== 'N/A') {
-                        $tglAwalFormatted       = (new \DateTime($tglAwal))->format('d-m-Y');
+                    if ($userDetails && $userDetails->instansi == 1) {
+                        // Konfigurasi Tanggal Cuti
+                            $formattedDate              = $cutiDetail->created_at? Carbon::parse($cutiDetail->created_at)->translatedFormat('d F Y'): 'N/A';
+                            $tglAwal                    = $cutiDetail->tglawal;
+                            $tglAkhir                   = $cutiDetail->tglakhir;
+        
+                            if ($tglAwal !== 'N/A') {
+                                $tglAwalFormatted       = (new \DateTime($tglAwal))->format('d-m-Y');
+                            } else {
+                                $tglAwalFormatted       = 'N/A';
+                            }
+                            
+                            if ($tglAkhir !== 'N/A') {
+                                $tglAkhirFormatted      = (new \DateTime($tglAkhir))->format('d-m-Y');
+                            } else {
+                                $tglAkhirFormatted      = 'N/A';
+                            }
+        
+                            $jumlahHariCuti             = $this->hitungHariCuti($tglAwal, $tglAkhir);
+                            $jumlahHariCutiTerbilang    = $this->terbilang($jumlahHariCuti);
+                        // !Konfigurasi Tanggal Cuti
+                        
+                        //Hitung Masa Kerja
+                            $nip = $cutiDetail->userDetails->nip ?? 'N/A';
+                            $awalKerja = $cutiDetail->userDetails->awal_kerja ?? null;
+                                        
+                            if (is_null($awalKerja) && $nip == 'default_nip') {
+                                $lamaBekerja = null;
+                                $tanggalAwalKerja = null;
+                            } else {
+                                if ($awalKerja) {
+                                    $tanggalPengangkatanCarbon = Carbon::parse($awalKerja, 'Asia/Jakarta');
+                                } else {
+                                    // Jika tidak ada awal kerja, hitung berdasarkan NIP
+                                    $tanggalPengangkatan = substr($nip, 8, 6);
+                                    $tahunPengangkatan = substr($tanggalPengangkatan, 0, 4);
+                                    $bulanPengangkatan = substr($tanggalPengangkatan, 4, 2);
+                                    $tanggalPengangkatanCarbon = Carbon::createFromDate($tahunPengangkatan, $bulanPengangkatan, 1, 'Asia/Jakarta');
+                                }
+                        
+                                $tanggalHariIni = Carbon::now('Asia/Jakarta');
+                                $lamaBekerja = $tanggalPengangkatanCarbon->diff($tanggalHariIni);
+                                $tanggalAwalKerja = $tanggalPengangkatanCarbon->format('d-m-Y'); // Format dd-mm-yyyy
+                            }
+                                              
+                            if ($lamaBekerja) {
+                                $formattedLamaBekerja = $lamaBekerja->y . ' Tahun ' . $lamaBekerja->m . ' Bulan';
+                            } else {
+                                $formattedLamaBekerja = 'N/A';
+                            }
+                        //!Hitung Masa Kerja
+                        
+                        // QR Code
+                            $urlToBarcodePegawai =route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign);
+                            $urlToBarcodePejabat = route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign_atasan_dua);
+            
+                            $qrCodePegawai = base64_encode(QrCode::format('svg')
+                                                        ->size(70)
+                                                        ->errorCorrection('M')
+                                                        ->generate($urlToBarcodePegawai));
+                        
+                            $qrCodePejabat = base64_encode(QrCode::format('svg')
+                                                        ->size(70)
+                                                        ->errorCorrection('M')
+                                                        ->generate($urlToBarcodePejabat));
+                        // !QR Code
+                       
+                        $data = [
+                            'title' => 'Cuti ' . $cutiDetail->userDetails->name,
+                            'no_surat' => $cutiDetail->no_surat ?? 'N/A',
+                            'name' => $cutiDetail->userDetails->name ?? 'N/A',
+                            'nip' => $cutiDetail->userDetails->nip ?? 'N/A',
+                            'jabatan' => $cutiDetail->userDetails->jabatan ?? 'N/A',
+                            'alasan' => $cutiDetail->alasan ?? '-',
+                            'bulan' => $cutiDetail->userDetails->bulan ?? 'N/A',
+                            'instansi' => "Mahkamah Syar'iyah Lhokseumawe",
+                            'jumlahHariCuti' => $jumlahHariCuti ?? 'N/A',
+                            'cutiTerbilang' => $jumlahHariCutiTerbilang ?? 'N/A',
+                            'jenis' => $cutiDetail->jenis ?? 'N/A',
+                            'jumlahhari' => $cutiDetail->jumlahhari ?? 'N/A',
+                            'tglawal' => $tglAwalFormatted,
+                            'tglakhir' => $tglAkhirFormatted,
+                            'cuti_n' => $cutiDetail->cuti_n ?? 'N/A',
+                            'cuti_nsatu' => $cutiDetail->cuti_nsatu ?? 'N/A',
+                            'cuti_ndua' => $cutiDetail->cuti_ndua ?? 'N/A',
+                            'alamat' => $cutiDetail->alamat ?? 'N/A',
+                            'status' => $cutiDetail->status ?? 'N/A',
+                            'alamat' => $cutiDetail->alamat ?? 'N/A',
+                            'whatsapp' => $cutiDetail->userDetails->whatsapp ?? 'N/A',
+    
+                            'nippim' => $cutiDetail->atasanDua->nip ?? 'N/A',
+                            'namepim' => $cutiDetail->atasanDua->name ?? 'N/A',
+                            'jabatanpim' => $cutiDetail->atasanDua->jabatan ?? 'N/A',
+                            'lamaBekerja' => $formattedLamaBekerja,
+                            'nippim2' => $cutiDetail->nippim2 ?? 'N/A',
+                            'created_at' => $formattedDate ?? 'N/A',
+                            'qrCodePegawai' => $qrCodePegawai,
+                            'qrCodePejabat' => $qrCodePejabat,
+                        ];
+            
+                        $pdf = PDF::loadView('Kepegawaian.Pdf.cutiSatu', compact('data'));
+                        return $pdf->stream('cuti_pimpinan.pdf');
                     } else {
-                        $tglAwalFormatted       = 'N/A';
+                        // Konfigurasi Tanggal Cuti
+                            $formattedDate              = $cutiDetail->created_at? Carbon::parse($cutiDetail->created_at)->translatedFormat('d F Y'): 'N/A';
+                            $tglAwal                    = $cutiDetail->tglawal;
+                            $tglAkhir                   = $cutiDetail->tglakhir;
+        
+                            if ($tglAwal !== 'N/A') {
+                                $tglAwalFormatted       = (new \DateTime($tglAwal))->format('d-m-Y');
+                            } else {
+                                $tglAwalFormatted       = 'N/A';
+                            }
+                            
+                            if ($tglAkhir !== 'N/A') {
+                                $tglAkhirFormatted      = (new \DateTime($tglAkhir))->format('d-m-Y');
+                            } else {
+                                $tglAkhirFormatted      = 'N/A';
+                            }
+        
+                            $jumlahHariCuti             = $this->hitungHariCuti($tglAwal, $tglAkhir);
+                            $jumlahHariCutiTerbilang    = $this->terbilang($jumlahHariCuti);
+                        // !Konfigurasi Tanggal Cuti
+                        
+                        //Hitung Masa Kerja
+                            $nip = $cutiDetail->userDetails->nip ?? 'N/A';
+                            $awalKerja = $cutiDetail->userDetails->awal_kerja ?? null;
+                                        
+                            if (is_null($awalKerja) && $nip == 'default_nip') {
+                                $lamaBekerja = null;
+                                $tanggalAwalKerja = null;
+                            } else {
+                                if ($awalKerja) {
+                                    $tanggalPengangkatanCarbon = Carbon::parse($awalKerja, 'Asia/Jakarta');
+                                } else {
+                                    // Jika tidak ada awal kerja, hitung berdasarkan NIP
+                                    $tanggalPengangkatan = substr($nip, 8, 6);
+                                    $tahunPengangkatan = substr($tanggalPengangkatan, 0, 4);
+                                    $bulanPengangkatan = substr($tanggalPengangkatan, 4, 2);
+                                    $tanggalPengangkatanCarbon = Carbon::createFromDate($tahunPengangkatan, $bulanPengangkatan, 1, 'Asia/Jakarta');
+                                }
+                        
+                                $tanggalHariIni = Carbon::now('Asia/Jakarta');
+                                $lamaBekerja = $tanggalPengangkatanCarbon->diff($tanggalHariIni);
+                                $tanggalAwalKerja = $tanggalPengangkatanCarbon->format('d-m-Y'); // Format dd-mm-yyyy
+                            }
+                                                
+                            if ($lamaBekerja) {
+                                $formattedLamaBekerja = $lamaBekerja->y . ' Tahun ' . $lamaBekerja->m . ' Bulan';
+                            } else {
+                                $formattedLamaBekerja = 'N/A';
+                            }
+                        //!Hitung Masa Kerja
+                        
+                        // QR Code
+                            $urlToBarcodePegawai =route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign);
+                            $urlToBarcodePejabat = route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign_atasan_dua);
+            
+                            $qrCodePegawai = base64_encode(QrCode::format('svg')
+                                                        ->size(70)
+                                                        ->errorCorrection('M')
+                                                        ->generate($urlToBarcodePegawai));
+                        
+                            $qrCodePejabat = base64_encode(QrCode::format('svg')
+                                                        ->size(70)
+                                                        ->errorCorrection('M')
+                                                        ->generate($urlToBarcodePejabat));
+                        // !QR Code
+
+                        $instansiId     = $userDetails->instansi;
+                        $instansi       = Instansi::where('id', $instansiId)->first();
+                        $instansiName   = $instansi ? $instansi->name : null;
+                        
+                        
+                        $data = [
+                            'title' => 'Cuti ' . $cutiDetail->userDetails->name,
+                            'no_surat' => $cutiDetail->no_surat ?? 'N/A',
+                            'name' => $cutiDetail->userDetails->name ?? 'N/A',
+                            'nip' => $cutiDetail->userDetails->nip ?? 'N/A',
+                            'jabatan' => $cutiDetail->userDetails->jabatan ?? 'N/A',
+                            'alasan' => $cutiDetail->alasan ?? '-',
+                            'bulan' => $cutiDetail->userDetails->bulan ?? 'N/A',
+                            'instansi' => $instansiName . ' Diperbantukan Di MS Lhokseumawe',
+                            'jumlahHariCuti' => $jumlahHariCuti ?? 'N/A',
+                            'ket_atasan_dua' => $cutiDetail->keterangan_atasan_dua ?? 'N/A',
+                            'cutiTerbilang' => $jumlahHariCutiTerbilang ?? 'N/A',
+                            'jenis' => $cutiDetail->jenis ?? 'N/A',
+                            'jumlahhari' => $cutiDetail->jumlahhari ?? 'N/A',
+                            'tglawal' => $tglAwalFormatted,
+                            'tglakhir' => $tglAkhirFormatted,
+                            'cuti_n' => $cutiDetail->cuti_n ?? 'N/A',
+                            'cuti_nsatu' => $cutiDetail->cuti_nsatu ?? 'N/A',
+                            'cuti_ndua' => $cutiDetail->cuti_ndua ?? 'N/A',
+                            'alamat' => $cutiDetail->alamat ?? 'N/A',
+                            'status' => $cutiDetail->status ?? 'N/A',
+                            'alamat' => $cutiDetail->alamat ?? 'N/A',
+                            'whatsapp' => $cutiDetail->userDetails->whatsapp ?? 'N/A',
+
+                            'nippim' => $cutiDetail->atasanDua->nip ?? 'N/A',
+                            'namepim' => $cutiDetail->atasanDua->name ?? 'N/A',
+                            'jabatanpim' => $cutiDetail->atasanDua->jabatan ?? 'N/A',
+                            'lamaBekerja' => $formattedLamaBekerja,
+                            'nippim2' => $cutiDetail->nippim2 ?? 'N/A',
+                            'created_at' => $formattedDate ?? 'N/A',
+                            'qrCodePegawai' => $qrCodePegawai,
+                            'qrCodePejabat' => $qrCodePejabat,
+                        ];
+            
+                        $pdf = PDF::loadView('Kepegawaian.Pdf.cutiSatu', compact('data'));
+                        return $pdf->stream('cuti_pimpinan.pdf');
                     }
                     
-                    if ($tglAkhir !== 'N/A') {
-                        $tglAkhirFormatted      = (new \DateTime($tglAkhir))->format('d-m-Y');
-                    } else {
-                        $tglAkhirFormatted      = 'N/A';
-                    }
+                } elseif ($userInstansi !== '1') {
+                    // Konfigurasi Tanggal Cuti
+                        $formattedDate              = $cutiDetail->created_at? Carbon::parse($cutiDetail->created_at)->translatedFormat('d F Y'): 'N/A';
+                        $tglAwal                    = $cutiDetail->tglawal;
+                        $tglAkhir                   = $cutiDetail->tglakhir;
 
-                    $jumlahHariCuti             = $this->hitungHariCuti($tglAwal, $tglAkhir);
-                    $jumlahHariCutiTerbilang    = $this->terbilang($jumlahHariCuti);
+                        if ($tglAwal !== 'N/A') {
+                            $tglAwalFormatted       = (new \DateTime($tglAwal))->format('d-m-Y');
+                        } else {
+                            $tglAwalFormatted       = 'N/A';
+                        }
+                        
+                        if ($tglAkhir !== 'N/A') {
+                            $tglAkhirFormatted      = (new \DateTime($tglAkhir))->format('d-m-Y');
+                        } else {
+                            $tglAkhirFormatted      = 'N/A';
+                        }
 
+                        $jumlahHariCuti             = $this->hitungHariCuti($tglAwal, $tglAkhir);
+                        $jumlahHariCutiTerbilang    = $this->terbilang($jumlahHariCuti);
+                    // !Konfigurasi Tanggal Cuti
+                    
                     //Hitung Masa Kerja
-                    $nip = $cutiDetail->userDetails->nip ?? 'N/A';
-                    $awalKerja = $cutiDetail->userDetails->awal_kerja ?? null;
-                
-                    // Menghitung lama bekerja berdasarkan awal kerja atau NIP
+                        $nip = $cutiDetail->userDetails->nip ?? 'N/A';
+                        $awalKerja = $cutiDetail->userDetails->awal_kerja ?? null;
+                                    
                         if (is_null($awalKerja) && $nip == 'default_nip') {
                             $lamaBekerja = null;
                             $tanggalAwalKerja = null;
@@ -920,7 +2221,7 @@ class CutiController extends Controller
                             $lamaBekerja = $tanggalPengangkatanCarbon->diff($tanggalHariIni);
                             $tanggalAwalKerja = $tanggalPengangkatanCarbon->format('d-m-Y'); // Format dd-mm-yyyy
                         }
-                                          
+                                            
                         if ($lamaBekerja) {
                             $formattedLamaBekerja = $lamaBekerja->y . ' Tahun ' . $lamaBekerja->m . ' Bulan';
                         } else {
@@ -928,28 +2229,37 @@ class CutiController extends Controller
                         }
                     //!Hitung Masa Kerja
                     
-                   $urlToBarcodePegawai =route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign);
-                   $urlToBarcodePejabat = route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign_atasan_dua);
+                    // QR Code
+                        $urlToBarcodePegawai =route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign);
+                        $urlToBarcodePejabat = route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign_atasan_dua);
+        
+                        $qrCodePegawai = base64_encode(QrCode::format('svg')
+                                                    ->size(70)
+                                                    ->errorCorrection('M')
+                                                    ->generate($urlToBarcodePegawai));
+                    
+                        $qrCodePejabat = base64_encode(QrCode::format('svg')
+                                                    ->size(70)
+                                                    ->errorCorrection('M')
+                                                    ->generate($urlToBarcodePejabat));
+                    // !QR Code
 
-                   $qrCodePegawai = base64_encode(QrCode::format('svg')
-                                                ->size(70)
-                                                ->errorCorrection('M')
-                                                ->generate($urlToBarcodePegawai));
-                  
-                    $qrCodePejabat = base64_encode(QrCode::format('svg')
-                                                ->size(70)
-                                                ->errorCorrection('M')
-                                                ->generate($urlToBarcodePejabat));
-                   
+                    $instansiId     = $userDetails->instansi;
+                    $instansi       = Instansi::where('id', $instansiId)->first();
+                    $instansiName   = $instansi ? $instansi->name : null;
+                    
+                    
                     $data = [
+                        'title' => 'Cuti ' . $cutiDetail->userDetails->name,
                         'no_surat' => $cutiDetail->no_surat ?? 'N/A',
                         'name' => $cutiDetail->userDetails->name ?? 'N/A',
                         'nip' => $cutiDetail->userDetails->nip ?? 'N/A',
                         'jabatan' => $cutiDetail->userDetails->jabatan ?? 'N/A',
                         'alasan' => $cutiDetail->alasan ?? '-',
                         'bulan' => $cutiDetail->userDetails->bulan ?? 'N/A',
-                        'instansi' => "Mahkamah Syar'iyah Lhokseumawe",
+                        'instansi' => $instansiName . ' Diperbantukan Di MS Lhokseumawe',
                         'jumlahHariCuti' => $jumlahHariCuti ?? 'N/A',
+                        'ket_atasan_dua' => $cutiDetail->keterangan_atasan_dua ?? 'N/A',
                         'cutiTerbilang' => $jumlahHariCutiTerbilang ?? 'N/A',
                         'jenis' => $cutiDetail->jenis ?? 'N/A',
                         'jumlahhari' => $cutiDetail->jumlahhari ?? 'N/A',
@@ -975,35 +2285,117 @@ class CutiController extends Controller
         
                     $pdf = PDF::loadView('Kepegawaian.Pdf.cutiSatu', compact('data'));
                     return $pdf->stream('cuti_pimpinan.pdf');
-                } elseif ($userInstansi !== '1') {
-                    echo 'b';
                 } else {
+                    // Konfigurasi Tanggal Cuti
+                        $formattedDate              = $cutiDetail->created_at? Carbon::parse($cutiDetail->created_at)->translatedFormat('d F Y'): 'N/A';
+                        $tglAwal                    = $cutiDetail->tglawal;
+                        $tglAkhir                   = $cutiDetail->tglakhir;
+
+                        if ($tglAwal !== 'N/A') {
+                            $tglAwalFormatted       = (new \DateTime($tglAwal))->format('d-m-Y');
+                        } else {
+                            $tglAwalFormatted       = 'N/A';
+                        }
+                        
+                        if ($tglAkhir !== 'N/A') {
+                            $tglAkhirFormatted      = (new \DateTime($tglAkhir))->format('d-m-Y');
+                        } else {
+                            $tglAkhirFormatted      = 'N/A';
+                        }
+
+                        $jumlahHariCuti             = $this->hitungHariCuti($tglAwal, $tglAkhir);
+                        $jumlahHariCutiTerbilang    = $this->terbilang($jumlahHariCuti);
+                    // !Konfigurasi Tanggal Cuti
+                    
+                    //Hitung Masa Kerja
+                        $nip = $cutiDetail->userDetails->nip ?? 'N/A';
+                        $awalKerja = $cutiDetail->userDetails->awal_kerja ?? null;
+                                    
+                        if (is_null($awalKerja) && $nip == 'default_nip') {
+                            $lamaBekerja = null;
+                            $tanggalAwalKerja = null;
+                        } else {
+                            if ($awalKerja) {
+                                $tanggalPengangkatanCarbon = Carbon::parse($awalKerja, 'Asia/Jakarta');
+                            } else {
+                                // Jika tidak ada awal kerja, hitung berdasarkan NIP
+                                $tanggalPengangkatan = substr($nip, 8, 6);
+                                $tahunPengangkatan = substr($tanggalPengangkatan, 0, 4);
+                                $bulanPengangkatan = substr($tanggalPengangkatan, 4, 2);
+                                $tanggalPengangkatanCarbon = Carbon::createFromDate($tahunPengangkatan, $bulanPengangkatan, 1, 'Asia/Jakarta');
+                            }
+                    
+                            $tanggalHariIni = Carbon::now('Asia/Jakarta');
+                            $lamaBekerja = $tanggalPengangkatanCarbon->diff($tanggalHariIni);
+                            $tanggalAwalKerja = $tanggalPengangkatanCarbon->format('d-m-Y'); // Format dd-mm-yyyy
+                        }
+                                            
+                        if ($lamaBekerja) {
+                            $formattedLamaBekerja = $lamaBekerja->y . ' Tahun ' . $lamaBekerja->m . ' Bulan';
+                        } else {
+                            $formattedLamaBekerja = 'N/A';
+                        }
+                    //!Hitung Masa Kerja
+                    
+                    // QR Code
+                        $urlToBarcodePegawai =route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign);
+                        $urlToBarcodeAtasan = route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign_atasan);
+                        $urlToBarcodePejabat = route('barcode.scan') . '?eSign=' . urlencode($cutiDetail->id_sign_atasan_dua);
+        
+                        $qrCodePegawai = base64_encode(QrCode::format('svg')
+                                                    ->size(70)
+                                                    ->errorCorrection('M')
+                                                    ->generate($urlToBarcodePegawai));
+                    
+                        $qrCodeAtasan = base64_encode(QrCode::format('svg')
+                                                    ->size(70)
+                                                    ->errorCorrection('M')
+                                                    ->generate($urlToBarcodeAtasan));
+
+                        $qrCodePejabat = base64_encode(QrCode::format('svg')
+                                                    ->size(70)
+                                                    ->errorCorrection('M')
+                                                    ->generate($urlToBarcodePejabat));
+                    // !QR Code
+                    
                     $data = [
-                        'nama' => $cutiDetail->userDetails->name ?? 'N/A',
+                        'title' => 'Cuti ' . $cutiDetail->userDetails->name,
+                        'no_surat' => $cutiDetail->no_surat ?? 'N/A',
+                        'name' => $cutiDetail->userDetails->name ?? 'N/A',
                         'nip' => $cutiDetail->userDetails->nip ?? 'N/A',
                         'jabatan' => $cutiDetail->userDetails->jabatan ?? 'N/A',
-                        'tahun' => $cutiDetail->userDetails->tahun ?? 'N/A',
+                        'alasan' => $cutiDetail->alasan ?? '-',
                         'bulan' => $cutiDetail->userDetails->bulan ?? 'N/A',
-                        'instansi' => $cutiDetail->userDetails->instansi ?? 'N/A',
-                        'jenis' => $cutiDetail->cuti->name ?? 'N/A',
+                        'instansi' => "Mahkamah Syar'iyah Lhokseumawe",
+                        'jumlahHariCuti' => $jumlahHariCuti ?? 'N/A',
+                        'cutiTerbilang' => $jumlahHariCutiTerbilang ?? 'N/A',
+                        'jenis' => $cutiDetail->jenis ?? 'N/A',
                         'jumlahhari' => $cutiDetail->jumlahhari ?? 'N/A',
-                        'tglawal' => $cutiDetail->tglawal ?? 'N/A',
-                        'tglakhir' => $cutiDetail->tglakhir ?? 'N/A',
-                        'sisan2' => $cutiDetail->sisan2 ?? 'N/A',
-                        'sisan1' => $cutiDetail->sisan1 ?? 'N/A',
-                        'sisan' => $cutiDetail->sisan ?? 'N/A',
+                        'tglawal' => $tglAwalFormatted,
+                        'tglakhir' => $tglAkhirFormatted,
+                        'cuti_n' => $cutiDetail->cuti_n ?? 'N/A',
+                        'cuti_nsatu' => $cutiDetail->cuti_nsatu ?? 'N/A',
+                        'cuti_ndua' => $cutiDetail->cuti_ndua ?? 'N/A',
                         'alamat' => $cutiDetail->alamat ?? 'N/A',
-                        'whatsapp' => $cutiDetail->whatsapp ?? 'N/A',
-                        'statuspim' => $cutiDetail->statuspim ?? 'N/A',
-                        'kettas' => $cutiDetail->kettas ?? 'N/A',
-                        'jappim' => $cutiDetail->jappim ?? 'N/A',
-                        'nippim' => $cutiDetail->nippim ?? 'N/A',
-                        'namepim' => $cutiDetail->namepim ?? 'N/A',
-                        'namepim2' => $cutiDetail->namepim2 ?? 'N/A',
-                        'nippim2' => $cutiDetail->nippim2 ?? 'N/A'
+                        'status' => $cutiDetail->status ?? 'N/A',
+                        'alamat' => $cutiDetail->alamat ?? 'N/A',
+                        'whatsapp' => $cutiDetail->userDetails->whatsapp ?? 'N/A',
+
+                        'niptas' => $cutiDetail->atasan->nip ?? 'N/A',
+                        'nametas' => $cutiDetail->atasan->name ?? 'N/A',
+                        'jabatantas' => $cutiDetail->atasan->jabatan ?? 'N/A',
+                        'nippim' => $cutiDetail->atasanDua->nip ?? 'N/A',
+                        'namepim' => $cutiDetail->atasanDua->name ?? 'N/A',
+                        'jabatanpim' => $cutiDetail->atasanDua->jabatan ?? 'N/A',
+                        'lamaBekerja' => $formattedLamaBekerja,
+                        'nippim2' => $cutiDetail->nippim2 ?? 'N/A',
+                        'created_at' => $formattedDate ?? 'N/A',
+                        'qrCodePegawai' => $qrCodePegawai,
+                        'qrCodeAtasan' => $qrCodeAtasan,
+                        'qrCodePejabat' => $qrCodePejabat,
                     ];
         
-                    $pdf = PDF::loadView('Kepegawaian.Pdf.cutiPimpinan', compact('data'));
+                    $pdf = PDF::loadView('Kepegawaian.Pdf.cutiDua', compact('data'));
                     return $pdf->stream('cuti_pimpinan.pdf');
                 }
         
@@ -1034,7 +2426,7 @@ class CutiController extends Controller
                 'cuti_n' => $request->cuti_n1,
                 'cuti_nsatu' => $request->cuti_n2,
                 'cuti_ndua' => $request->cuti_n3,
-                'cuti_s' => $request->cuti_sakit,
+                'cuti_sakit' => $request->cuti_sakit,
                 'cuti_ap' => $request->cap,
                 'cuti_b' => $request->cuti_besar,
                 'cuti_m' => $request->cuti_melahirkan,
@@ -1094,8 +2486,8 @@ class CutiController extends Controller
                 ->addColumn('cutintiga', function ($user) {
                     return $user->cutiSisa->cuti_ndua ?? 0;
                 })
-                ->addColumn('cs', function ($user) {
-                    return $user->cutiSisa->cuti_s ?? 0;
+                ->addColumn('cuti_sakit', function ($user) {
+                    return $user->cutiSisa->cuti_sakit ?? 0;
                 })
                 ->addColumn('cap', function ($user) {
                     return $user->cutiSisa->cuti_ap ?? 0;
@@ -1113,7 +2505,7 @@ class CutiController extends Controller
                     data-cutinsatu="' . ($user->cutiSisa->cuti_n ?? 0) . '"
                     data-cutindua="' . ($user->cutiSisa->cuti_nsatu ?? 0) . '"
                     data-cutintiga="' . ($user->cutiSisa->cuti_ndua ?? 0) . '"
-                    data-cs="' . ($user->cutiSisa->cuti_s ?? 0) . '"
+                    data-cuti_sakit="' . ($user->cutiSisa->cuti_sakit ?? 0) . '"
                     data-cap="' . ($user->cutiSisa->cuti_ap ?? 0) . '"
                     data-cb="' . ($user->cutiSisa->cuti_b ?? 0) . '"
                     data-cm="' . ($user->cutiSisa->cuti_m ?? 0) . '"></i>';
@@ -1281,32 +2673,55 @@ class CutiController extends Controller
                     if ($row->status == 1) {
                         return '<span class="badge bg-info">Menunggu Persetujuan<br><br>Atasan Langsung</span>';
                     }
+                    if ($row->status == 2) {
+                        return '<span class="badge bg-info">Menunggu Persetujuan<br><br>Pejabat Yang Berwenang</span>';
+                    }
                     if ($row->status == 9) {
                         return '<span class="badge bg-dark">Menunggu Penomoran<br><br>Surat</span>';
                     }
                     if ($row->status == 10) {
                         return '<span class="badge bg-success">Cuti Disetujui</span>';
                     }
+                    if ($row->status == 11) {
+                        return '<span class="badge bg-danger">Cuti Tidak Disetujui<br><br>Menunung Konfirmasi Pejabat Yang Berwenang</span>';
+                    }
+                    if ($row->status == 12) {
+                        return '<span class="badge bg-danger">Cuti Tidak Disetujui<br><br>Menunung Penomoran Surat</span>';
+                    }
+                    if ($row->status == 13) {
+                        return '<span class="badge bg-danger">Cuti Tidak Disetujui</span>';
+                    }
+                    if ($row->status == 23) {
+                        return '<span class="badge bg-warning">Cuti Ditangguhkan</span>';
+                    }
                     // Return other status if necessary
                     return '<span class="badge bg-secondary">Status Lain</span>';
                 })
                 ->addColumn('action', function($row){
-                    $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm mb-2" 
-                            data-id="'.$row->id.'"
-                            data-jenis="'.$row->jenis.'"
-                            data-user_name="'.$row->userDetails->name.'"
-                            data-alasan="'.$row->alasan.'"
-                            data-tglawal="'.$row->tglawal.'"
-                            data-tglakhir="'.$row->tglakhir.'"
-                            >Perubahan</a>';
+                    $btn = '';
                 
                     // Cek status, jika sesuai maka munculkan tombol download
                     if($row->status == 10) {
+                        $btn .= '<a href="'.route('cetakCuti', $row->id).'" class="btn btn-warning btn-sm" target="_blank">Unduh</a><br>';
+                        $btn .= '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm mb-2" 
+                                    data-id="'.$row->id.'"
+                                    data-jenis="'.$row->jenis.'"
+                                    data-user_name="'.$row->userDetails->name.'"
+                                    data-alasan="'.$row->alasan.'"
+                                    data-tglawal="'.$row->tglawal.'"
+                                    data-tglakhir="'.$row->tglakhir.'"
+                                    >Perubahan</a>';
+                    } elseif($row->status == 13){
                         $btn .= '<a href="'.route('cetakCuti', $row->id).'" class="btn btn-warning btn-sm" target="_blank">Unduh</a>';
+                    } elseif($row->status == 23){
+                        $btn .= '<a href="'.route('cetakCuti', $row->id).'" class="btn btn-warning btn-sm" target="_blank">Unduh</a>';
+                    } else {
+                        $btn .= '<a href="javascript:void(0)" class="btn btn-warning btn-sm disabled" aria-disabled="true">Waiting...</a>';
                     }
-                
+                                
                     return $btn;
                 })
+                
                 
                 ->rawColumns(['status', 'atasan_name', 'action'])
                 ->make(true);
@@ -1347,10 +2762,12 @@ class CutiController extends Controller
             $currentYear++;
         }
     
-        // Filter out holidays that fall within the leave period
+        // Filter out holidays that fall within the leave period and on weekdays (Mon-Fri)
         $hariLiburDalamRentang = array_filter($hariLibur, function ($libur) use ($startDate, $endDate) {
             $tanggalLibur = new \DateTime($libur['holiday_date']);
-            return $tanggalLibur >= $startDate && $tanggalLibur <= $endDate;
+            $dayOfWeek = $tanggalLibur->format('w');
+            // Check if the holiday falls within the range and on a weekday (Mon-Fri)
+            return $tanggalLibur >= $startDate && $tanggalLibur <= $endDate && $dayOfWeek >= 1 && $dayOfWeek <= 5;
         });
     
         // Calculate the total number of holidays within the range
@@ -1367,7 +2784,7 @@ class CutiController extends Controller
         $url = "https://api-harilibur.vercel.app/api?year={$year}";
         $response = file_get_contents($url);
         return json_decode($response, true);
-    }
+    }    
 
     private function terbilang($number)
     {

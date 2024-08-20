@@ -170,11 +170,11 @@
                         <input type="date" class="form-control" id="tglAkhirBaruPenanguhan" name="tglAkhirBaruPenanguhan">
                     </div>
                     <div class="mb-3">
-                        <label for="penanguhanComment" class="form-label">Komentar</label>
+                        <label for="penanguhanComment" class="form-label">Alasan</label>
                         <textarea class="form-control" id="penanguhanComment" name="penanguhanComment" rows="3"></textarea>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <button type="button" class="btn btn-secondary" id="backToMainModal2">Kembali</button>
+                        <button type="button" class="btn btn-secondary">Kembali</button>
                         <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
                 </form>

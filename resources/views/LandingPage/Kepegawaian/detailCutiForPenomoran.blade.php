@@ -71,6 +71,28 @@
                             @elseif($cutiDetail->status == 10)
                             <span class="badge bg-success">
                                 Status: Cuti Disetujui
+                            @elseif($cutiDetail->status == 11)
+                            <span class="badge bg-danger">
+                                Status: Cuti Ditolak
+                                <div class="badge-line-break">Menunggu Konfirmasi Selanjutnya</div>
+                            @elseif($cutiDetail->status == 12)
+                            <span class="badge bg-danger">
+                                Status: Cuti Ditolak
+                                <div class="badge-line-break">Menunggu Penomoran Surat</div>
+                            @elseif($cutiDetail->status == 13)
+                            <span class="badge bg-danger">
+                                Status: Cuti Ditolak       
+                            @elseif($cutiDetail->status == 21)
+                            <span class="badge bg-warning">
+                                Status: Cuti Ditangguhkan
+                                <div class="badge-line-break">Menunggu Konfirmasi Selanjutnya</div>
+                            @elseif($cutiDetail->status == 22)
+                            <span class="badge bg-warning">
+                                Status: Cuti Ditangguhkan
+                                <div class="badge-line-break">Menunggu Penomoran Surat</div>
+                            @elseif($cutiDetail->status == 23)
+                            <span class="badge bg-warning">
+                                Status: Cuti Ditangguhkan           
                             @else
                                 Status Lain
                             @endif
@@ -134,7 +156,7 @@
                             @endif
                         </div>
                         <input type="hidden" id="id" name="id" value="{{$cutiDetail->id}}">
-                        @if ($cutiDetail->status == 9)
+                        @if ($cutiDetail->status == 9 || $cutiDetail->status == 12 || $cutiDetail->status == 22)
                         <div class="d-flex flex-wrap justify-content-center mt-3">                               
                             <button type="button" class="btn btn-dark m-2" id="btnPenanguhan" data-bs-toggle="modal" data-bs-target="#penomoranModal">
                                 Berikan Nomor Surat
@@ -165,7 +187,7 @@
                     <input type="hidden" id="id" name="id" value="{{$cutiDetail->id}}">
                     <div class="mb-3">
                         <label for="nomorSurat" class="form-label">Nomor Surat</label>
-                        <input type="text" class="form-control" id="nomorSurat" name="nomorSurat" required>
+                        <input type="text" class="form-control" id="nomorSurat" name="nomorSurat" placeholder="0000/KMS.W1-A5/KP5.3/VII/2024" required>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>

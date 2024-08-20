@@ -71,6 +71,28 @@
                             @elseif($cutiDetail->status == 10)
                             <span class="badge bg-success">
                                 Status: Cuti Disetujui
+                            @elseif($cutiDetail->status == 11)
+                            <span class="badge bg-danger">
+                                Status: Cuti Ditolak
+                                <div class="badge-line-break">Menunggu Konfirmasi Selanjutnya</div>
+                            @elseif($cutiDetail->status == 12)
+                            <span class="badge bg-danger">
+                                Status: Cuti Ditolak
+                                <div class="badge-line-break">Menunggu Penomoran Surat</div>
+                            @elseif($cutiDetail->status == 13)
+                            <span class="badge bg-danger">
+                                Status: Cuti Ditolak                             
+                            @elseif($cutiDetail->status == 21)
+                            <span class="badge bg-warning">
+                                Status: Cuti Ditangguhkan
+                                <div class="badge-line-break">Menunggu Konfirmasi Selanjutnya</div>
+                            @elseif($cutiDetail->status == 22)
+                            <span class="badge bg-warning">
+                                Status: Cuti Ditangguhkan
+                                <div class="badge-line-break">Menunggu Penomoran Surat</div>
+                            @elseif($cutiDetail->status == 23)
+                            <span class="badge bg-warning">
+                                Status: Cuti Ditangguhkan                             
                             @else
                                 Status Lain
                             @endif
@@ -117,7 +139,18 @@
                                 <div class="col-sm-6">
                                     <label class="form-label" for="tglAkhir">Tanggal Akhir</label>
                                     <input type="text" name="tglAkhir" id="tglAkhir" class="form-control" value="{{$cutiDetail->tglakhir}}" readonly />
-                                </div>                                
+                                </div>    
+                                @if($cutiDetail->status == 21)
+                                    <div class="col-sm-6">
+                                        <label class="form-label" for="tglAwal">Tanggal Awal Setelah Penangguhan</label>
+                                        <input type="text" name="tglAwal" id="tglAwal" class="form-control" value="{{ $cutiDetail->tglawal_per_atasan }}" readonly />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label" for="tglAkhir">Tanggal Akhir Setelah Penangguhan</label>
+                                        <input type="text" name="tglAkhir" id="tglAkhir" class="form-control" value="{{ $cutiDetail->tglakhir_per_atasan }}" readonly />
+                                    </div>
+                                @endif
+                            
                                 <div class="col-sm-{{ $cutiDetail->user_id !== $cutiDetail->atasan_dua_id ? '6' : '12' }}">
                                     <label class="form-label" for="atasan">Atasan</label>
                                     <input type="text" name="atasan" id="atasan" class="form-control" value="{{ $cutiDetail->atasan->name }}" readonly />
@@ -132,16 +165,32 @@
                                 <p>Data cuti tidak ditemukan.</p>
                             @endif
                         </div>
-                        <input type="hidden" id="id" name="id" value="{{$cutiDetail->id}}">
+                        <input type="hidden" id="id" name="id" value="{{$cutiDetail->id}}">                        
+                        <input type="hidden" id="user_id" name="user_id" value="{{$users->id}}">
                         @if (($cutiDetail->status == 1 && $users->id === $cutiDetail->atasan_id) || 
-     ($cutiDetail->status == 2 && $users->id === $cutiDetail->atasan_dua_id))
-    <div class="d-flex flex-wrap justify-content-center mt-3">
-        <button type="submit" class="btn btn-success m-2">Izinkan</button>
-        <button type="button" class="btn btn-warning m-2" id="btnPenanguhan">Penanguhan</button>
-        <button type="button" class="btn btn-danger m-2" id="btnTolak">Tolak</button>
-    </div>
-@endif
-
+                            ($cutiDetail->status == 2 && $users->id === $cutiDetail->atasan_dua_id))
+                            <div class="d-flex flex-wrap justify-content-center mt-3">
+                                <button type="submit" class="btn btn-success m-2">Izinkan</button>
+                                <button type="button" class="btn btn-warning m-2" id="btnPenanguhan" data-bs-toggle="modal" data-bs-target="#penanguhanModal">Penanguhan</button>
+                                <button type="button" class="btn btn-danger m-2" data-bs-toggle="modal" data-bs-target="#tolakModal">Tolak</button>
+                            </div>
+                        @endif
+                        @if ($cutiDetail->status == 11 && $users->id === $cutiDetail->atasan_dua_id)
+                            <div class="d-flex flex-wrap justify-content-center mt-3">
+                                <button type="button" id="confirmButton" class="btn btn-danger m-2">Setujui Penolakan</button>
+                            </div>
+                        @endif
+                        @if ($cutiDetail->status == 11 && $users->id === $cutiDetail->atasan_dua_id)
+                            <div class="d-flex flex-wrap justify-content-center mt-3">
+                                <button type="button" id="confirmButton" class="btn btn-danger m-2">Setujui Penolakan</button>
+                            </div>
+                        @endif
+                        @if ($cutiDetail->status == 21 && $users->id === $cutiDetail->atasan_dua_id)
+                            <div class="d-flex flex-wrap justify-content-center mt-3">
+                                <button type="button" id="confirmPenangguhan" class="btn btn-warning m-2">Setujui Penanguhan</button>
+                                <button type="button" class="btn btn-warning m-2" data-bs-toggle="modal" data-bs-target="#rubahPenangguhan">Rubah Penangguhan</button>
+                            </div>
+                        @endif
                     </form>
                 </div>
               </div>
@@ -150,6 +199,103 @@
         </div>
       </section>
     </div>
+
+    <div class="modal fade" id="penanguhanModal" tabindex="-1" aria-labelledby="penanguhanModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="penanguhanModalLabel">Penanguhan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Isi modal -->
+                    <form id="penanguhanForm" method="POST" action="{{ route('cuti.penanguhan') }}">
+                        @csrf                       
+                        <div class="mb-3">
+                            <label for="tglAwalBaruPenanguhan" class="form-label">Tanggal Awal Baru</label>
+                            <input type="date" class="form-control" id="tglAwalBaruPenanguhan" name="tglAwalBaruPenanguhan">
+                        </div>
+                        <div class="mb-3">
+                            <label for="tglAkhirBaruPenanguhan" class="form-label">Tanggal Akhir Baru</label>
+                            <input type="date" class="form-control" id="tglAkhirBaruPenanguhan" name="tglAkhirBaruPenanguhan">
+                        </div>
+                        <div class="mb-3">
+                            <label for="penanguhanComment" class="form-label">Alasan</label>
+                            <textarea class="form-control" id="penanguhanComment" name="penanguhanComment" rows="3"></textarea>
+                        </div>
+                        <input type="hidden" id="id" name="id" value="{{$cutiDetail->id}}">
+                        <input type="hidden" id="user_id" name="user_id" value="{{$users->id}}">
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="tolakModal" tabindex="-1" aria-labelledby="tolakModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="penanguhanModalLabel">Berikan Alasan Penolakan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Isi modal -->
+                    <form id="penanguhanForm" method="POST" action="{{ route('cuti.tolak') }}">
+                        @csrf                        
+                        <div class="mb-3">
+                            <label for="penanguhanComment" class="form-label">Alasan</label>
+                            <textarea class="form-control" id="penanguhanComment" name="penanguhanComment" rows="3"></textarea>
+                        </div>
+                        <input type="hidden" id="id" name="id" value="{{$cutiDetail->id}}">
+                        <input type="hidden" id="user_id" name="user_id" value="{{$users->id}}">
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="rubahPenangguhan" tabindex="-1" aria-labelledby="rubahPenangguhanLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="penanguhanForm" method="POST" action="{{ route('cuti.penanguhan.update') }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rubahPenangguhanLabel">Rubah Penangguhan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="tglAwalBaruPenanguhan" class="form-label">Tanggal Awal Baru</label>
+                            <input type="date" class="form-control" id="tglAwalBaruPenanguhan" name="tglAwalBaruPenanguhan">
+                        </div>
+                        <div class="mb-3">
+                            <label for="tglAkhirBaruPenanguhan" class="form-label">Tanggal Akhir Baru</label>
+                            <input type="date" class="form-control" id="tglAkhirBaruPenanguhan" name="tglAkhirBaruPenanguhan">
+                        </div>
+                        <div class="mb-3">
+                            <label for="penanguhanComment" class="form-label">Alasan</label>
+                            <textarea class="form-control" id="penanguhanComment" name="penanguhanComment" rows="3"></textarea>
+                        </div>
+                        <input type="hidden" id="id" name="id" value="{{ $cutiDetail->id }}">
+                        <input type="hidden" id="user_id" name="user_id" value="{{ $users->id }}">
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('footer-script') 
@@ -171,5 +317,115 @@
                 showSweetAlert(response);
             @endif
         });
+
+        document.getElementById('confirmButton').addEventListener('click', function() {
+            const cutiId = document.getElementById('id').value;
+            const userId = document.getElementById('user_id').value;
+
+            Swal.fire({
+                title: 'Setujui Penolakan Cuti?',
+                text: "Permohonan Cuti Ini Tidak Disetujui Atasan Sebelumnya",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, setujui!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('{{ route("cuti.tolak.pejabat") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            id: cutiId,
+                            user_id: userId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire(
+                                data.title,
+                                data.message,
+                                'success'
+                            ).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire(
+                                data.title,
+                                data.message,
+                                'error'
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire(
+                            'Error!',
+                            'Ada kesalahan dalam pengajuan.',
+                            'error'
+                        );
+                    });
+                }
+            });
+        });
+
+        document.getElementById('confirmPenangguhan').addEventListener('click', function () {
+            const cutiId = document.getElementById('id').value;
+            const userId = document.getElementById('user_id').value;
+
+            Swal.fire({
+                title: 'Setujui Penangguhan Cuti?',
+                text: "Permohonan Cuti Ini Ditangguhkan Atasan Sebelumnya",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Setujui!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('{{ route("cuti.tangguh.pejabat") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            id: cutiId,
+                            user_id: userId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire(
+                                'Berhasil!',
+                                'Penangguhan Cuti Disetujui.',
+                                'success'
+                            );
+                            // Optional: Redirect or update the page
+                        } else {
+                            Swal.fire(
+                                'Gagal!',
+                                data.message || 'Terjadi kesalahan, silakan coba lagi.',
+                                'error'
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire(
+                            'Gagal!',
+                            'Terjadi kesalahan saat mengirim permintaan.',
+                            'error'
+                        );
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        });
+
+
     </script>
 @endpush

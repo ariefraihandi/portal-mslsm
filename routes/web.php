@@ -60,6 +60,8 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/add-childsubmenu',                [AdminController::class, 'addChildSubmenu'])->name('add.ChildSubmenu');
     Route::get('/delete/menu',                      [AdminController::class, 'deleteMenu'])->name('delete.menu');
     Route::get('/delete/childsubmenu',              [AdminController::class, 'deleteChildSubMenu'])->name('delete.ChildSubmenu');
+    Route::post('/instansi/store',                  [AdminController::class, 'instansiStore'])->name('instansi.store');
+
 
     Route::post('/role/add',                        [AdminController::class, 'addRole'])->name('role.add');
     Route::post('/role/edit',                       [AdminController::class, 'editRole'])->name('role.edit');
@@ -79,6 +81,10 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/submit-cutiperubahan',            [CutiController::class, 'cutiPerubahan'])->name('cuti.perubahan');
     Route::post('/submit-cutipenanguhan',           [CutiController::class, 'cutiPenanguhan'])->name('cuti.penanguhan');
     Route::post('/submit-cutitolak',                [CutiController::class, 'cutiTolak'])->name('cuti.tolak');
+    Route::post('/cuti-tolak-pejabat',              [CutiController::class, 'cutiTolakPejabat'])->name('cuti.tolak.pejabat');
+    Route::post('/cuti/tangguh/pejabat',            [CutiController::class, 'tangguhPejabat'])->name('cuti.tangguh.pejabat');
+    Route::post('/cuti/penanguhan/update',          [CutiController::class, 'updatePenanguhan'])->name('cuti.penanguhan.update');
+
     Route::post('/submit-penomoran',                [CutiController::class, 'penomoranStore'])->name('penomoran.store');
     Route::get('/qr',                               [CutiController::class, 'generateQrCodeWithLogo'])->name('qr');
     Route::post('/hitung-hari-cuti',                [CutiController::class, 'hitungHariCuti']);

@@ -121,8 +121,7 @@ class AdminController extends Controller
         $instansi = Instansi::find(1);
         $id                     = $request->session()->get('user_id');
         $user                   = User::with('detail')->find($id); 
-    
-        // If the data is not found, you might want to handle this case
+
         if (!$instansi) {
             abort(404, 'Instansi not found');
         }
@@ -134,7 +133,7 @@ class AdminController extends Controller
             'subtitle'          => 'Portal MS Lhokseumawe',
             'users'             => $user,
             'sidebar'           => $accessMenus,
-            'instansi'          => $instansi, // Add the fetched data here
+            'instansi'          => $instansi,
         ];
     
         return view('Admin.instansi', $data);
@@ -368,6 +367,52 @@ class AdminController extends Controller
                 ],
             ]);
         }
+        
+        public function instansiStore(Request $request)
+        {     
+            // Validasi input
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'surname' => 'nullable|string|max:255',
+                'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'alamat' => 'required|string|max:255',
+                'profil' => 'required|string',
+                'email' => 'required|email|max:255',
+                'telp' => 'required|string|max:15',
+                'igusername' => 'required|string|max:255',
+                'tiktokusername' => 'nullable|string|max:255',
+                'fbusername' => 'nullable|string|max:255',
+            ]);
+
+            // Proses upload logo
+            if ($request->hasFile('logo')) {
+                $logoName = time().'.'.$request->logo->extension();
+                $request->logo->move(public_path('assets/img/logo'), $logoName);
+            }
+
+            // Simpan data ke database
+            Instansi::create([
+                'name' => $request->name,
+                'surname' => $request->surname,
+                'logo' => $logoName, // Simpan path logo
+                'alamat' => $request->alamat,
+                'profil' => $request->profil,
+                'email' => $request->email,
+                'telp' => $request->telp,
+                'igusername' => $request->igusername,
+                'tiktokusername' => $request->tiktokusername,
+                'fbusername' => $request->fbusername,
+            ]);
+
+            // Redirect back dengan response sukses
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => true,
+                    'title' => 'Success',
+                    'message' => 'Instansi berhasil ditambahkan!',
+                ],
+            ]);
+        }
 
     //!addItem
 
@@ -487,14 +532,11 @@ class AdminController extends Controller
             $subMenuChildId = $request->input('id');
             
             try {
-                // Hapus AccessSubChild yang terkait dengan childsubmenu_id
                 AccessSubChild::where('childsubmenu_id', $subMenuChildId)->delete();
                 Log::info('Deleted access sub child records for sub menu child ID: ' . $subMenuChildId);
-
-                // Hapus MenuSubChild dengan ID yang diberikan
+                
                 MenuSubChild::where('id', $subMenuChildId)->delete();
 
-                // Jika berhasil, kembalikan response sukses
                 return redirect()->route('admin.menu.childmenulist')->with([
                     'response' => [
                         'success' => true,

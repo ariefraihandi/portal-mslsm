@@ -312,7 +312,19 @@
                                 <textarea type="text" class="form-control" name="alamat" id="alamat" placeholder="alamat"required></textarea>
                             </div>
                         </div>
-                        <input type="hidden" name="instansi" id="instansi" placeholder="Instansi" value="1">
+                        <div class="row">
+                            <div class="col mb-3">
+                                <label for="instansi" class="form-label">Instansi</label>
+                                <select name="instansi" id="instansi" class="form-control">
+                                    <option value="">Pilih Instansi</option>
+                                    @foreach($instansi as $item)
+                                        <option value="{{ $item->id }}">{{ $item->igusername }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        
+                        {{-- <input type="hidden" name="instansi" id="instansi" placeholder="Instansi" value="1"> --}}
                         <button type="submit" class="btn btn-primary">Tambah Pegawai</button>
                     </form>
                 </div>

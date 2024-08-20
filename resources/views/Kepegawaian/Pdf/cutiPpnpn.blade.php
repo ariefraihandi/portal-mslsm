@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PDF with QR Code</title>
+    <title>{{ $data['title'] }}</title>
     <style>
          body {
             font-size: 10pt;
@@ -134,7 +134,7 @@
             <td colspan="5" style="border: 1px solid black;"><strong>&nbsp;VI. ALAMAT SELAMA MENJALANKAN CUTI</strong></td>
         </tr>
         <tr>
-            <td style="width:50%; border: 1px solid black; text-align: left;" rowspan="2" colspan="2">{{ $data['alamat']}}</td>
+            <td style="width:50%; border: 1px solid black; text-align: left; padding: 4px;" rowspan="2" colspan="2">{{ $data['alamat']}}</td>
             <td style="width:10%; border: 1px solid black;">&nbsp;TELP</td>
             <td colspan="2" style="width:40%; border: 1px solid black;">&nbsp;{{ $data['whatsapp']}}</td>
         </tr>
@@ -161,11 +161,19 @@
                     V
                 @endif
             </td>
-            <td colspan="2" style="width:50%; border: 1px solid black; text-align: center;"></td>
+            <td colspan="2" style="width:50%; border: 1px solid black; text-align: center;">
+                @if ($data['status'] === '13')
+                    V
+                @endif
+            </td>
             
         </tr>
         <tr>
-            <td style="border: 1px solid black; width:50%; "></td>
+            <td style="border: 1px solid black; width:50%; padding: 4px;">
+                @if ($data['status'] === '13')
+                {{ $data['ket_atasan_dua'] }}
+                @endif
+            </td>
             <td style="border: 1px solid black; width:30%;">&nbsp;Kuasa Pengguana Anggaran,<br><br><em>&nbsp;(e-Sign)</em><br><strong>&nbsp;{{ $data['namepim'] }}</strong><br><strong>&nbsp;NIP. {{ $data['nippim'] }}</strong></td>
             <td style="width:20%; border: 1px solid black; text-align: center;">
                 

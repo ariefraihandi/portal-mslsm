@@ -236,7 +236,7 @@
                               <label for="ataslang" class="form-label">Pilih Atasan</label>
                               <select name="ataslang" id="ataslang" class="form-control" required>
                                   @if($atasanDetail)
-                                      <option value="{{ $atasanDetail->id }}" @if($atasanCuti) disabled @endif>
+                                      <option value="{{ $atasanDetail->user_id }}" @if($atasanCuti) disabled @endif>
                                           {{ $atasanDetail->name }} @if($atasanCuti) | Cuti @endif
                                       </option>
                                   @endif
@@ -251,7 +251,7 @@
                               <label for="id_pimpinan" class="form-label">Pejabat Yang Berwenang Memeberikan Cuti</label>
                               <select name="id_pimpinan" id="id_pimpinan" class="form-control" required>
                                   @if($atasanDuaDetail)
-                                      <option value="{{ $atasanDuaDetail->id }}" @if($atasanDuaCuti) disabled @endif>
+                                      <option value="{{ $atasanDuaDetail->user_id }}" @if($atasanDuaCuti) disabled @endif>
                                           {{ $atasanDuaDetail->name }} @if($atasanDuaCuti) | Cuti @endif
                                       </option>
                                            @foreach($atasanLainnya as $atasan)
@@ -537,6 +537,7 @@
               let hariLibur = [];
               let currentDate = new Date(startDate);
 
+              // Hitung hari kerja (Senin-Jumat) dalam rentang tanggal
               while (currentDate <= endDate) {
                   const dayOfWeek = currentDate.getDay();
                   if (dayOfWeek !== 6 && dayOfWeek !== 0) { // Exclude Saturdays (6) and Sundays (0)
@@ -553,9 +554,12 @@
                   currentYear++;
               }
 
+              // Filter hari libur nasional yang jatuh pada hari kerja (Senin-Jumat)
               const hariLiburDalamRentang = hariLibur.filter(libur => {
                   const tanggalLibur = new Date(libur.holiday_date);
-                  return tanggalLibur >= startDate && tanggalLibur <= endDate;
+                  const dayOfWeek = tanggalLibur.getDay();
+                  // Hanya hitung hari libur nasional yang jatuh pada hari kerja (Senin-Jumat)
+                  return tanggalLibur >= startDate && tanggalLibur <= endDate && dayOfWeek >= 1 && dayOfWeek <= 5;
               });
 
               const jumlahHariLibur = hariLiburDalamRentang.length;
@@ -567,6 +571,7 @@
               saldoCutiRow.style.display = 'block';
           }
       });
+
     </script>
     
    

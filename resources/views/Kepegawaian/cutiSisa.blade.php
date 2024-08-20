@@ -126,7 +126,7 @@
                 { data: 'cutinsatu', name: 'cutinsatu' },         
                 { data: 'cutindua', name: 'cutindua' },
                 { data: 'cutintiga', name: 'cutintiga' },
-                { data: 'cs', name: 'cs' },
+                { data: 'cuti_sakit', name: 'cuti_sakit' },
                 { data: 'cap', name: 'cap' },
                 { data: 'cb', name: 'cb' },
                 { data: 'cm', name: 'cm' },
@@ -141,7 +141,7 @@
             var cutiN1 = icon.data('cutinsatu');
             var cutiN2 = icon.data('cutindua');
             var cutiN3 = icon.data('cutintiga');
-            var cutiSakit = icon.data('cs');
+            var cutiSakit = icon.data('cuti_sakit');
             var cap = icon.data('cap');
             var cutiBesar = icon.data('cb');
             var cutiMelahirkan = icon.data('cm');
@@ -168,14 +168,18 @@
                 method: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
-                    Swal.fire({
+                Swal.fire({
                         title: 'Success!',
                         text: response.message + ' for ' + response.userName,
                         icon: 'success',
                         confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Close the modal
+                        $('#sisaCutiModal').modal('hide');
+                        
+                        // Reload the datatable
+                        $('#pegawai-table').DataTable().ajax.reload();
                     });
-                    $('#sisaCutiModal').modal('hide');
-                    $('#pegawai-table').DataTable().ajax.reload();
                 },
                 error: function(xhr) {
                     Swal.fire({

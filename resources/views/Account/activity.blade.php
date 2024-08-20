@@ -29,9 +29,15 @@
                   alt="User avatar" />
                 <div class="user-info text-center">
                   <h4 class="mb-2">{{$users->detail->name}}</h4>
-                  <span class="badge bg-label-secondary">
-                    MS Lhokseumawe
-                </span>
+                  @if ($instansiId == 1)
+                      <span class="badge bg-label-secondary text-truncate">
+                          {{$users->detail->jabatan}}<br><br>{{$instansiName}}
+                      </span>   
+                  @else
+                      <span class="badge bg-label-secondary text-truncate">
+                          {{$users->detail->jabatan}}<br><br>{{$instansiName}} Diperbantukan di <br><br> MS Lhokseumawe
+                      </span>   
+                  @endif           
                 </div>
               </div>
             </div>
