@@ -296,7 +296,7 @@ class ResendNotifications extends Command
         ];
 
         try {
-            Mail::send('emails.notification', $data, function ($message) use ($notification) {
+            Mail::send('Emails.notification', $data, function ($message) use ($notification) {
                 $message->to($notification->email)
                     ->subject('Unread Notification Reminder');
             });
