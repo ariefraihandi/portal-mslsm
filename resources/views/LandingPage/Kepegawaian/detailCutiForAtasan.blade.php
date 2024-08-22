@@ -111,7 +111,7 @@
             <div class="col-lg-12">
               <div class="card">              
                 <div class="card-body">                
-                    <form id="formChangePassword" method="POST" action="{{ route('cuti.approve') }}" enctype="multipart/form-data">                        
+                    <form id="approveCuti" method="POST" action="{{ route('cuti.approve') }}" enctype="multipart/form-data">                        
                         @csrf                        
                         <div class="row g-3">
                             <!-- Display Cuti Detail data -->
@@ -119,10 +119,10 @@
                                 <div class="col-sm-6">
                                     <label class="form-label" for="name">Nama</label>
                                     <input type="text" name="name" id="name" class="form-control" value="{{ $cutiDetail->userDetails->name ?? 'Nama tidak ditemukan' }}" readonly />
-                                </div>
+                                </div>                                
                                 <div class="col-sm-6">
-                                    <label class="form-label" for="jenisCuti">Jenis</label>
-                                    <input type="text" name="jenisCuti" id="jenisCuti" class="form-control" value="{{$cutiDetail->cuti->name}}" readonly />
+                                    <label class="form-label" for="code">Jenis</label>
+                                    <input type="text" name="code" id="code" class="form-control" value="{{$cutiDetail->cuti->name}}" readonly />
                                 </div>
                                 <div class="col-sm-6">
                                     <label class="form-label" for="alasan">Alasan</label>
@@ -167,10 +167,11 @@
                         </div>
                         <input type="hidden" id="id" name="id" value="{{$cutiDetail->id}}">                        
                         <input type="hidden" id="user_id" name="user_id" value="{{$users->id}}">
+                        <input type="hidden" name="jenisCuti" id="jenisCuti" value="{{$cutiDetail->jenis}}"/>
                         @if (($cutiDetail->status == 1 && $users->id === $cutiDetail->atasan_id) || 
                             ($cutiDetail->status == 2 && $users->id === $cutiDetail->atasan_dua_id))
                             <div class="d-flex flex-wrap justify-content-center mt-3">
-                                <button type="submit" class="btn btn-success m-2">Izinkan</button>
+                                <button type="submit" id="submitButton" class="btn btn-success m-2">Izinkan</button>
                                 <button type="button" class="btn btn-warning m-2" id="btnPenanguhan" data-bs-toggle="modal" data-bs-target="#penanguhanModal">Penanguhan</button>
                                 <button type="button" class="btn btn-danger m-2" data-bs-toggle="modal" data-bs-target="#tolakModal">Tolak</button>
                             </div>
@@ -227,7 +228,7 @@
                         <input type="hidden" id="user_id" name="user_id" value="{{$users->id}}">
                         <div class="d-flex justify-content-between">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
-                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="submit"  id="submitButton" class="btn btn-primary">Simpan</button>
                         </div>
                     </form>
                 </div>
@@ -253,7 +254,7 @@
                         <input type="hidden" id="id" name="id" value="{{$cutiDetail->id}}">
                         <input type="hidden" id="user_id" name="user_id" value="{{$users->id}}">
                         <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
+                            <button type="button" id="submitButton" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
                             <button type="submit" class="btn btn-primary">Simpan</button>
                         </div>
                     </form>
@@ -288,7 +289,7 @@
                         <input type="hidden" id="user_id" name="user_id" value="{{ $users->id }}">
                     </div>
                     <div class="modal-footer d-flex justify-content-between">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
+                        <button type="button" id="submitButton" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
                         <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
                 </form>
@@ -425,7 +426,20 @@
                 }
             });
         });
-
-
     </script>
+
+    <script>
+        document.getElementById('approveCuti').addEventListener('submit', function() {
+            var button = document.getElementById('submitButton');
+            button.disabled = true;
+            button.innerText = "Memproses..."; // Optional: Mengubah teks tombol
+        });
+    </script> 
+    <script>
+        document.getElementById('penanguhanForm').addEventListener('submit', function() {
+            var button = document.getElementById('submitButton');
+            button.disabled = true;
+            button.innerText = "Memproses..."; // Optional: Mengubah teks tombol
+        });
+        </script>
 @endpush

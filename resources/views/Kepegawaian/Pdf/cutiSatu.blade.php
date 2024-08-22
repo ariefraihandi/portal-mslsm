@@ -218,7 +218,7 @@
                 @if ($data['status'] === '13')
                     {{ $data['ket_atasan_dua'] }}
                 @endif</td>            
-            <td style="border: 1px solid black; width:30%;">&nbsp;{{ $data['jabatanpim'] }},<br><br><em>&nbsp;(e-Sign)</em><br><strong>&nbsp;{{ $data['namepim'] }}</strong><br><strong>&nbsp;NIP. {{ $data['nippim'] }}</strong></td>
+            <td style="border: 1px solid black; width:30%; padding: 4px;">{{ $data['jabatanpim'] }},<br><br><em>&nbsp;(e-Sign)</em><br><strong>&nbsp;{{ $data['namepim'] }}</strong><br><strong>&nbsp;NIP. {{ $data['nippim'] }}</strong></td>
             <td style="width:20%; border: 1px solid black; text-align: center;">
                 <img src="data:image/png;base64, {!! $data['qrCodePejabat'] !!}">
             </td> 

@@ -13,8 +13,7 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="py-3 mb-4"><span class="text-muted fw-light">User / Account /</span> Cuti</h4>
-    {{-- {!! QrCode::size(256)->generate('https://google.com') !!} --}}
+    <h4 class="py-3 mb-4"><span class="text-muted fw-light">User / Account /</span> Cuti</h4>    
     <div class="row">   
       <div class="col-xl-12 col-lg-12 col-md-12 order-0 order-md-1">
         <ul class="nav nav-pills flex-column flex-md-row mb-3">
@@ -46,12 +45,12 @@
                           </svg>
                       </span>  
                   </div>
-                  <h2 class="ms-1 mb-0">3</h2>
+                  <h2 class="ms-1 mb-0">{{$cutiSisa->cuti_n + $cutiSisa->cuti_nsatu+ $cutiSisa->cuti_ndua}}</h2>
                 </div>
                 <h5 class="mb-1">Cuti Tahunan</h5>           
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cutiTahunan" style="width: 100%; font-size: 12px; padding: 10px;">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cutiTahunan" data-jenis="CT">
                   Ajukan Cuti Tahunan
-              </button>       
+                </button>   
               </div>
             </div>
           </div>
@@ -82,12 +81,12 @@
                               </svg>
                         </span> 
                     </div>
-                  <h2 class="ms-1 mb-0">12</h2>
+                  <h2 class="ms-1 mb-0">{{$cutiSisa->cuti_sakit}}</h2>
                 </div>
                 <h5 class="mb-1">Cuti Sakit</h5>
-                <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#myModal" style="width: 100%; font-size: 12px; padding: 10px;">
+                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#cutiTahunan" data-jenis="CS">
                   Ajukan Cuti Sakit
-                </button>       
+                </button>     
               </div>
             </div>
           </div>
@@ -111,12 +110,12 @@
                           </svg>
                     </span> 
                   </div>
-                  <h2 class="ms-1 mb-0">2</h2>
+                  <h2 class="ms-1 mb-0">{{$cutiSisa->cuti_ap}}</h2>
                 </div>
                 <h5 class="mb-1">Cuti Alasan Penting</h5>
-                <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#myModal" style="width: 100%; font-size: 12px; padding: 10px;">
+                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#cutiTahunan" data-jenis="CAP">
                   Ajukan Cuti Alasan Penting
-                </button>       
+                </button>     
               </div>
             </div>
           </div>
@@ -146,7 +145,7 @@
                           </svg>
                         </span>
                       </div>
-                      <h2 class="ms-1 mb-0">12</h2>
+                      {{-- <h2 class="ms-1 mb-0">12</h2> --}}
                     </div>
                     <div class="separator mx-3">|</div>
                     <div class="d-flex align-items-center justify-content-center">
@@ -157,19 +156,18 @@
                           </svg>
                         </span>
                       </div>
-                      <h2 class="ms-1 mb-0">12</h2>
+                      {{-- <h2 class="ms-1 mb-0">12</h2> --}}
                     </div>
                   </div>
                   <h5 class="mb-1">Cuti Besar / Melahirkan</h5>
-                  <button type="button" class="btn btn-info" data-toggle="modal" data-target="#myModal" style="width: 100%; font-size: 12px; padding: 10px;">
-                      Ajukan Cuti Besar / Melahirkan
-                    </button>       
+                  <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#cutiTahunan" style="width: 100%; font-size: 12px; padding: 10px;">
+                    Ajukan Cuti Besar / Melahirkan
+                  </button>                   
                 </div>
               </div>
-          </div>     
-        </div>
-          
-        <div class="card mb-4">
+            </div>     
+          </div>
+          <div class="card mb-4">
             <h5 class="card-header">Daftar Cuti</h5>
             <div class="card-body">
               <div class="card-datatable table-responsive">
@@ -192,111 +190,113 @@
                 </table>
               </div>
             </div>
-          </div>
-          
-            </div>
+          </div>        
         </div>
       </div>
-    
+    </div>    
   </div>
 
 {{-- //Modal CUti Tahunan --}}
-    <div class="modal fade" id="cutiTahunan" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="cutiTahunanTitle">Form Pengajuan Cuti Tahunan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="formcuti" method="post" action="{{ route('submit-cutiTahunan') }}">
-                  @csrf
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col mb-3">
-                                <label for="name" class="form-label">Nama</label>
-                                <input type="text" id="name" name="name" required class="form-control" value="{{$users->detail->name}}" readonly />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col mb-3">
-                                <label for="code" class="form-label">Jenis Cuti</label>
-                                <select name="code" id="code" readonly class="form-control">                                
-                                    <option selected value="CT">Cuti Tahunan</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col mb-3">
-                                <label for="alcut" class="form-label">Alasan Cuti</label>
-                                <textarea id="alcut" required name="alcut" class="form-control" placeholder="Alasan Pengajuan Cuti"></textarea>
-                            </div>
-                        </div>
-                        <div class="row">
+  <div class="modal fade" id="cutiTahunan" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="cutiTahunanTitle">Form Pengajuan Cuti Tahunan</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form id="formcuti" method="post" action="{{ route('submit-cutiTahunan') }}">
+                @csrf
+                  <div class="modal-body">
+                      <div class="row">
                           <div class="col mb-3">
-                              <label for="ataslang" class="form-label">Pilih Atasan</label>
-                              <select name="ataslang" id="ataslang" class="form-control" required>
-                                  @if($atasanDetail)
-                                      <option value="{{ $atasanDetail->user_id }}" @if($atasanCuti) disabled @endif>
-                                          {{ $atasanDetail->name }} @if($atasanCuti) | Cuti @endif
-                                      </option>
-                                  @endif
-                                  @foreach($atasanLainnya as $atasan)
-                                    <option value="{{ $atasan->user_id }}">{{ $atasan->name }}</option>
-                                  @endforeach
-                              </select>
+                              <label for="name" class="form-label">Nama</label>
+                              <input type="text" id="name" name="name" required class="form-control" value="{{$users->detail->name}}" readonly />
+                          </div>
+                      </div>
+                      <div class="row">
+                        <div class="col mb-3">
+                          <label for="code" class="form-label">Jenis Cuti</label>
+                          <select name="code" id="code" class="form-control">
+                            <option value="CT">Cuti Tahunan</option>
+                            <option value="CS">Cuti Sakit</option>
+                            <option value="CAP">Cuti Alasan Penting</option>
+                            <option value="CB">Cuti Besar</option>
+                            <option value="CM">Cuti Melahirkan</option>
+                          </select>
+                        </div>
+                      </div>                                         
+                      <div class="row">
+                          <div class="col mb-3">
+                              <label for="alcut" class="form-label">Alasan Cuti</label>
+                              <textarea id="alcut" required name="alcut" class="form-control" placeholder="Alasan Pengajuan Cuti"></textarea>
+                          </div>
+                      </div>
+                      <div class="row">
+                        <div class="col mb-3">
+                            <label for="ataslang" class="form-label">Pilih Atasan</label>
+                            <select name="ataslang" id="ataslang" class="form-control" required>
+                                @if($atasanDetail)
+                                    <option value="{{ $atasanDetail->user_id }}" @if($atasanCuti) disabled @endif>
+                                        {{ $atasanDetail->name }} @if($atasanCuti) | Cuti @endif
+                                    </option>
+                                @endif
+                                @foreach($atasanLainnya as $atasan)
+                                  <option value="{{ $atasan->user_id }}">{{ $atasan->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label for="id_pimpinan" class="form-label">Pejabat Yang Berwenang Memeberikan Cuti</label>
+                            <select name="id_pimpinan" id="id_pimpinan" class="form-control" required>
+                                @if($atasanDuaDetail)
+                                    <option value="{{ $atasanDuaDetail->user_id }}" @if($atasanDuaCuti) disabled @endif>
+                                        {{ $atasanDuaDetail->name }} @if($atasanDuaCuti) | Cuti @endif
+                                    </option>
+                                          @foreach($atasanLainnya as $atasan)
+                                  <option value="{{ $atasan->user_id }}">{{ $atasan->name }}</option>
+                                @endforeach
+                                @else
+                                    <option value="{{$users->id}}">Tidak ada Atasan 2</option>
+                                @endif
+                            </select>
+                        </div>
+                    </div>
+                      <div class="row g-2">
+                          <div class="col mb-0">
+                              <label for="tglawal" class="form-label">Dari Tanggal</label>
+                              <input type="date" id="tglawal" name="tglawal" required class="form-control" value="2024-08-01" />
+                          </div>
+                          <div class="col mb-0">
+                              <label for="tglakhir" class="form-label">Sampai Tanggal</label>
+                              <input type="date" id="tglakhir" name="tglakhir" required class="form-control" value="2024-08-05" />
+                          </div>
+                      </div>
+                      <div class="row" id="saldo_cuti_row" style="display: none;">
+                          <div class="col mb-3">
+                              <label for="saldo_cuti" class="form-label">Sisa Cuti & Jumlah Hari Cuti</label>
+                              <input type="text" id="saldo_cuti" class="form-control" disabled>
                           </div>
                       </div>
                       <div class="row">
                           <div class="col mb-3">
-                              <label for="id_pimpinan" class="form-label">Pejabat Yang Berwenang Memeberikan Cuti</label>
-                              <select name="id_pimpinan" id="id_pimpinan" class="form-control" required>
-                                  @if($atasanDuaDetail)
-                                      <option value="{{ $atasanDuaDetail->user_id }}" @if($atasanDuaCuti) disabled @endif>
-                                          {{ $atasanDuaDetail->name }} @if($atasanDuaCuti) | Cuti @endif
-                                      </option>
-                                           @foreach($atasanLainnya as $atasan)
-                                    <option value="{{ $atasan->user_id }}">{{ $atasan->name }}</option>
-                                  @endforeach
-                                  @else
-                                      <option value="{{$users->id}}">Tidak ada Atasan 2</option>
-                                  @endif
-                              </select>
+                              <label for="alamat" class="form-label">Alamat Selama Cuti</label>
+                              <input type="text" id="alamat" name="alamat" class="form-control" value="{{$users->detail->alamat}}" />
                           </div>
                       </div>
-                        <div class="row g-2">
-                            <div class="col mb-0">
-                                <label for="tglawal" class="form-label">Dari Tanggal</label>
-                                <input type="date" id="tglawal" name="tglawal" required class="form-control" value="2024-08-01" />
-                            </div>
-                            <div class="col mb-0">
-                                <label for="tglakhir" class="form-label">Sampai Tanggal</label>
-                                <input type="date" id="tglakhir" name="tglakhir" required class="form-control" value="2024-08-05" />
-                            </div>
-                        </div>
-                        <div class="row" id="saldo_cuti_row" style="display: none;">
-                            <div class="col mb-3">
-                                <label for="saldo_cuti" class="form-label">Sisa Cuti & Jumlah Hari Cuti</label>
-                                <input type="text" id="saldo_cuti" class="form-control" disabled>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col mb-3">
-                                <label for="alamat" class="form-label">Alamat Selama Cuti</label>
-                                <input type="text" id="alamat" name="alamat" class="form-control" value="{{$users->detail->alamat}}" />
-                            </div>
-                        </div>
-                    </div>
-                    <input type="hidden" id="id_pegawai" name="id_pegawai" class="form-control" value="{{$users->id}}" />
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Close
-                        </button>
-                        <button id="submitButton" type="submit" class="btn btn-success">Ajukan Cuti</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+                  </div>
+                  <input type="hidden" id="id_pegawai" name="id_pegawai" class="form-control" value="{{$users->id}}" />
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                          Close
+                      </button>
+                      <button id="submitButton" type="submit" class="btn btn-success">Ajukan Cuti</button>
+                  </div>
+              </form>
+          </div>
+      </div>
+  </div>
 {{-- //Modal CUti Tahunan --}}
 @endsection
 
@@ -351,58 +351,7 @@
                   {data: 'status', name: 'status'},
                   {data: 'action', name: 'action', orderable: false, searchable: false},
               ]
-          });
-  
-          // Handle action button click
-          $('#permohonanCuti-table').on('click', '.edit', function () {
-              var data = table.row($(this).parents('tr')).data();
-              $('#id').val(data.id);
-              $('#jenisCuti').val(data.jenis);
-              $('#name').val(data.user_name);
-              $('#tglAwal').val(data.tglawal);
-              $('#tglAkhir').val(data.tglakhir);
-              $('#alasan').val(data.alasan); // Assuming you have an 'alasan' field in your data
-              $('#permohonanCuti').modal('show');
-          });
-  
-          // Handle Perubahan button click
-          $('#btnPerubahan').on('click', function () {
-              $('#permohonanCuti').modal('hide');
-              $('#idPerubahan').val($('#id').val());
-              $('#perubahanModal').modal('show');
-          });
-  
-          // Handle Penanguhan button click
-          $('#btnPenanguhan').on('click', function () {
-              $('#permohonanCuti').modal('hide');
-              $('#idPenanguhan').val($('#id').val());
-              $('#penanguhanModal').modal('show');
-          });
-  
-          // Handle Tolak button click
-          $('#btnTolak').on('click', function () {
-              $('#permohonanCuti').modal('hide');
-              $('#idTolak').val($('#id').val());
-              $('#tolakModal').modal('show');
-          });
-  
-          // Handle Back button click in Perubahan modal
-          $('#backToMainModal1').on('click', function () {
-              $('#perubahanModal').modal('hide');
-              $('#permohonanCuti').modal('show');
-          });
-  
-          // Handle Back button click in Penanguhan modal
-          $('#backToMainModal2').on('click', function () {
-              $('#penanguhanModal').modal('hide');
-              $('#permohonanCuti').modal('show');
-          });
-  
-          // Handle Back button click in Tolak modal
-          $('#backToMainModal3').on('click', function () {
-              $('#tolakModal').modal('hide');
-              $('#permohonanCuti').modal('show');
-          });
+          });         
       });
     </script>
 
@@ -485,93 +434,164 @@
     </script>   
 
     <script>
-      
-        function checkNotificationPermission() {
-            return Notification.permission;
-        }
+      document.getElementById('cutiTahunan').addEventListener('submit', function() {
+      var button = document.getElementById('submitButton');
+      button.disabled = true;
+      button.innerText = "Memproses..."; // Optional: Mengubah teks tombol
+      });
+    </script>
+    <script>
+     document.addEventListener('DOMContentLoaded', function () {
+        var cutiTahunanModal = document.getElementById('cutiTahunan');
+        
+        cutiTahunanModal.addEventListener('show.bs.modal', function (event) {
+            // Button that triggered the modal
+            var button = event.relatedTarget;
 
-        function monitorNotificationPermission() {
-            let currentPermission = checkNotificationPermission();
+            // Extract the value of data-jenis (this might be null for the CB/CM button)
+            var jenisCuti = button.getAttribute('data-jenis');
 
-            setInterval(() => {
-                let newPermission = checkNotificationPermission();
-                if (newPermission !== currentPermission) {
-                    location.reload(); 
+            // Get the select element
+            var codeInput = cutiTahunanModal.querySelector('#code');
+
+            // Enable all options first
+            for (var i = 0; i < codeInput.options.length; i++) {
+                codeInput.options[i].disabled = false;
+            }
+
+            if (jenisCuti) {
+                // Set the selected option based on data-jenis and disable other options
+                codeInput.value = jenisCuti;
+                for (var i = 0; i < codeInput.options.length; i++) {
+                    if (codeInput.options[i].value !== jenisCuti) {
+                        codeInput.options[i].disabled = true;
+                    }
                 }
-            }, 1000);
-        }
-        monitorNotificationPermission();
+            } else {
+                // Special handling for "Cuti Besar / Melahirkan"
+                codeInput.value = "CB"; // Default to "Cuti Besar"
+                for (var i = 0; i < codeInput.options.length; i++) {
+                    if (codeInput.options[i].value !== "CB" && codeInput.options[i].value !== "CM") {
+                        codeInput.options[i].disabled = true;
+                    }
+                }
+            }
+        });
+      });
+
+
+
+      function checkNotificationPermission() {
+          return Notification.permission;
+      }
+
+      function monitorNotificationPermission() {
+          let currentPermission = checkNotificationPermission();
+
+          setInterval(() => {
+              let newPermission = checkNotificationPermission();
+              if (newPermission !== currentPermission) {
+                  location.reload(); 
+              }
+          }, 1000);
+      }
+      monitorNotificationPermission();
     </script>
     
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-          const tglAwalInput = document.getElementById('tglawal');
-          const tglAkhirInput = document.getElementById('tglakhir');
-          const saldoCutiInput = document.getElementById('saldo_cuti');
-          const saldoCutiRow = document.getElementById('saldo_cuti_row');
+        const tglAwalInput = document.getElementById('tglawal');
+        const tglAkhirInput = document.getElementById('tglakhir');
+        const saldoCutiInput = document.getElementById('saldo_cuti');
+        const saldoCutiRow = document.getElementById('saldo_cuti_row');
+        const codeInput = document.getElementById('code'); // Dropdown for leave type
 
-          // Ambil data sisa cuti dari PHP
-          const sisaCuti = @json($cutiSisa->cuti_n + $cutiSisa->cuti_nsatu + $cutiSisa->cuti_ndua);
+        // Leave balances from PHP
+        const cutiTahunan = @json($cutiSisa->cuti_n + $cutiSisa->cuti_nsatu + $cutiSisa->cuti_ndua);
+        const cutiSakit = @json($cutiSisa->cuti_sakit);
+        const cutiAP = @json($cutiSisa->cuti_ap);
+        const maxCutiBesarMelahirkan = 60; // Max 60 days for CB/CM
 
-          tglAwalInput.addEventListener('change', calculateLeaveDays);
-          tglAkhirInput.addEventListener('change', calculateLeaveDays);
+        tglAwalInput.addEventListener('change', calculateLeaveDays);
+        tglAkhirInput.addEventListener('change', calculateLeaveDays);
+        codeInput.addEventListener('change', calculateLeaveDays); // Recalculate when the leave type changes
 
-          async function calculateLeaveDays() {
-              const tglAwal = tglAwalInput.value;
-              const tglAkhir = tglAkhirInput.value;
+        async function calculateLeaveDays() {
+            const tglAwal = tglAwalInput.value;
+            const tglAkhir = tglAkhirInput.value;
 
-              if (!tglAwal || !tglAkhir) {
-                  return;
-              }
+            if (!tglAwal || !tglAkhir) {
+                return;
+            }
 
-              const startDate = new Date(tglAwal);
-              const endDate = new Date(tglAkhir);
+            const startDate = new Date(tglAwal);
+            const endDate = new Date(tglAkhir);
 
-              if (startDate > endDate) {
-                  saldoCutiInput.value = 'Tanggal awal tidak boleh lebih besar dari tanggal akhir.';
-                  saldoCutiRow.style.display = 'block';
-                  return;
-              }
+            if (startDate > endDate) {
+                saldoCutiInput.value = 'Tanggal awal tidak boleh lebih besar dari tanggal akhir.';
+                saldoCutiRow.style.display = 'block';
+                return;
+            }
 
-              let totalHari = 0;
-              let hariLibur = [];
-              let currentDate = new Date(startDate);
+            let totalHari = 0;
+            let hariLibur = [];
+            let currentDate = new Date(startDate);
 
-              // Hitung hari kerja (Senin-Jumat) dalam rentang tanggal
-              while (currentDate <= endDate) {
-                  const dayOfWeek = currentDate.getDay();
-                  if (dayOfWeek !== 6 && dayOfWeek !== 0) { // Exclude Saturdays (6) and Sundays (0)
-                      totalHari++;
-                  }
-                  currentDate.setDate(currentDate.getDate() + 1);
-              }
+            // Calculate working days (Monday-Friday) in the date range
+            while (currentDate <= endDate) {
+                const dayOfWeek = currentDate.getDay();
+                if (dayOfWeek !== 6 && dayOfWeek !== 0) { // Exclude Saturdays (6) and Sundays (0)
+                    totalHari++;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
 
-              let currentYear = startDate.getFullYear();
-              while (currentYear <= endDate.getFullYear()) {
-                  let response = await fetch(`https://api-harilibur.vercel.app/api?year=${currentYear}`);
-                  let data = await response.json();
-                  hariLibur = hariLibur.concat(data.filter(libur => libur.is_national_holiday));
-                  currentYear++;
-              }
+            let currentYear = startDate.getFullYear();
+            while (currentYear <= endDate.getFullYear()) {
+                let response = await fetch(`https://api-harilibur.vercel.app/api?year=${currentYear}`);
+                let data = await response.json();
+                hariLibur = hariLibur.concat(data.filter(libur => libur.is_national_holiday));
+                currentYear++;
+            }
 
-              // Filter hari libur nasional yang jatuh pada hari kerja (Senin-Jumat)
-              const hariLiburDalamRentang = hariLibur.filter(libur => {
-                  const tanggalLibur = new Date(libur.holiday_date);
-                  const dayOfWeek = tanggalLibur.getDay();
-                  // Hanya hitung hari libur nasional yang jatuh pada hari kerja (Senin-Jumat)
-                  return tanggalLibur >= startDate && tanggalLibur <= endDate && dayOfWeek >= 1 && dayOfWeek <= 5;
-              });
+            // Filter national holidays that fall on working days (Monday-Friday)
+            const hariLiburDalamRentang = hariLibur.filter(libur => {
+                const tanggalLibur = new Date(libur.holiday_date);
+                const dayOfWeek = tanggalLibur.getDay();
+                return tanggalLibur >= startDate && tanggalLibur <= endDate && dayOfWeek >= 1 && dayOfWeek <= 5;
+            });
 
-              const jumlahHariLibur = hariLiburDalamRentang.length;
-              const jumlahHariCuti = totalHari - jumlahHariLibur;
-              const sisaCutiAkhir = sisaCuti - jumlahHariCuti;
-              const sisaCutiMessage = sisaCutiAkhir < 0 ? " | Sisa Cuti Anda Tidak Mencukupi" : "";
+            const jumlahHariLibur = hariLiburDalamRentang.length;
+            const jumlahHariCuti = totalHari - jumlahHariLibur;
 
-              saldoCutiInput.value = `Jumlah Hari Cuti: ${jumlahHariCuti} | Sisa Cuti: ${sisaCutiAkhir}${sisaCutiMessage}`;
-              saldoCutiRow.style.display = 'block';
-          }
+            // Determine the appropriate leave balance based on the selected leave type
+            let sisaCutiAkhir;
+            let sisaCutiMessage = "";
+
+            switch (codeInput.value) {
+                case 'CS': // Cuti Sakit
+                    sisaCutiAkhir = cutiSakit - jumlahHariCuti;
+                    if (sisaCutiAkhir < 0) sisaCutiMessage = " | Sisa Cuti Anda Tidak Mencukupi";
+                    break;
+                case 'CAP': // Cuti Alasan Penting
+                    sisaCutiAkhir = cutiAP - jumlahHariCuti;
+                    if (sisaCutiAkhir < 0) sisaCutiMessage = " | Sisa Cuti Anda Tidak Mencukupi";
+                    break;
+                case 'CB': // Cuti Besar
+                case 'CM': // Cuti Melahirkan
+                    sisaCutiAkhir = maxCutiBesarMelahirkan - jumlahHariCuti;
+                    if (sisaCutiAkhir < 0) sisaCutiMessage = " | Sisa Cuti Anda Tidak Mencukupi";
+                    break;
+                default: // Default to Cuti Tahunan
+                    sisaCutiAkhir = cutiTahunan - jumlahHariCuti;
+                    if (sisaCutiAkhir < 0) sisaCutiMessage = " | Sisa Cuti Anda Tidak Mencukupi";
+                    break;
+            }
+
+            saldoCutiInput.value = `Jumlah Hari Cuti: ${jumlahHariCuti} | Sisa Cuti: ${sisaCutiAkhir}${sisaCutiMessage}`;
+            saldoCutiRow.style.display = 'block';
+        }
       });
-
     </script>
     
    

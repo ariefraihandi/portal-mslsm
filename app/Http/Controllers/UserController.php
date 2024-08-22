@@ -166,7 +166,7 @@ class UserController extends Controller
         $awalKerja = $user->detail->awal_kerja;
         $cutiSisa = CutiSisa::where('user_id', $id)->first();
     
-        // Periksa jika ada message_id dan type dalam query string
+        // dd($cutiSisa);
         $message_id = $request->query('message_id');
         $type = $request->query('type');
     
@@ -235,11 +235,11 @@ class UserController extends Controller
         }
     
         $data = [
-            'title' => 'Cuti Pegawai',
-            'subtitle' => 'Portal MS Lhokseumawe',
-            'sidebar' => $accessMenus,
-            'users' => $user,
-            'cutiSisa' => $cutiSisa,
+            'title'         => 'Cuti Pegawai',
+            'subtitle'      => 'Portal MS Lhokseumawe',
+            'sidebar'       => $accessMenus,
+            'users'         => $user,
+            'cutiSisa'      => $cutiSisa,
             'atasanDetail' => $atasanDetail,
             'atasanDuaDetail' => $atasanDuaDetail,
             'atasanCuti' => $atasanCuti,
@@ -249,10 +249,6 @@ class UserController extends Controller
     
         return view('Account.cuti', $data);
     }
-    
-    
-    
-
 
     //Editing
         public function uploadAvatar(Request $request)
@@ -415,7 +411,7 @@ class UserController extends Controller
         }
     //!Editing
 
-     private function getDeviceIcon($userAgent)
+    private function getDeviceIcon($userAgent)
     {
         $mobileDevices = ['Android', 'webOS', 'iPhone', 'iPad', 'iPod', 'BlackBerry', 'IEMobile', 'Opera Mini'];
         foreach ($mobileDevices as $device) {

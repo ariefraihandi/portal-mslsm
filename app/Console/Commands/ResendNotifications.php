@@ -26,7 +26,7 @@ class ResendNotifications extends Command
         $currentHour = Carbon::now()->format('H');
     
         // Jika jam di luar jam kerja (08:00 - 18:00), hentikan proses
-        if ($currentHour < 8 || $currentHour >= 18) {
+        if ($currentHour < 0 || $currentHour >= 18) {
             $this->info('Notification processing skipped outside of working hours.');
             return;
         }
@@ -91,7 +91,7 @@ class ResendNotifications extends Command
                 $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;                
 
                 // Jika waktu yang telah berlalu lebih dari 1 menit
-                if ($timeDifferenceInMinutes >= 60) {
+                if ($timeDifferenceInMinutes >= 1) {
                     if ($notification->is_sent_wa == 1 && $notification->is_sent_onesignal == 0 && $notification->is_sent_email == 0) {
                         // Kirim OneSignal jika WA sudah dikirim tetapi OneSignal belum
                         $this->sendOneSignalNotification($notification);
@@ -137,7 +137,7 @@ class ResendNotifications extends Command
                 $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;                
 
                 // Jika waktu yang telah berlalu lebih dari 1 menit
-                if ($timeDifferenceInMinutes >= 60) {
+                if ($timeDifferenceInMinutes >= 1) {
                     if ($notification->is_sent_wa == 1 && $notification->is_sent_onesignal == 0 && $notification->is_sent_email == 0) {
                         // Kirim OneSignal jika WA sudah dikirim tetapi OneSignal belum
                         $this->sendOneSignalNotification($notification);

@@ -517,29 +517,39 @@ class CutiController extends Controller
 
                         // Sisa Cuti Update
                             $sisaCuti = CutiSisa::where('user_id', $user->id)->first();
-                                    
-                            $remainingLeave = $jumlahHariCuti;
+                            $jenisCuti = $validatedData['jenisCuti'];
                 
-                            if ($sisaCuti->cuti_ndua >= $remainingLeave) {
-                                $sisaCuti->cuti_ndua -= $remainingLeave;
-                            } else {
-                                $remainingLeave -= $sisaCuti->cuti_ndua;
-                                $sisaCuti->cuti_ndua = 0;
-                
-                                if ($sisaCuti->cuti_nsatu >= $remainingLeave) {
-                                    $sisaCuti->cuti_nsatu -= $remainingLeave;
+                            if ($jenisCuti === 'CT') {
+                                // Potong cuti tahunan sesuai aturan yang telah Anda berikan
+                                $remainingLeave = $jumlahHariCuti;
+                                if ($sisaCuti->cuti_ndua >= $remainingLeave) {
+                                    $sisaCuti->cuti_ndua -= $remainingLeave;
                                 } else {
-                                    $remainingLeave -= $sisaCuti->cuti_nsatu;
-                                    $sisaCuti->cuti_nsatu = 0;
-                
-                                    if ($sisaCuti->cuti_n >= $remainingLeave) {
-                                        $sisaCuti->cuti_n -= $remainingLeave;
+                                    // Set to negative if not enough leave
+                                    $remainingLeave -= $sisaCuti->cuti_ndua;
+                                    $sisaCuti->cuti_ndua = 0;
+                            
+                                    if ($sisaCuti->cuti_nsatu >= $remainingLeave) {
+                                        $sisaCuti->cuti_nsatu -= $remainingLeave;
                                     } else {
-                                        return response()->json(['error' => 'Insufficient leave balance'], 400);
+                                        $remainingLeave -= $sisaCuti->cuti_nsatu;
+                                        $sisaCuti->cuti_nsatu = 0;
+                            
+                                        // Set cuti_n to negative if not enough leave
+                                        $sisaCuti->cuti_n -= $remainingLeave;
                                     }
                                 }
+                            } elseif ($jenisCuti === 'CS') {
+                                // Potong cuti sakit
+                                $sisaCuti->cuti_sakit -= $jumlahHariCuti;
+                            } elseif ($jenisCuti === 'CAP') {
+                                // Potong cuti alasan penting
+                                $sisaCuti->cuti_ap -= $jumlahHariCuti;
+                            } elseif ($jenisCuti === 'CB' || $jenisCuti === 'CM') {
+                                // Untuk Cuti Besar dan Cuti Melahirkan, tidak ada pemotongan
                             }
-                
+                            
+                            // Simpan perubahan saldo cuti
                             $sisaCuti->save();
                         //! Sisa Cuti Update
 
@@ -623,7 +633,7 @@ class CutiController extends Controller
                     }
                 } else {
                     if ($cutiDetail->status == 1) {
-                        if ($cutiDetail->atasan_id != $cutiDetail->atasan_dua_id) {
+                        if ($cutiDetail->atasan_id !== $cutiDetail->atasan_dua_id) {
                             // Update Cuti Detail Status
                                 $cutiDetail->status = 2;
                                 $cutiDetail->save();
@@ -723,28 +733,41 @@ class CutiController extends Controller
                         
                         // Sisa Cuti Update
                             $sisaCuti = CutiSisa::where('user_id', $user->id)->first();
-                                        
-                            $remainingLeave = $jumlahHariCuti;
+                            $jenisCuti = $validatedData['jenisCuti'];
                 
-                            if ($sisaCuti->cuti_ndua >= $remainingLeave) {
-                                $sisaCuti->cuti_ndua -= $remainingLeave;
-                            } else {
-                                $remainingLeave -= $sisaCuti->cuti_ndua;
-                                $sisaCuti->cuti_ndua = 0;
-                
-                                if ($sisaCuti->cuti_nsatu >= $remainingLeave) {
-                                    $sisaCuti->cuti_nsatu -= $remainingLeave;
+                            if ($jenisCuti === 'CT') {
+                                // Potong cuti tahunan sesuai aturan yang telah Anda berikan
+                                $remainingLeave = $jumlahHariCuti;
+                                if ($sisaCuti->cuti_ndua >= $remainingLeave) {
+                                    $sisaCuti->cuti_ndua -= $remainingLeave;
                                 } else {
-                                    $remainingLeave -= $sisaCuti->cuti_nsatu;
-                                    $sisaCuti->cuti_nsatu = 0;
-                
-                                    if ($sisaCuti->cuti_n >= $remainingLeave) {
-                                        $sisaCuti->cuti_n -= $remainingLeave;
+                                    // Set to negative if not enough leave
+                                    $remainingLeave -= $sisaCuti->cuti_ndua;
+                                    $sisaCuti->cuti_ndua = 0;
+                            
+                                    if ($sisaCuti->cuti_nsatu >= $remainingLeave) {
+                                        $sisaCuti->cuti_nsatu -= $remainingLeave;
                                     } else {
-                                        return response()->json(['error' => 'Insufficient leave balance'], 400);
+                                        $remainingLeave -= $sisaCuti->cuti_nsatu;
+                                        $sisaCuti->cuti_nsatu = 0;
+                            
+                                        // Set cuti_n to negative if not enough leave
+                                        $sisaCuti->cuti_n -= $remainingLeave;
                                     }
                                 }
+                            } elseif ($jenisCuti === 'CS') {
+                                // Potong cuti sakit
+                                $sisaCuti->cuti_sakit -= $jumlahHariCuti;
+                            } elseif ($jenisCuti === 'CAP') {
+                                // Potong cuti alasan penting
+                                $sisaCuti->cuti_ap -= $jumlahHariCuti;
+                            } elseif ($jenisCuti === 'CB' || $jenisCuti === 'CM') {
+                                // Untuk Cuti Besar dan Cuti Melahirkan, tidak ada pemotongan
                             }
+                            
+                            // Simpan perubahan saldo cuti
+                            $sisaCuti->save();
+                            
                 
                             $sisaCuti->save();
                         //! Sisa Cuti Update
@@ -828,8 +851,6 @@ class CutiController extends Controller
                             }
                         //!Create Message For Administrasi
                     }
-                    
-                   
                 }
         
                 DB::commit();
@@ -2730,6 +2751,9 @@ class CutiController extends Controller
                     // Return only atasanName if no atasanDua is present
                     return $atasanName;
                 })
+                ->addColumn('jenis', function($row){
+                    return $row->cuti->name ?? 'N/A';
+                })
                 ->addColumn('status', function($row){
                     if ($row->status == 1) {
                         return '<span class="badge bg-info">Menunggu Persetujuan<br><br>Atasan Langsung</span>';
@@ -2764,14 +2788,14 @@ class CutiController extends Controller
                     // Cek status, jika sesuai maka munculkan tombol download
                     if($row->status == 10) {
                         $btn .= '<a href="'.route('cetakCuti', $row->id).'" class="btn btn-warning btn-sm" target="_blank">Unduh</a><br>';
-                        $btn .= '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm mb-2" 
-                                    data-id="'.$row->id.'"
-                                    data-jenis="'.$row->jenis.'"
-                                    data-user_name="'.$row->userDetails->name.'"
-                                    data-alasan="'.$row->alasan.'"
-                                    data-tglawal="'.$row->tglawal.'"
-                                    data-tglakhir="'.$row->tglakhir.'"
-                                    >Perubahan</a>';
+                        // $btn .= '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm mb-2" 
+                        //             data-id="'.$row->id.'"
+                        //             data-jenis="'.$row->jenis.'"
+                        //             data-user_name="'.$row->userDetails->name.'"
+                        //             data-alasan="'.$row->alasan.'"
+                        //             data-tglawal="'.$row->tglawal.'"
+                        //             data-tglakhir="'.$row->tglakhir.'"
+                        //             >Perubahan</a>';
                     } elseif($row->status == 13){
                         $btn .= '<a href="'.route('cetakCuti', $row->id).'" class="btn btn-warning btn-sm" target="_blank">Unduh</a>';
                     } elseif($row->status == 23){

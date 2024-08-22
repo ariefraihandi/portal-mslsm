@@ -54,6 +54,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/kepegawaian/cuti/pejabat',         [CutiController::class, 'showCutiDetailpejabat'])->name('kepegawaian.cuti.pejabat');
     Route::get('/kepegawaian/cuti/penomoran',       [CutiController::class, 'showCutiDetailPenomoran'])->name('kepegawaian.cuti.penomoran');
     Route::get('/cuti/delete',                      [CutiController::class, 'destroy'])->name('cuti.delete');
+    Route::get('/cuti/delete',                      [CutiController::class, 'destroy'])->name('submit-cutiSakit');
 
     Route::post('/admin/user/changeaccess',         [AdminController::class, 'changeAccess'])->name('admin.user.changeaccess');    
     Route::post('/menu',                            [AdminController::class, 'addMenu'])->name('menu.add');
@@ -115,4 +116,4 @@ Route::middleware([AuthMiddleware::class])->group(function () {
 
 
 Route::get('/cetak/cuti/{id}',                      [CutiController::class, 'cetakCuti'])->name('cetakCuti');
-Route::get('/barcode/scan',                         [BarcodeController::class, 'scan'])->name('barcode.scan');
+Route::get('/barcode/scan',                         [BarcodeController::class, 'getSignData'])->name('barcode.scan');
