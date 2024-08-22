@@ -17,7 +17,7 @@
     
     @yield('content')
     
-    @include('IndexLandingPage.footer')
+    {{-- @include('IndexLandingPage.footer') --}}
     
     @include('IndexLandingPage.script')
 </body>
