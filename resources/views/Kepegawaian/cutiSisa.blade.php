@@ -178,9 +178,13 @@
                         $('#sisaCutiModal').modal('hide');
                         
                         // Reload the datatable
-                        $('#pegawai-table').DataTable().ajax.reload();
+                        $('#sisaCuti-table').DataTable().ajax.reload();
+
+                        // Reset the form
+                        $('#cutiForm').trigger('reset');
                     });
                 },
+
                 error: function(xhr) {
                     Swal.fire({
                         title: 'Error!',

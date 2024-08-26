@@ -13,6 +13,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KepegawaianController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\CutiController;
+use App\Http\Controllers\SiramasakanController;
 
 Route::get('/',                                 [MaintenanceController::class, 'index'])->name('index');
 Route::get('/buku-tamu',                        [GuestBookController::class, 'showBukuTamu'])->name('show.bukutamu');
@@ -39,6 +40,8 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
     Route::get('/user/account/detil',               [UserController::class, 'showAccount'])->name('user.account.detil');
     Route::get('/user/account/activity',            [UserController::class, 'showActivity'])->name('user.account.activity');
     Route::get('/user/account/cuti',                [UserController::class, 'showCuti'])->name('user.account.cuti');
+    
+    Route::get('/aplikasi/siramasakan',             [SiramasakanController::class, 'index'])->name('aplikasi.siramasakan');
     
     Route::get('/admin/user/access',                [AdminController::class, 'showRole'])->name('admin.user.access');
     Route::get('/admin/menu/menulist',              [AdminController::class, 'showMenu'])->name('admin.menu.menulist');
