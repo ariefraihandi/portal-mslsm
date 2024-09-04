@@ -49,141 +49,103 @@ class ResendNotifications extends Command
                 } elseif ($notification->priority == 'high') {
                     $this->processHighPriority($notification);
                 }
-                sleep(5);
+                sleep(5); // Tunda 5 detik antar notifikasi
             }
         }
         
         $this->info('Notification processing completed.');
-    }    
+    }
+    
 
     protected function processLowMediumPriority($notification)
     {
         $now = Carbon::now();
-
-        if ($this->isRead($notification) == 0) {
-            // Ensure that notifications are sent only if they haven't been sent before
-            if ($notification->is_sent_wa == 0 || $notification->is_sent_onesignal == 0 || $notification->is_sent_email == 0) {
-                if (is_null($notification->last_message_sent)) {
-                    // First-time send
-                    if (!is_null($notification->whatsapp) && $notification->is_sent_wa == 0) {
-                        if ($this->checkNotificationStatus()) {
-                            $this->sendWhatsAppNotification($notification);
-                        } else {
-                            $this->sendFallbackNotification($notification);
-                        }
-                    }
-                    if (!is_null($notification->onesignal) && $notification->is_sent_onesignal == 0) {
-                        $this->sendOneSignalNotification($notification);
-                    }
-                    if (!is_null($notification->email) && $notification->is_sent_email == 0) {
-                        $this->sendEmailNotification($notification);
-                    }
-                } else {
-                    // Check the time interval before resending
-                    $lastMessageSent = $notification->last_message_sent;
-                    $nowTimestamp = $now->getTimestamp();
-                    $lastMessageTimestamp = $lastMessageSent->getTimestamp();
-                    $timeDifferenceInMinutes = ($nowTimestamp - $lastMessageTimestamp) / 60;
-
-                    if ($timeDifferenceInMinutes >= 60) {
-                        if ($notification->is_sent_wa == 0) {
-                            $this->sendWhatsAppNotification($notification);
-                        }
-                        if ($notification->is_sent_onesignal == 0) {
-                            $this->sendOneSignalNotification($notification);
-                        }
-                        if ($notification->is_sent_email == 0) {
-                            $this->sendEmailNotification($notification);
-                        }
-                    }
+    
+        // Cek apakah notifikasi sudah dibaca
+        if (!$this->isRead($notification)) {
+    
+            // Cek apakah WhatsApp terkoneksi dan apakah belum dikirim via WA
+            if ($this->checkNotificationStatus() && $notification->is_sent_wa == 0) {
+                // Jika WhatsApp terkoneksi, coba kirim pesan WA
+                try {
+                    $this->sendWhatsAppNotification($notification);
+                    // Jika berhasil, hentikan proses tanpa perlu mencoba OS atau Email
+                    return;
+                } catch (Exception $e) {
+                    // Jika gagal, lanjutkan dengan OneSignal
                 }
             }
+    
+            // Cek jika WA gagal atau tidak terkoneksi, dan belum dikirim via OneSignal
+            if ($notification->is_sent_onesignal == 0) {
+                try {
+                    $this->sendOneSignalNotification($notification);
+                    // Jika berhasil kirim OneSignal, hentikan proses tanpa mencoba Email
+                    return;
+                } catch (Exception $e) {
+                    // Jika OneSignal gagal, lanjutkan ke Email
+                }
+            }
+    
+            // Jika WA dan OneSignal gagal, dan belum dikirim via Email
+            if ($notification->is_sent_email == 0) {
+                try {
+                    $this->sendEmailNotification($notification);
+                    // Email adalah upaya terakhir, tidak ada langkah lanjutan.
+                } catch (Exception $e) {
+                    // Jika Email juga gagal, tangani kesalahan sesuai kebutuhan
+                }
+            }
+    
+            // Semua metode telah dicoba, pastikan statusnya diperbarui dalam metode masing-masing
         }
     }
+    
 
     protected function processHighPriority($notification)
     {
         $now = Carbon::now();
-
-        if ($this->isRead($notification) == 0) {
-            // Ensure that notifications are sent only if they haven't been sent before
-            if ($notification->is_sent_wa == 0 || $notification->is_sent_onesignal == 0 || $notification->is_sent_email == 0) {
-                if (is_null($notification->last_message_sent)) {
-                    if (!is_null($notification->whatsapp) && $notification->is_sent_wa == 0) {
-                        if ($this->checkNotificationStatus()) {
-                            $this->sendWhatsAppNotification($notification);
-                        } else {
-                            $this->sendFallbackNotification($notification);
-                        }
-                    }
-                    if (!is_null($notification->onesignal) && $notification->is_sent_onesignal == 0) {
-                        $this->sendOneSignalNotification($notification);
-                    }
-                    if (!is_null($notification->email) && $notification->is_sent_email == 0) {
-                        $this->sendEmailNotification($notification);
-                    }
-                } else {
-                    // Check the time interval before resending
-                    $lastMessageSent = $notification->last_message_sent;
-                    $nowTimestamp = $now->getTimestamp();
-                    $lastMessageTimestamp = $lastMessageSent->getTimestamp();
-                    $timeDifferenceInMinutes = ($nowTimestamp - $lastMessageTimestamp) / 60;
-
-                    if ($timeDifferenceInMinutes >= 60) {
-                        if ($notification->is_sent_wa == 0) {
-                            $this->sendWhatsAppNotification($notification);
-                        }
-                        if ($notification->is_sent_onesignal == 0) {
-                            $this->sendOneSignalNotification($notification);
-                        }
-                        if ($notification->is_sent_email == 0) {
-                            $this->sendEmailNotification($notification);
-                        }
-                    }
+    
+        // Cek apakah notifikasi sudah dibaca
+        if (!$this->isRead($notification)) {
+    
+            // Cek apakah WhatsApp terkoneksi dan apakah belum dikirim via WA
+            if ($this->checkNotificationStatus() && $notification->is_sent_wa == 0) {
+                // Jika WhatsApp terkoneksi, coba kirim pesan WA
+                try {
+                    $this->sendWhatsAppNotification($notification);
+                    // Jika berhasil, hentikan proses tanpa perlu mencoba OS atau Email
+                    return;
+                } catch (Exception $e) {
+                    // Jika gagal, lanjutkan dengan OneSignal
                 }
             }
-        }
-    }
-
-    protected function sendFallbackNotification($notification)
-    {
-        $now = Carbon::now();
     
-        if ($this->isRead($notification) == 0) {
-            if (is_null($notification->last_message_sent)) {
-                // First-time send
-                if (!is_null($notification->whatsapp) && $notification->is_sent_wa == 0) {
-                    if ($this->checkNotificationStatus()) {
-                        $this->sendWhatsAppNotification($notification);
-                    }
-                }
-                if (!is_null($notification->onesignal) && $notification->is_sent_onesignal == 0) {
+            // Cek jika WA gagal atau tidak terkoneksi, dan belum dikirim via OneSignal
+            if ($notification->is_sent_onesignal == 0) {
+                try {
                     $this->sendOneSignalNotification($notification);
-                }
-                if (!is_null($notification->email) && $notification->is_sent_email == 0) {
-                    $this->sendEmailNotification($notification);
-                }
-            } else {
-                // Check the time interval before resending
-                $lastMessageSent = $notification->last_message_sent;
-                $nowTimestamp = $now->getTimestamp();
-                $lastMessageTimestamp = $lastMessageSent->getTimestamp();
-                $timeDifferenceInMinutes = ($nowTimestamp - $lastMessageTimestamp) / 60;
-    
-                if ($timeDifferenceInMinutes >= 60) {
-                    if ($notification->is_sent_wa == 0) {
-                        $this->sendWhatsAppNotification($notification);
-                    }
-                    if ($notification->is_sent_onesignal == 0) {
-                        $this->sendOneSignalNotification($notification);
-                    }
-                    if ($notification->is_sent_email == 0) {
-                        $this->sendEmailNotification($notification);
-                    }
+                    // Jika berhasil kirim OneSignal, hentikan proses tanpa mencoba Email
+                    return;
+                } catch (Exception $e) {
+                    // Jika OneSignal gagal, lanjutkan ke Email
                 }
             }
+    
+            // Jika WA dan OneSignal gagal, dan belum dikirim via Email
+            if ($notification->is_sent_email == 0) {
+                try {
+                    $this->sendEmailNotification($notification);
+                    // Email adalah upaya terakhir, tidak ada langkah lanjutan.
+                } catch (Exception $e) {
+                    // Jika Email juga gagal, tangani kesalahan sesuai kebutuhan
+                }
+            }
+    
+            // Semua metode telah dicoba, pastikan statusnya diperbarui dalam metode masing-masing
         }
     }
+    
     
     private function sendWhatsAppNotification($notification)
     {
@@ -347,6 +309,7 @@ class ResendNotifications extends Command
         }
     }
 
+
     private function sendEmergencyEmail($notification, $errorMessage)
     {
         $data = [
@@ -438,4 +401,6 @@ class ResendNotifications extends Command
             $this->sendEmergencyEmail($errorNotification, $message);
         }
     }
+
+
 }
