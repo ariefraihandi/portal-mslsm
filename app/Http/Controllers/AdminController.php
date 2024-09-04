@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserDetail;
+use App\Models\Atasan;
 use App\Models\Menu;
 use App\Models\MenuSub;
 use App\Models\MenuSubChild;
@@ -15,6 +17,7 @@ use App\Models\AccessSubChild;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use DataTables;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -140,6 +143,65 @@ class AdminController extends Controller
     }
     
 
+    public function showUserList(Request $request)
+    {
+        $accessMenus = $request->get('accessMenus');          
+        $id                     = $request->session()->get('user_id');
+        $roles              = Role::all();
+        $instansi           = Instansi::all();
+        $user               = User::with('detail')->find($id); 
+        $userDetails        = UserDetail::all();
+        $totalData          = $userDetails->count();      
+        $atasans            = UserDetail::join('jabatan', 'users_detail.jabatan', '=', 'jabatan.name')
+                            ->where('users_detail.jabatan', '!=', 'PPNPN')
+                            ->orderBy('jabatan.id', 'asc')
+                            ->select('users_detail.*', 'jabatan.name as jabatan_name')
+                            ->get();
+
+        // Menghitung jumlah data dengan posisi tertentu
+        $hakimCount = $userDetails->where('posisi', 'HAKIM')->count();
+        $pegawaiCount = $userDetails->where('posisi', 'PEGAWAI')->count();
+        $cakimCount = $userDetails->where('posisi', 'CAKIM')->count();
+        $cpnsCount = $userDetails->where('posisi', 'CPNS')->count();
+        $ppnpnCount = $userDetails->where('posisi', 'PPNPN')->count();
+        $magangCount = $userDetails->where('posisi', 'MAGANG')->count();
+
+        $hakimCakimCount = $hakimCount + $cakimCount;
+        $pegawaiCpnsCount = $pegawaiCount + $cpnsCount;
+    
+        // Menghitung persentase
+        $hakimCakimPercentage = $totalData > 0 ? ($hakimCakimCount / $totalData) * 100 : 0;
+        $pegawaiCpnsPercentage = $totalData > 0 ? ($pegawaiCpnsCount / $totalData) * 100 : 0;
+        $ppnpnPercentage = $totalData > 0 ? ($ppnpnCount / $totalData) * 100 : 0;
+        $magangPercentage = $totalData > 0 ? ($magangCount / $totalData) * 100 : 0;
+
+        $data = [
+            'title' => 'List',
+            'subtitle' => 'Bilik Hukum',
+            'sidebar' => $accessMenus,
+            'roles' => $roles,
+            'users'             => $user,
+            'atasans' => $atasans,
+            'roles' => $roles, 
+            'totalData' => $totalData,        
+            'hakimCount' => $hakimCount,
+            'pegawaiCount' => $pegawaiCount,
+            'cakimCount' => $cakimCount,
+            'cpnsCount' => $cpnsCount,
+            'ppnpnCount' => $ppnpnCount,
+            'magangCount' => $magangCount,
+            'hakimCakimPercentage' => $hakimCakimPercentage,
+            'instansi' => $instansi,
+            'pegawaiCpnsPercentage' => $pegawaiCpnsPercentage,
+            'ppnpnPercentage' => $ppnpnPercentage,
+            'magangPercentage' => $magangPercentage,
+            'hakimCakimCount' => $hakimCakimCount,
+            'pegawaiCpnsCount' => $pegawaiCpnsCount,
+        ];        
+        return view('Admin.userList', $data);
+
+    }
+
     public function showRole(Request $request)
     {
         $accessMenus = $request->get('accessMenus');          
@@ -163,7 +225,6 @@ class AdminController extends Controller
         
         return view('Admin.roleAccess', $data);
     }
-    
 
     //addItem
         public function addMenu(Request $request)
@@ -438,6 +499,42 @@ class AdminController extends Controller
                     'success' => true,
                     'title' => 'Success',
                     'message' => 'Role updated successfully',
+                ],
+            ]);
+        }
+
+        public function changeRole(Request $request)
+        {
+            // Validate the request
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'role_id' => 'required|exists:roles,id',
+            ]);
+
+            // Find the user by ID
+            $user = User::find($request->user_id);
+
+            if ($user) {
+                // Update the role_id
+                $user->role = $request->role_id;
+                $user->save();
+
+                // Return response with SweetAlert
+                return redirect()->back()->with([
+                    'response' => [
+                        'success' => true,
+                        'title' => 'Success',
+                        'message' => 'Role updated successfully',
+                    ],
+                ]);
+            }
+
+            // Handle the case where user is not found (just in case)
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => false,
+                    'title' => 'Error',
+                    'message' => 'User not found',
                 ],
             ]);
         }
@@ -799,6 +896,119 @@ class AdminController extends Controller
     }
 
 //Get Data
+    public function userGetData(Request $request)
+    {
+        if ($request->ajax()) {
+            $today = Carbon::today()->toDateString();
+            $data = UserDetail::select([
+                'users_detail.id', 'users_detail.user_id', 'users_detail.name', 
+                'users_detail.image', 'jabatan.name as jabatan', 'users_detail.nip', 
+                'users_detail.whatsapp', 'users_detail.posisi', 'users_detail.created_at', 
+                'atasans.atasan_id', 'atasans.atasan_dua_id', 'users.email'
+            ])
+            ->join('jabatan', 'users_detail.jabatan', '=', 'jabatan.name')
+            ->leftJoin('atasans', 'users_detail.user_id', '=', 'atasans.user_id')
+            ->leftJoin('users as atasan1', 'atasans.atasan_id', '=', 'atasan1.id')
+            ->leftJoin('users as atasan2', 'atasans.atasan_dua_id', '=', 'atasan2.id')
+            ->leftJoin('users', 'users_detail.user_id', '=', 'users.id')
+            ->orderBy('jabatan.id', 'asc')
+            ->get();
+            
+    
+            return Datatables::of($data)
+                ->addColumn('no', function () {
+                    static $counter = 0;
+                    $counter++;
+                    return $counter;
+                })
+                ->addColumn('pegawai', function ($user) {
+                    $userImage = $user->image ? asset('assets/img/avatars/' . $user->image) : asset('assets/img/avatars/default-image.jpg');
+                    $name = $user->name ?? 'Unknown User';
+                    $userNip = $user->nip ?? 'Unknown NIP';
+                    $userSince = Carbon::parse($user->created_at)->format('d F Y');
+                    $userData = User::where('id', $user->user_id)->first(); 
+                    $userName = $userData ? $userData->username : 'Unknown Username';
+    
+                    $output = '
+                        <div class="d-flex align-items-center">
+                            <img src="' . $userImage . '" alt="Avatar" class="rounded-circle me-2" width="40" height="40">
+                            <div>
+                                <span class="fw-bold">' . e($name) . '</span>
+                                <small class="text-muted d-block">' . e($userName) . '</small>';
+    
+                    if ($userNip !== 'default_nip') {
+                        $output .= '<small class="text-muted d-block">' . e($userNip) . '</small>';
+                    }
+    
+                    $output .= '<small class="text-muted d-block">Since: ' . $userSince . '</small>
+                            </div>
+                        </div>';
+    
+                    return $output;
+                })
+                ->addColumn('jabatan', function ($user) {
+                    $jabatan = '<strong>' . e($user->jabatan) . '</strong>';
+                    if (($user->jabatan) !== 'PPNPN') {
+                        $jabatan .= '<br>(' . e($user->posisi) . ')';
+                    }
+                    return $jabatan;
+                })
+                ->addColumn('atasan', function ($user) {
+                    // Ambil data atasan berdasarkan user_id dari tabel Atasan
+                    $atasan = Atasan::where('user_id', $user->user_id)->first(); // Mengambil record atasan berdasarkan user_id
+                    
+                    $output = '';
+                
+                    // Cek apakah ada data atasan
+                    if ($atasan) {
+                        // Ambil nama dari UserDetail berdasarkan atasan_id dan atasan_dua_id
+                        $atasan1 = UserDetail::where('user_id', $atasan->atasan_id)->pluck('name')->first();
+                        $atasan2 = UserDetail::where('user_id', $atasan->atasan_dua_id)->pluck('name')->first();
+                        
+                        // Tampilkan Nama Atasan 1 jika ID atasan valid (tidak 10000)
+                        if ($atasan->atasan_id != 10000) {
+                            $output .= '<strong>Atasan 1:</strong> ' . e($atasan1 ? $atasan1 : 'Tidak Diketahui');
+                            $output .= ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan1\', \'' . e($user->name) . '\')"></i><br>';
+                        }
+                
+                        // Tampilkan Nama Atasan 2 jika ID atasan valid (tidak 10000)
+                        if ($atasan->atasan_dua_id != 10000) {
+                            $output .= '<strong>Atasan 2:</strong> ' . e($atasan2 ? $atasan2 : 'Tidak Diketahui');
+                            $output .= ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan2\', \'' . e($user->name) . '\')"></i><br>';
+                        }
+                    } else {
+                        $output .= ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan1\', \'' . e($user->name) . '\')"></i><br>';
+                        $output .= ' | <i class="fa fa-edit" style="cursor:pointer;" onclick="showSelectAtasanModal(' . $user->user_id . ', \'atasan2\', \'' . e($user->name) . '\')"></i><br>';
+                    }
+                
+                    return $output;
+                })    
+                ->addColumn('kontak', function ($user) {
+                    $whatsapp = $user->whatsapp ? e($user->whatsapp) : 'Tidak ada';
+                    $email = $user->email ? e($user->email) : 'Tidak ada';
+    
+                    return '<strong>WA:</strong><br>' . $whatsapp . '<br><strong>Email:</strong><br> ' . $email;
+                })             
+                ->addColumn('role', function ($user) {
+                    // Fetch the role ID directly from the $user object
+                    $userData = User::where('id', $user->user_id)->first(); 
+                    $roleId = $userData ? $userData->role : null;
+                    $roleName = $roleId ? \App\Models\Role::where('id', $roleId)->value('name') : 'Unknown Role';
+                
+                    // Return the role name as a badge with data attributes for role ID and role name
+                    return '<span class="badge bg-secondary" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#roleModal" data-user-id="' . e($userData->id) . '" data-role-id="' . e($roleId) . '" data-role-name="' . e($roleName) . '">' . e($roleName) . '</span>';
+                })  
+                ->addColumn('action', function($row){
+                    $deleteUrl = route('pegawai.destroy', ['id' => $row->user_id]);
+                    $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>';
+                    $btn .= '<a href="javascript:void(0)" class="delete btn btn-danger btn-sm" onclick="showDeleteConfirmation(\'' . $deleteUrl . '\', \'Apakah Anda yakin ingin menghapus item ini?\')"><i class="fa fa-trash"></i></a>';
+                    return $btn;
+                })
+                ->rawColumns(['pegawai', 'atasan', 'action', 'kontak', 'jabatan', 'role'])
+                ->make(true);
+        }
+    }
+
     public function getDataMenu()
     {
         $menus = Menu::all();
@@ -1031,35 +1241,32 @@ class AdminController extends Controller
     }
 
     public function getDataRoleList(Request $request)
-{
-    if ($request->ajax()) {
-        $data = Role::all();
-        return Datatables::of($data)
-            
-            ->addColumn('no', function ($data) {
-                static $counter = 0;
-                $counter++;
-                return $counter;
-            })
-            ->addColumn('action', function($row){
-                $id = $row->id;
-                $roleName = $row->name;
+    {
+        if ($request->ajax()) {
+            $data = Role::all();
+            return Datatables::of($data)
+                
+                ->addColumn('no', function ($data) {
+                    static $counter = 0;
+                    $counter++;
+                    return $counter;
+                })
+                ->addColumn('action', function($row){
+                    $id = $row->id;
+                    $roleName = $row->name;
 
-                $editIcon = '<a href="#" class="text-body edit-role-btn" data-toggle="modal" data-target="#editRole_' . $id . '">' .
-                            '<i class="bx bxs-message-square-edit mx-1"></i>' .
-                            '</a>';
-                $deleteIcon = '<a href="#" class="text-body" onclick="showDeleteConfirmation(\'/delete/role?id=' . $id . '\', \'Hapus Role: ' . $roleName . ' ?\')">' .
-                              '<i class="bx bx-trash"></i>' .
-                              '</a>';
+                    $editIcon = '<a href="#" class="text-body edit-role-btn" data-toggle="modal" data-target="#editRole_' . $id . '">' .
+                                '<i class="bx bxs-message-square-edit mx-1"></i>' .
+                                '</a>';
+                    $deleteIcon = '<a href="#" class="text-body" onclick="showDeleteConfirmation(\'/delete/role?id=' . $id . '\', \'Hapus Role: ' . $roleName . ' ?\')">' .
+                                '<i class="bx bx-trash"></i>' .
+                                '</a>';
 
-                return $editIcon . $deleteIcon;
-            })
-            ->rawColumns(['action'])
-            ->make(true);
-    }
-}
-
-    
-      
+                    return $editIcon . $deleteIcon;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+    }      
 //! Get Data
 }

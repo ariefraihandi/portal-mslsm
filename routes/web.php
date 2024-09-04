@@ -9,6 +9,7 @@ use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\GuestBookController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PtspController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KepegawaianController;
 use App\Http\Controllers\BarcodeController;
@@ -42,8 +43,10 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
     Route::get('/user/account/cuti',                [UserController::class, 'showCuti'])->name('user.account.cuti');
     
     Route::get('/aplikasi/siramasakan',             [SiramasakanController::class, 'index'])->name('aplikasi.siramasakan');
+    Route::get('/aplikasi/ptsp/informasi',          [PtspController::class, 'index'])->name('aplikasi.ptsp.informasi');
     
     Route::get('/admin/user/access',                [AdminController::class, 'showRole'])->name('admin.user.access');
+    Route::get('/admin/user/list',                  [AdminController::class, 'showUserList'])->name('admin.user.list');
     Route::get('/admin/menu/menulist',              [AdminController::class, 'showMenu'])->name('admin.menu.menulist');
     Route::get('/admin/menu/submenulist',           [AdminController::class, 'showsubMenu'])->name('admin.menu.submenulist');
     Route::get('/admin/menu/childmenulist',         [AdminController::class, 'showchildMenu'])->name('admin.menu.childmenulist');
@@ -71,6 +74,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/role/add',                        [AdminController::class, 'addRole'])->name('role.add');
     Route::post('/role/edit',                       [AdminController::class, 'editRole'])->name('role.edit');
     Route::get('/delete/role',                      [AdminController::class, 'deleteRole'])->name('role.delete');
+    Route::post('/change/role',                     [AdminController::class, 'changerole'])->name('changeRole');
     Route::post('/account/avatar',                  [UserController::class, 'uploadAvatar'])->name('upload.avatar');
     Route::post('/account/update',                  [UserController::class, 'accountUpdate'])->name('account.update');    
    
@@ -111,6 +115,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/getdata/submenu',                  [AdminController::class, 'getDatasubMenu'])->name('getDatasubMenu');
     Route::get('/getdata/childmenu',                [AdminController::class, 'getDataChildMenu'])->name('getDataChildMenu');
     Route::get('/getdata/rolelist',                 [AdminController::class, 'getDataRoleList'])->name('roleList.getData');
+    Route::get('/getdata/user',                     [AdminController::class, 'userGetData'])->name('user.getData');
     Route::get('/getdata/pegawai',                  [KepegawaianController::class, 'pegawaiGetData'])->name('pegawai.getData');
     Route::get('/getdata/cutisisa',                 [CutiController::class, 'sisaCutigetData'])->name('cutis.getData');
     Route::get('/getdata/cuti/permohonan',          [CutiController::class, 'permohonanCutigetData'])->name('cutis.permohonangetData');

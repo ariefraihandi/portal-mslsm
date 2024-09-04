@@ -4,7 +4,9 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Notification;
+use App\Models\WhatsappErrorNotification;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Http;
 use Exception;
 use Carbon\Carbon;
 use OneSignal;
@@ -25,13 +27,12 @@ class ResendNotifications extends Command
         // Dapatkan waktu saat ini
         $currentHour = Carbon::now()->format('H');
     
-        // Jika jam di luar jam kerja (08:00 - 18:00), hentikan proses
-        if ($currentHour < 0 || $currentHour >= 18) {
+        if ($currentHour < 8 || $currentHour >= 18) {
+        // if ($currentHour >= 18) {
             $this->info('Notification processing skipped outside of working hours.');
             return;
         }
-    
-        // Ambil semua notifikasi yang belum dibaca di salah satu channel
+            
         $notifications = Notification::where(function ($query) {
             $query->where('is_read_wa', 0)
                 ->orWhere('is_read_email', 0)
@@ -40,117 +41,133 @@ class ResendNotifications extends Command
         ->orderBy('priority', 'desc')
         ->orderBy('created_at', 'asc')
         ->get();
-    
+
         foreach ($notifications as $notification) {
             if ($notification->whatsapp || $notification->email || $notification->onesignal) {
                 if (in_array($notification->priority, ['low', 'medium'])) {
                     $this->processLowMediumPriority($notification);
-                    sleep(5); // Tunda 5 detik antar notifikasi
                 } elseif ($notification->priority == 'high') {
                     $this->processHighPriority($notification);
-                    sleep(5); // Tunda 5 detik antar notifikasi
                 }
+                sleep(5); // Tunda 5 detik antar notifikasi
             }
         }
-    
+        
         $this->info('Notification processing completed.');
     }
     
 
     protected function processLowMediumPriority($notification)
-    {            
-        // Jika last_message_sent null, kirim WhatsApp terlebih dahulu
-        if (is_null($notification->last_message_sent)) {
-            $now = Carbon::now();
-        
-            if (!is_null($notification->whatsapp)) {
-                $this->sendWhatsAppNotification($notification);
-            }
-        
-            // Cek apakah email tersedia, jika ada kirim Email
-            if (!is_null($notification->email)) {
-                $this->sendEmailNotification($notification);
-            }
-        
-            // Update waktu pengiriman terakhir setelah pengiriman pesan
-            $notification->update(['last_message_sent' => $now]);
-        } else {
-            // Cek apakah pesan belum dibaca di semua kanal
-            if (!$this->isRead($notification)) {
-                $now = Carbon::now();
+    {
+        $now = Carbon::now();
+    
+        if (!$this->isRead($notification)) {
+            // Jika belum pernah ada pesan yang dikirim
+            if (is_null($notification->last_message_sent)) {
+                if (!is_null($notification->whatsapp)) {
+                    // Periksa status WhatsApp
+                    if ($this->checkNotificationStatus()) {
+                        $this->sendWhatsAppNotification($notification);
+                    } else {                        
+                        $this->sendFallbackNotification($notification);
+                    }
+                }
+            } else {
+                // Jika sudah ada pesan yang dikirim, cek waktu terakhir pengiriman
                 $lastMessageSent = $notification->last_message_sent;
-                
-                // Konversi waktu sekarang dan waktu `last_message_sent` ke timestamp (detik sejak epoch)
                 $nowTimestamp = $now->getTimestamp();
                 $lastMessageTimestamp = $lastMessageSent->getTimestamp();
-                
-                // Hitung selisih waktu dalam detik
                 $timeDifferenceInSeconds = $nowTimestamp - $lastMessageTimestamp;
+                $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;
                     
-                // Konversi selisih waktu ke menit
-                $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;                
-
-                // Jika waktu yang telah berlalu lebih dari 1 menit
-                if ($timeDifferenceInMinutes >= 1) {
-                    if ($notification->is_sent_wa == 1 && $notification->is_sent_onesignal == 0 && $notification->is_sent_email == 0) {
-                        // Kirim OneSignal jika WA sudah dikirim tetapi OneSignal belum
+                if ($timeDifferenceInMinutes >= 60) {
+                    if ($notification->is_sent_wa == 0) {
+                        $this->sendWhatsAppNotification($notification);
+                    }
+                    if ($notification->is_sent_onesignal == 0) {
                         $this->sendOneSignalNotification($notification);
-                        $notification->update(['is_sent_onesignal' => 1, 'last_message_sent' => $now]);
-                    } elseif ($notification->is_sent_wa == 1 && $notification->is_sent_onesignal == 1 && $notification->is_sent_email == 0) {
-                        // Kirim Email jika WA dan OneSignal sudah dikirim tetapi Email belum
+                    }
+                    if ($notification->is_sent_email == 0) {
                         $this->sendEmailNotification($notification);
-                        $notification->update(['is_sent_email' => 1, 'last_message_sent' => $now]);
+                    }
+                }
+            }
+        }
+    }
+
+    protected function processHighPriority($notification)
+    {
+        $now = Carbon::now();
+    
+        if (!$this->isRead($notification)) {
+            // Jika belum pernah ada pesan yang dikirim
+            if (is_null($notification->last_message_sent)) {
+                if (!is_null($notification->whatsapp)) {
+                    // Periksa status WhatsApp
+                    if ($this->checkNotificationStatus()) {
+                        $this->sendWhatsAppNotification($notification);
+                    } else {                        
+                        $this->sendFallbackNotification($notification);
+                    }
+                }
+            } else {                
+                $lastMessageSent = $notification->last_message_sent;
+                $nowTimestamp = $now->getTimestamp();
+                $lastMessageTimestamp = $lastMessageSent->getTimestamp();
+                $timeDifferenceInSeconds = $nowTimestamp - $lastMessageTimestamp;
+                $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;
+                    
+                if ($timeDifferenceInMinutes >= 60) {
+                    if ($notification->is_sent_wa == 0) {
+                        $this->sendWhatsAppNotification($notification);
+                    }
+                    if ($notification->is_sent_onesignal == 0) {
+                        $this->sendOneSignalNotification($notification);
+                    }
+                    if ($notification->is_sent_email == 0) {
+                        $this->sendEmailNotification($notification);
+                    }
+                }
+            }
+        }
+    }
+
+    protected function sendFallbackNotification($notification)
+    {
+        $now = Carbon::now();
+    
+        if (!$this->isRead($notification)) {
+            if (is_null($notification->last_message_sent)) {
+                if (!is_null($notification->whatsapp)) {
+                    if ($this->checkNotificationStatus()) {
+                        $this->sendWhatsAppNotification($notification);
+                    } else {
+                        $this->sendFallbackNotification($notification);
+                    }
+                }
+            } else {
+                
+                $lastMessageSent = $notification->last_message_sent;
+                $nowTimestamp = $now->getTimestamp();
+                $lastMessageTimestamp = $lastMessageSent->getTimestamp();
+                $timeDifferenceInSeconds = $nowTimestamp - $lastMessageTimestamp;
+                $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;
+                
+                if ($timeDifferenceInMinutes >= 60) {
+                    if ($notification->is_sent_wa == 0) {
+                        $this->sendWhatsAppNotification($notification);
+                    }
+                    if ($notification->is_sent_onesignal == 0) {
+                        $this->sendOneSignalNotification($notification);
+                    }
+                    if ($notification->is_sent_email == 0) {
+                        $this->sendEmailNotification($notification);
                     }
                 }
             }
         }
     }
     
-    protected function processHighPriority($notification)
-    {            
-        if (is_null($notification->last_message_sent)) {
-            $now = Carbon::now();
-        
-            if (!is_null($notification->whatsapp)) {
-                $this->sendWhatsAppNotification($notification);
-            }
-            
-            if (!is_null($notification->email)) {
-                $this->sendEmailNotification($notification);
-            }
-        
-            $notification->update(['last_message_sent' => $now]);
-        } else {
-            // Cek apakah pesan belum dibaca di semua kanal
-            if (!$this->isRead($notification)) {
-                $now = Carbon::now();
-                $lastMessageSent = $notification->last_message_sent;
-                
-                // Konversi waktu sekarang dan waktu `last_message_sent` ke timestamp (detik sejak epoch)
-                $nowTimestamp = $now->getTimestamp();
-                $lastMessageTimestamp = $lastMessageSent->getTimestamp();
-                
-                // Hitung selisih waktu dalam detik
-                $timeDifferenceInSeconds = $nowTimestamp - $lastMessageTimestamp;
-                    
-                // Konversi selisih waktu ke menit
-                $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;                
-
-                // Jika waktu yang telah berlalu lebih dari 1 menit
-                if ($timeDifferenceInMinutes >= 1) {
-                    if ($notification->is_sent_wa == 1 && $notification->is_sent_onesignal == 0 && $notification->is_sent_email == 0) {
-                        // Kirim OneSignal jika WA sudah dikirim tetapi OneSignal belum
-                        $this->sendOneSignalNotification($notification);
-                        $notification->update(['is_sent_onesignal' => 1, 'last_message_sent' => $now]);
-                    } elseif ($notification->is_sent_wa == 1 && $notification->is_sent_onesignal == 1 && $notification->is_sent_email == 0) {
-                        // Kirim Email jika WA dan OneSignal sudah dikirim tetapi Email belum
-                        $this->sendEmailNotification($notification);
-                        $notification->update(['is_sent_email' => 1, 'last_message_sent' => $now]);
-                    }
-                }
-            }
-        }
-    }
     
 
     
@@ -158,7 +175,7 @@ class ResendNotifications extends Command
     {
         // Pastikan nomor WhatsApp ada
         if (empty($notification->whatsapp)) {
-            $notification->update(['eror_wa' => 'WhatsApp number not available']);
+            $notification->update(['error_wa' => 'WhatsApp number not available']);
             return;
         }
 
@@ -189,7 +206,7 @@ class ResendNotifications extends Command
 
             if (curl_errno($curl)) {
                 $error_msg = curl_error($curl);
-                $notification->update(['eror_wa' => $error_msg]);
+                $notification->update(['error_wa' => $error_msg]);
                 $this->sendEmergencyEmail($notification, $error_msg);
                 throw new Exception($error_msg);
             }
@@ -197,7 +214,7 @@ class ResendNotifications extends Command
             $http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             if ($http_status !== 200) {
                 $error_msg = "Failed to send WhatsApp message";
-                $notification->update(['eror_wa' => $error_msg]);
+                $notification->update(['error_wa' => $error_msg]);
                 $this->sendEmergencyEmail($notification, $error_msg);
                 throw new Exception($error_msg);
             }
@@ -206,18 +223,19 @@ class ResendNotifications extends Command
 
             if (!isset($response_data['status']) || $response_data['status'] !== true) {
                 $error_msg = "Failed to send WhatsApp message: " . $response_data['message'];
-                $notification->update(['eror_wa' => $error_msg]);
+                $notification->update(['error_wa' => $error_msg]);
                 $this->sendEmergencyEmail($notification, $error_msg);
                 throw new Exception($error_msg);
             }
 
-            // Jika berhasil, update status dan jumlah pengiriman
+            // Jika berhasil, update status, jumlah pengiriman, dan waktu pengiriman terakhir
             $notification->update([
                 'is_sent_wa' => 1,
-                'count_sent_wa' => $notification->count_sent_wa + 1
+                'count_sent_wa' => $notification->count_sent_wa + 1,
+                'last_message_sent' => now() // Update the last message sent timestamp
             ]);
         } catch (Exception $e) {
-            $notification->update(['eror_wa' => $e->getMessage()]);
+            $notification->update(['error_wa' => $e->getMessage()]);
             $this->sendEmergencyEmail($notification, $e->getMessage());
             throw $e;
         } finally {
@@ -228,7 +246,7 @@ class ResendNotifications extends Command
     private function sendOneSignalNotification($notification)
     {
         if (empty($notification->onesignal)) {
-            $notification->update(['eror_onesignal' => 'OneSignal ID not available']);
+            $notification->update(['error_onesignal' => 'OneSignal ID not available']);
             return;
         }
 
@@ -251,7 +269,7 @@ class ResendNotifications extends Command
 
             if ($response->getStatusCode() !== 200) {
                 $error_msg = "Failed to send OneSignal notification";
-                $notification->update(['eror_onesignal' => $error_msg]);
+                $notification->update(['error_onesignal' => $error_msg]);
                 $this->sendEmergencyEmail($notification, $error_msg);
                 Log::error("OneSignal Error: HTTP Status Code: {$response->getStatusCode()}");
                 throw new Exception($error_msg);
@@ -261,19 +279,20 @@ class ResendNotifications extends Command
 
             if (isset($response_data['errors'])) {
                 $error_msg = "Failed to send OneSignal notification: " . json_encode($response_data['errors']);
-                $notification->update(['eror_onesignal' => $error_msg]);
+                $notification->update(['error_onesignal' => $error_msg]);
                 $this->sendEmergencyEmail($notification, $error_msg);
                 Log::error("OneSignal Error: " . json_encode($response_data['errors']));
                 throw new Exception($error_msg);
             }
 
-            // Jika berhasil, update status dan jumlah pengiriman
+            // Jika berhasil, update status, jumlah pengiriman, dan waktu pengiriman terakhir
             $notification->update([
                 'is_sent_onesignal' => 1,
-                'count_sent_onesignal' => $notification->count_sent_onesignal + 1
+                'count_sent_onesignal' => $notification->count_sent_onesignal + 1,
+                'last_message_sent' => now() // Update the last message sent timestamp
             ]);
         } catch (Exception $e) {
-            $notification->update(['eror_onesignal' => $e->getMessage()]);
+            $notification->update(['error_onesignal' => $e->getMessage()]);
             $this->sendEmergencyEmail($notification, $e->getMessage());
             Log::error("Failed to send OneSignal notification.", ['error' => $e->getMessage()]);
             throw $e;
@@ -284,7 +303,7 @@ class ResendNotifications extends Command
     {
         // Pastikan alamat email ada
         if (empty($notification->email)) {
-            $notification->update(['eror_email' => 'Email address not available']);
+            $notification->update(['error_email' => 'Email address not available']);
             return;
         }
 
@@ -301,17 +320,19 @@ class ResendNotifications extends Command
                     ->subject('Unread Notification Reminder');
             });
 
-            // Jika berhasil, update status dan jumlah pengiriman
+            // Jika berhasil, update status, jumlah pengiriman, dan waktu pengiriman terakhir
             $notification->update([
                 'is_sent_email' => 1,
-                'count_sent_email' => $notification->count_sent_email + 1
+                'count_sent_email' => $notification->count_sent_email + 1,
+                'last_message_sent' => now() // Update the last message sent timestamp
             ]);
         } catch (Exception $e) {
-            $notification->update(['eror_email' => $e->getMessage()]);
+            $notification->update(['error_email' => $e->getMessage()]);
             $this->sendEmergencyEmail($notification, $e->getMessage());
             throw $e;
         }
     }
+
 
     private function sendEmergencyEmail($notification, $errorMessage)
     {
@@ -338,4 +359,72 @@ class ResendNotifications extends Command
     {
         return $notification->is_read_wa && $notification->is_read_onesignal && $notification->is_read_email;
     }
+
+    protected function checkNotificationStatus()
+    {
+        try {
+            $response = Http::get('https://app.whacenter.com/api/statusDevice', [
+                'device_id' => env('DEVICE_ID', 'default_device_id'), // Ganti dengan device ID dari .env
+            ]);
+
+            if ($response->successful()) {
+                $responseData = $response->json();
+
+                if ($responseData['status'] === false) {
+                    $error_msg = $responseData['message'] ?? 'Unknown error occurred';
+                    $this->info('WhatsApp device error: ' . $error_msg);
+                    $this->logAndSaveError('WhatsApp device error', $error_msg);
+                    return false;
+                }
+
+                $deviceStatus = $responseData['data']['status'] ?? 'UNKNOWN';
+                if ($deviceStatus !== 'CONNECTED') {
+                    $error_msg = 'WhatsApp device is not connected. Status: ' . $deviceStatus;
+                    $this->info($error_msg);
+                    $this->logAndSaveError('WhatsApp device is not connected', $error_msg);
+                    return false;
+                }
+
+                $this->info('WhatsApp device is connected.');
+                return true;
+            } else {
+                $error_msg = "Failed to get device status. HTTP Status: " . $response->status();
+                $this->info($error_msg);
+                $this->logAndSaveError('HTTP Error', $error_msg);
+                return false;
+            }
+        } catch (Exception $e) {
+            $error_msg = 'Error occurred while checking device status: ' . $e->getMessage();
+            $this->info($error_msg);
+            $this->logAndSaveError('Exception', $error_msg);
+            return false;
+        }
+    }
+
+    protected function logAndSaveError($title, $message)
+    {
+        Log::error($title . ': ' . $message);
+
+        // Periksa apakah error yang sama sudah ada di database hari ini
+        $existingError = WhatsappErrorNotification::where('error_description', $message)
+            ->whereDate('created_at', Carbon::today())
+            ->first();
+
+        if ($existingError) {
+            // Jika error yang sama sudah tercatat hari ini, batalkan pengiriman email
+            $this->info('Error has already been notified today, skipping email.');
+        } else {
+            // Simpan error ke dalam database
+            $errorNotification = WhatsappErrorNotification::create([
+                'error_description' => $message,
+                'is_notified' => true,
+                'created_at' => Carbon::now(),
+            ]);
+
+            // Setelah menyimpan, kirim email darurat dan perbarui is_notified jika berhasil
+            $this->sendEmergencyEmail($errorNotification, $message);
+        }
+    }
+
+
 }

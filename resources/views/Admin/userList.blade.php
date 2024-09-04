@@ -179,10 +179,9 @@
                         <tr>
                             <th>No</th>
                             <th>Pegawai</th>
-                            <th>Jabatan dan<br>Posisi</th>                                                    
-                            <th>Atasan</th>                            
+                            <th>Jabatan dan<br>Posisi</th>                                                                                                       
                             <th>Kontak</th>
-                            <th>Status</th>
+                            <th>Role</th>
                             <th>Aksi</th>       
                         </tr>
                     </thead>
@@ -332,65 +331,38 @@
         </div>
     </div>
 
-    <div class="modal fade" id="selectAtasanModal" tabindex="-1" aria-labelledby="selectAtasanModalLabel" aria-hidden="true">
+    <!-- Modal Structure -->
+    <div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="selectAtasanModalLabel">Pilih Atasan untuk <span id="userName"></span></h5>
+                    <h5 class="modal-title" id="roleModalLabel">Ganti Role Pegawai</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="selectAtasanForm">
+                    <form id="roleForm" action="{{ route('changeRole') }}" method="POST">
                         @csrf
-                        <input type="hidden" id="userId" name="user_id">
-                        <input type="hidden" id="atasanType" name="atasan_type">
+                        <input type="hidden" name="user_id" id="userId">
                         <div class="mb-3">
-                            <label for="atasanSelect" class="form-label">Pilih Atasan</label>
-                            <select id="atasanSelect" name="atasan_id" class="form-control">
-                                @foreach($atasans as $atasan)
-                                    <option value="{{ $atasan->user_id }}">{{ $atasan->name }} | {{ $atasan->jabatan }}</option>
+                            <label for="roleSelect" class="form-label">Role</label>
+                            <select class="form-select" id="roleSelect" name="role_id" required>
+                                @foreach(\App\Models\Role::all() as $role)
+                                    <option value="{{ $role->id }}">{{ ucwords($role->name) }}</option>
                                 @endforeach
-                                <option value="10000">Tidak Ada</option>
                             </select>
-                        </div>
-                        <button type="button" class="btn btn-primary" onclick="saveAtasan()">Simpan</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="editKehadiranModal" tabindex="-1" aria-labelledby="editKehadiranModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editKehadiranModalLabel">Ubah Kehadiran untuk <span id="editUserName"></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editKehadiranForm">
-                        @csrf
-                        <input type="hidden" id="editUserId" name="user_id">
-                        <div class="mb-3">
-                            <label for="kehadiranStatusSelect" class="form-label">Status Kehadiran</label>
-                            <select class="form-control" id="kehadiranStatusSelect" name="kehadiran_status">
-                                <option value="Hadir">Hadir</option>
-                                <option value="Tidak Hadir">Tidak Hadir</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="kehadiranKeterangan" class="form-label">Keterangan</label>
-                            <textarea class="form-control" id="kehadiranKeterangan" name="keterangan" rows="3"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-primary" onclick="saveKehadiran()">Simpan</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="roleForm" class="btn btn-primary">Save changes</button>
                 </div>
             </div>
         </div>
     </div>
+    <!-- End Modal Structure -->
+
+
     
 @endsection
 
@@ -401,108 +373,35 @@
 
 @push('footer-Sec-script')
 
-<script type="text/javascript">
-    $(document).ready(function() {
-        $('#pegawai-table').DataTable({
-            "pageLength": 25,
-            processing: true,
-            serverSide: true,
-            ajax: '{!! route('pegawai.getData') !!}',
-            columns: [
-                { data: 'no', name: 'no' }, 
-                { data: 'pegawai', name: 'pegawai' },
-                { data: 'jabatan', name: 'jabatan' },         
-                { data: 'atasan', name: 'atasan' },
-                { data: 'kontak', name: 'kontak' },
-                { data: 'status', name: 'status' },
-                { data: 'action', name: 'action', orderable: false, searchable: false }
-            ]
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#pegawai-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{!! route('user.getData') !!}',
+                columns: [
+                    { data: 'no', name: 'no' }, 
+                    { data: 'pegawai', name: 'pegawai' },
+                    { data: 'jabatan', name: 'jabatan' },         
+                    { data: 'kontak', name: 'kontak' },
+                    { data: 'role', name: 'role' },                    
+                    { data: 'action', name: 'action', orderable: false, searchable: false }
+                ]
+            });
+
+            // Event listener for showing the modal with pre-selected role
+            $('#roleModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget); // Button that triggered the modal
+                var userId = button.data('user-id'); // Extract user ID from data-* attributes
+                var roleId = button.data('role-id'); // Extract role ID from data-* attributes
+                
+                $('#userId').val(userId);
+
+                // Set the selected role in the dropdown
+                $('#roleSelect').val(roleId);
+            });
         });
-    });
-
-    function showEditKehadiranModal(userId, userName) {
-        $('#editUserId').val(userId);
-        $('#editUserName').text(userName);
-        $('#editKehadiranModal').modal('show');
-    }
-
-    function saveKehadiran() {
-        var userId = $('#editUserId').val();
-        var kehadiranStatus = $('#kehadiranStatusSelect').val();
-        var keterangan = $('#kehadiranKeterangan').val();
-
-        var data = {
-            user_id: userId,
-            kehadiran_status: kehadiranStatus,
-            keterangan: keterangan,
-            _token: $('input[name="_token"]').val()
-        };
-
-        $.ajax({
-            url: '{{ route('update-kehadiran') }}',
-            method: 'POST',
-            data: data,
-            success: function(response) {
-                $('#editKehadiranModal').modal('hide');
-                $('#pegawai-table').DataTable().ajax.reload();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: 'Status kehadiran berhasil diperbarui'
-                });
-            },
-            error: function(response) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal',
-                    text: 'Gagal memperbarui status kehadiran. Silakan coba lagi.'
-                });
-            }
-        });
-    }
-
-    function showSelectAtasanModal(userId, atasanType, userName) {
-        $('#userId').val(userId);
-        $('#atasanType').val(atasanType);
-        $('#userName').text(userName);
-        $('#selectAtasanModal').modal('show');
-    }
-
-    function saveAtasan() {
-        var userId = $('#userId').val();
-        var atasanType = $('#atasanType').val();
-        var atasanId = $('#atasanSelect').val();
-        
-        var data = {
-            user_id: userId,
-            atasan_type: atasanType,
-            atasan_id: atasanId,
-            _token: $('input[name="_token"]').val()
-        };
-
-        $.ajax({
-            url: '{{ route('save-atasan') }}',
-            method: 'POST',
-            data: data,
-            success: function(response) {
-                $('#selectAtasanModal').modal('hide');
-                $('#pegawai-table').DataTable().ajax.reload();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: 'Atasan ' + (atasanType === 'atasan1' ? 'satu' : 'dua') + ' (' + response.userName + ') berhasil ditambahkan'
-                });
-            },
-            error: function(response) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal',
-                    text: 'Gagal menambahkan atasan. Silakan coba lagi.'
-                });
-            }
-        });
-    }
-</script>
+    </script>
 
 
   <script>
