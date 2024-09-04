@@ -108,13 +108,9 @@ class ResendNotifications extends Command
     
         // Cek apakah notifikasi sudah dibaca
         if (!$this->isRead($notification)) {
-    
-            // Cek apakah WhatsApp terkoneksi dan apakah belum dikirim via WA
             if ($this->checkNotificationStatus() && $notification->is_sent_wa == 0) {
-                // Jika WhatsApp terkoneksi, coba kirim pesan WA
                 try {
                     $this->sendWhatsAppNotification($notification);
-                    // Jika berhasil, hentikan proses tanpa perlu mencoba OS atau Email
                     return;
                 } catch (Exception $e) {
                     // Jika gagal, lanjutkan dengan OneSignal
@@ -141,8 +137,6 @@ class ResendNotifications extends Command
                     // Jika Email juga gagal, tangani kesalahan sesuai kebutuhan
                 }
             }
-    
-            // Semua metode telah dicoba, pastikan statusnya diperbarui dalam metode masing-masing
         }
     }
     
