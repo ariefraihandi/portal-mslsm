@@ -60,28 +60,30 @@ class ResendNotifications extends Command
     {
         $now = Carbon::now();
 
-        // Pastikan notifikasi belum dibaca dan belum dikirim
         if ($this->isRead($notification) == 0) {
-            // Pastikan belum ada pesan yang dikirim
+            // Ensure that notifications are sent only if they haven't been sent before
             if ($notification->is_sent_wa == 0 || $notification->is_sent_onesignal == 0 || $notification->is_sent_email == 0) {
                 if (is_null($notification->last_message_sent)) {
-                    // Jika belum pernah mengirim pesan dan WhatsApp tersedia
-                    if (!is_null($notification->whatsapp)) {
+                    // First-time send
+                    if (!is_null($notification->whatsapp) && $notification->is_sent_wa == 0) {
                         if ($this->checkNotificationStatus()) {
-                            if ($notification->is_sent_wa == 0) {
-                                $this->sendWhatsAppNotification($notification);
-                            }
+                            $this->sendWhatsAppNotification($notification);
                         } else {
                             $this->sendFallbackNotification($notification);
                         }
                     }
+                    if (!is_null($notification->onesignal) && $notification->is_sent_onesignal == 0) {
+                        $this->sendOneSignalNotification($notification);
+                    }
+                    if (!is_null($notification->email) && $notification->is_sent_email == 0) {
+                        $this->sendEmailNotification($notification);
+                    }
                 } else {
-                    // Jika sudah pernah mengirim pesan, cek interval waktu
+                    // Check the time interval before resending
                     $lastMessageSent = $notification->last_message_sent;
                     $nowTimestamp = $now->getTimestamp();
                     $lastMessageTimestamp = $lastMessageSent->getTimestamp();
-                    $timeDifferenceInSeconds = $nowTimestamp - $lastMessageTimestamp;
-                    $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;
+                    $timeDifferenceInMinutes = ($nowTimestamp - $lastMessageTimestamp) / 60;
 
                     if ($timeDifferenceInMinutes >= 60) {
                         if ($notification->is_sent_wa == 0) {
@@ -99,33 +101,33 @@ class ResendNotifications extends Command
         }
     }
 
-
     protected function processHighPriority($notification)
     {
         $now = Carbon::now();
 
-        // Pastikan notifikasi belum dibaca dan belum dikirim
         if ($this->isRead($notification) == 0) {
-            // Pastikan belum ada pesan yang dikirim
+            // Ensure that notifications are sent only if they haven't been sent before
             if ($notification->is_sent_wa == 0 || $notification->is_sent_onesignal == 0 || $notification->is_sent_email == 0) {
                 if (is_null($notification->last_message_sent)) {
-                    // Jika belum pernah mengirim pesan dan WhatsApp tersedia
-                    if (!is_null($notification->whatsapp)) {
+                    if (!is_null($notification->whatsapp) && $notification->is_sent_wa == 0) {
                         if ($this->checkNotificationStatus()) {
-                            if ($notification->is_sent_wa == 0) {
-                                $this->sendWhatsAppNotification($notification);
-                            }
+                            $this->sendWhatsAppNotification($notification);
                         } else {
                             $this->sendFallbackNotification($notification);
                         }
                     }
+                    if (!is_null($notification->onesignal) && $notification->is_sent_onesignal == 0) {
+                        $this->sendOneSignalNotification($notification);
+                    }
+                    if (!is_null($notification->email) && $notification->is_sent_email == 0) {
+                        $this->sendEmailNotification($notification);
+                    }
                 } else {
-                    // Jika sudah pernah mengirim pesan, cek interval waktu
+                    // Check the time interval before resending
                     $lastMessageSent = $notification->last_message_sent;
                     $nowTimestamp = $now->getTimestamp();
                     $lastMessageTimestamp = $lastMessageSent->getTimestamp();
-                    $timeDifferenceInSeconds = $nowTimestamp - $lastMessageTimestamp;
-                    $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;
+                    $timeDifferenceInMinutes = ($nowTimestamp - $lastMessageTimestamp) / 60;
 
                     if ($timeDifferenceInMinutes >= 60) {
                         if ($notification->is_sent_wa == 0) {
@@ -147,25 +149,27 @@ class ResendNotifications extends Command
     {
         $now = Carbon::now();
     
-        if (!$this->isRead($notification)) {
+        if ($this->isRead($notification) == 0) {
             if (is_null($notification->last_message_sent)) {
-                if (!is_null($notification->whatsapp)) {
+                // First-time send
+                if (!is_null($notification->whatsapp) && $notification->is_sent_wa == 0) {
                     if ($this->checkNotificationStatus()) {
-                        if ($notification->is_sent_wa == 0){
-                            $this->sendWhatsAppNotification($notification);
-                        }
-                    } else {
-                        $this->sendFallbackNotification($notification);
+                        $this->sendWhatsAppNotification($notification);
                     }
                 }
+                if (!is_null($notification->onesignal) && $notification->is_sent_onesignal == 0) {
+                    $this->sendOneSignalNotification($notification);
+                }
+                if (!is_null($notification->email) && $notification->is_sent_email == 0) {
+                    $this->sendEmailNotification($notification);
+                }
             } else {
-                
+                // Check the time interval before resending
                 $lastMessageSent = $notification->last_message_sent;
                 $nowTimestamp = $now->getTimestamp();
                 $lastMessageTimestamp = $lastMessageSent->getTimestamp();
-                $timeDifferenceInSeconds = $nowTimestamp - $lastMessageTimestamp;
-                $timeDifferenceInMinutes = $timeDifferenceInSeconds / 60;
-                
+                $timeDifferenceInMinutes = ($nowTimestamp - $lastMessageTimestamp) / 60;
+    
                 if ($timeDifferenceInMinutes >= 60) {
                     if ($notification->is_sent_wa == 0) {
                         $this->sendWhatsAppNotification($notification);
