@@ -67,7 +67,9 @@ class ResendNotifications extends Command
                 if (!is_null($notification->whatsapp)) {
                     // Periksa status WhatsApp
                     if ($this->checkNotificationStatus()) {
-                        $this->sendWhatsAppNotification($notification);
+                        if ($notification->is_sent_wa == 0){
+                            $this->sendWhatsAppNotification($notification);
+                        }
                     } else {                        
                         $this->sendFallbackNotification($notification);
                     }
@@ -105,7 +107,9 @@ class ResendNotifications extends Command
                 if (!is_null($notification->whatsapp)) {
                     // Periksa status WhatsApp
                     if ($this->checkNotificationStatus()) {
-                        $this->sendWhatsAppNotification($notification);
+                        if ($notification->is_sent_wa == 0){
+                            $this->sendWhatsAppNotification($notification);
+                        }
                     } else {                        
                         $this->sendFallbackNotification($notification);
                     }
@@ -140,7 +144,9 @@ class ResendNotifications extends Command
             if (is_null($notification->last_message_sent)) {
                 if (!is_null($notification->whatsapp)) {
                     if ($this->checkNotificationStatus()) {
-                        $this->sendWhatsAppNotification($notification);
+                        if ($notification->is_sent_wa == 0){
+                            $this->sendWhatsAppNotification($notification);
+                        }
                     } else {
                         $this->sendFallbackNotification($notification);
                     }
