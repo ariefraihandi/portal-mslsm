@@ -27,7 +27,7 @@ class ResendNotifications extends Command
         // Dapatkan waktu saat ini
         $currentHour = Carbon::now()->format('H');
     
-        if ($currentHour < 8 || $currentHour >= 18) {
+        if ($currentHour < 8 || $currentHour >= 17) {
         // if ($currentHour >= 18) {
             $this->info('Notification processing skipped outside of working hours.');
             return;
@@ -61,22 +61,16 @@ class ResendNotifications extends Command
     {
         $now = Carbon::now();
     
-        // Cek apakah notifikasi sudah dibaca
         if (!$this->isRead($notification)) {
     
-            // Cek apakah WhatsApp terkoneksi dan apakah belum dikirim via WA
             if ($this->checkNotificationStatus() && $notification->is_sent_wa == 0) {
-                // Jika WhatsApp terkoneksi, coba kirim pesan WA
                 try {
                     $this->sendWhatsAppNotification($notification);
-                    // Jika berhasil, hentikan proses tanpa perlu mencoba OS atau Email
                     return;
                 } catch (Exception $e) {
-                    // Jika gagal, lanjutkan dengan OneSignal
                 }
             }
     
-            // Cek jika WA gagal atau tidak terkoneksi, dan belum dikirim via OneSignal
             if ($notification->is_sent_onesignal == 0) {
                 try {
                     $this->sendOneSignalNotification($notification);
@@ -101,7 +95,6 @@ class ResendNotifications extends Command
         }
     }
     
-
     protected function processHighPriority($notification)
     {
         $now = Carbon::now();
@@ -139,8 +132,7 @@ class ResendNotifications extends Command
             }
         }
     }
-    
-    
+     
     private function sendWhatsAppNotification($notification)
     {
         // Pastikan nomor WhatsApp ada
