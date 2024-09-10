@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/select2/select2.css" />
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/tagify/tagify.css" />
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/bootstrap-select/bootstrap-select.css" />
-    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/typeahead-js/typeahead.css" />
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/sweetalert2/sweetalert2.css" /> 
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/css/pages/ptsp.css" />  
 @endpush
@@ -510,7 +509,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Simpan Perkara</button>
+                        <button type="submit" id="submitPerkara" class="btn btn-primary">Simpan Perkara</button>
                     </div>
                 </form>
             </div>
@@ -706,6 +705,9 @@
             $('#formTambahPerkara').on('submit', function(e) {
                 e.preventDefault(); // Mencegah form submit normal
 
+                // Disable tombol submit
+                $('#submitPerkara').prop('disabled', true);
+
                 // Ambil data dari form
                 var perkaraName = $('#perkara_name').val();
                 var perkaraJenis = $('input[name="perkara_jenis"]:checked').val();
@@ -738,6 +740,7 @@
                                 'error'
                             );
                         }
+                        $('#submitPerkara').prop('disabled', false); // Enable tombol kembali jika gagal
                     },
                     error: function(xhr) {
                         Swal.fire({
@@ -746,9 +749,11 @@
                             icon: 'error',
                             confirmButtonText: 'OK'
                         });
+                        $('#submitPerkara').prop('disabled', false); // Enable tombol kembali jika error
                     }
                 });
             });
+
 
             // Handle edit button click
             $('#tabelPerkara').on('click', '.edit-btn', function() {
@@ -870,6 +875,4 @@
             });
         });
     </script>
-
-
 @endpush

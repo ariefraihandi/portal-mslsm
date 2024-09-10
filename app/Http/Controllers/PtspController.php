@@ -26,7 +26,43 @@ class PtspController extends Controller
  
         return view('Ptsp.informasi', $data);
     }
-    
+
+    public function show(Request $request)
+    {
+        // Ambil parameter 'perkara' dari query string
+        $perkaraId = $request->query('perkara');
+        // Validasi jika diperlukan
+        if (!$perkaraId) {
+            return redirect()->back()->with('error', 'Parameter perkara tidak ditemukan.');
+        }
+
+        $perkara = Perkara::find($perkaraId);
+
+        if (!$perkara) {
+            return redirect()->back()->with('error', 'Data perkara tidak ditemukan.');
+        }
+
+        $syarat = SyaratPerkara::where('id_perkara', $perkaraId)->get();
+        $data = [
+            'title'         => 'Syarat',
+            'subtitle'      => 'Portal MS Lhokseumawe',               
+            'syarat'      => $syarat,               
+            'perkara'      => $perkara,               
+        ];
+        
+        return view('LandingPage.PTSP.syarat', $data);
+    }
+
+    public function layananMandiri()
+    {
+        $data = [
+            'title'         => 'Layanan Mandiri',
+            'subtitle'      => 'Portal MS Lhokseumawe',               
+        ];
+        
+        return view('LandingPage.PTSP.layananMandiri', $data);
+    }
+
     public function permohonanStore(Request $request)
     {
         $request->validate([
@@ -131,33 +167,174 @@ class PtspController extends Controller
                 'id_perkara' => 'required|exists:perkara,id'
             ]);
     
+            // Cari jumlah syarat yang sudah ada untuk id_perkara yang sama
+            $lastUrutan = SyaratPerkara::where('id_perkara', $validated['id_perkara'])
+                            ->max('urutan'); // Mendapatkan urutan terbesar untuk id_perkara tertentu
+    
+            // Set urutan baru, jika belum ada syarat, mulai dari 1
+            $newUrutan = $lastUrutan ? $lastUrutan + 1 : 1;
+    
             // Simpan data syarat ke database
             SyaratPerkara::create([
                 'name_syarat' => $validated['name_syarat'],
                 'discretion_syarat' => $validated['discretion_syarat'],
                 'url_syarat' => $validated['url_syarat'],
                 'id_perkara' => $validated['id_perkara'],
-                'urutan' => 1,
+                'urutan' => $newUrutan,
             ]);
     
             // Jika berhasil, redirect dengan pesan sukses
-            return response()->json(['success' => true, 'message' => 'Syarat berhasil ditambahkan.']);
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => true,
+                    'title' => 'Success',
+                    'message' => 'Syarat berhasil disimpan',
+                ],
+            ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Jika validasi gagal, kembalikan JSON dengan pesan kesalahan
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal.',
-                'errors' => $e->errors()
-            ], 422);
+            return redirect()->back()->withErrors($e->validator)->withInput();
         } catch (\Exception $e) {
-            // Tangani error lain selain validasi
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan, coba lagi nanti.',
-                'error' => $e->getMessage()
-            ], 500);
+            // Jika ada exception lain, kembalikan dengan pesan error
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => false,
+                    'title' => 'Error',
+                    'message' => 'Terjadi kesalahan saat menyimpan syarat',
+                ],
+            ]);
         }
     }
+
+    public function updateSyarat(Request $request)
+    {
+        // Validasi input dari form
+        $validated = $request->validate([
+            'id' => 'required|exists:syarat_perkara,id',  // Validasi id syarat
+            'name_syarat' => 'required|string|max:255',
+            'discretion_syarat' => 'required|string',
+            'url_syarat' => 'required',
+        ]);
+
+        // Cari syarat berdasarkan ID
+        $syarat = SyaratPerkara::findOrFail($validated['id']);
+
+        // Update data syarat
+        $syarat->update([
+            'name_syarat' => $validated['name_syarat'],
+            'discretion_syarat' => $validated['discretion_syarat'],
+            'url_syarat' => $validated['url_syarat'],
+        ]);
+
+        // Redirect back dengan pesan sukses
+        return redirect()->back()->with([
+            'response' => [
+                'success' => true,
+                'title' => 'Success',
+                'message' => 'Berhasil Diubah',
+            ],
+        ]);
+    }
+
+    public function destroySyarat(Request $request)
+    {
+        // Ambil ID dari query string
+        $id = $request->query('id');
+        // Cari syarat berdasarkan ID
+        $syarat = SyaratPerkara::findOrFail($id);
+
+        // Hapus syarat
+        $syarat->delete();
+
+        return redirect()->back()->with([
+            'response' => [
+                'success' => true,
+                'title' => 'Success',
+                'message' => 'Berhasil Diubah',
+            ],
+        ]);
+    }
+
+    public function moveUp($id)
+    {
+        // Ambil data syarat yang dipilih berdasarkan ID
+        $syarat = SyaratPerkara::find($id);
+        
+        if ($syarat && $syarat->urutan > 1) {
+            // Cari syarat dengan urutan satu nomor lebih kecil
+            $syaratAbove = SyaratPerkara::where('urutan', $syarat->urutan - 1)->first();
+            
+            if ($syaratAbove) {
+                // Tukar urutan
+                $syaratAbove->urutan += 1;
+                $syarat->urutan -= 1;
+                
+                $syaratAbove->save();
+                $syarat->save();
+            } else {
+                // Jika tidak ada elemen di atasnya, cukup kurangi urutan
+                $syarat->urutan -= 1;
+                $syarat->save();
+            }
+            
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => true,
+                    'title' => 'Success',
+                    'message' => 'Syarat moved up successfully',
+                ],
+            ]);
+        }
+
+        return redirect()->back()->with([
+            'response' => [
+                'success' => false,
+                'title' => 'Error',
+                'message' => 'Failed to move syarat up',
+            ],
+        ]);
+    }
+
+    public function moveDown($id)
+    {
+        // Ambil data syarat yang dipilih berdasarkan ID
+        $syarat = SyaratPerkara::find($id);
+        
+        if ($syarat) {
+            // Cari syarat dengan urutan satu nomor lebih besar
+            $syaratBelow = SyaratPerkara::where('urutan', $syarat->urutan + 1)->first();
+            
+            if ($syaratBelow) {
+                // Tukar urutan
+                $syaratBelow->urutan -= 1;
+                $syarat->urutan += 1;
+                
+                $syaratBelow->save();
+                $syarat->save();
+            } else {
+                // Jika tidak ada elemen di bawahnya, cukup tambah urutan
+                $syarat->urutan += 1;
+                $syarat->save();
+            }
+            
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => true,
+                    'title' => 'Success',
+                    'message' => 'Syarat moved down successfully',
+                ],
+            ]);
+        }
+    
+        return redirect()->back()->with([
+            'response' => [
+                'success' => false,
+                'title' => 'Error',
+                'message' => 'Failed to move syarat down',
+            ],
+        ]);
+    }    
+    
     
     public function perkaraStore(Request $request)
     {
@@ -298,7 +475,7 @@ class PtspController extends Controller
         }
 
         // Generate the URL for the requirements using the UUID of the perkara
-        $syaratUrl = route('syarat.show', ['uuid' => $perkara->id]);
+        $syaratUrl = url('syarat') . '?perkara=' . $perkara->id;
 
         // Determine salutation based on gender
         $salutation = $jenis_kelamin === 'Perempuan' ? 'ibu' : 'bapak';

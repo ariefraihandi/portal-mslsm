@@ -57,9 +57,14 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
         
         
 Route::middleware([AuthMiddleware::class])->group(function () {
-    Route::get('/syarat/{uuid}',                    [PtspController::class, 'show'])->name('syarat.show');
+    Route::get('/syarat',                           [PtspController::class, 'show'])->name('syarat.show');
     Route::get('/ptsp/syarat',                      [PtspController::class, 'tambahSyarat'])->name('tambah.syarat');
     Route::get('/delete/perkara',                   [PtspController::class, 'deletePerkara'])->name('perkara.delete');
+    Route::get('/syaratPerkara/{id}/move-up',       [PtspController::class, 'moveUp'])->name('syaratPerkara.moveUp');
+    Route::get('/syaratPerkara/{id}/move-down',     [PtspController::class, 'moveDown'])->name('syaratPerkara.moveDown');
+    Route::post('/syarat-perkara/update',           [PtspController::class, 'updateSyarat'])->name('syarat.update');
+    Route::get('/syarat/delete',                    [PtspController::class, 'destroySyarat'])->name('syarat.destroy');
+
     Route::post('/perkara/store',                   [PtspController::class, 'perkaraStore'])->name('perkara.store');   
     Route::post('/perkara/update/{id}',             [PtspController::class, 'updatePerkara']);
     Route::post('/syarat/store',                    [PtspController::class, 'storeSyarat'])->name('syarat.store');
@@ -137,5 +142,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
 Route::get('/cetak/cuti/{id}',                      [CutiController::class, 'cetakCuti'])->name('cetakCuti');
 Route::get('/barcode/scan',                         [BarcodeController::class, 'getSignData'])->name('barcode.scan');
 Route::get('/get-jenis-perkara',                    [PtspController::class, 'getJenisPerkara'])->name('jenis.perkara');
+Route::get('/layanan-mandiri',                      [PtspController::class, 'layananMandiri'])->name('layanan.mandiri');
+
 
 

@@ -55,9 +55,10 @@
             <div class="hero-text-box text-center">
               <h1 class="text-primary hero-title display-8 fw-bold">{{$title}}<br>Perkara {{$perkara->perkara_name}}</h1>               
               <!-- Tombol Tambah Syarat -->
-              <a href="{{ url()->previous() }}" class="btn btn-warning mt-3">
+            <a href="{{ route('aplikasi.ptsp.informasi') }}" class="btn btn-warning mt-3">
                 <i class="bx bx-arrow-back"></i> Kembali
-              </a>      
+            </a>
+            
               <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#tambahSyaratModal">Tambah Syarat</button>
             </div>
           </div>
@@ -79,24 +80,80 @@
               </tr>
             </thead>
             <tbody>
-                @forelse ($syaratPerkara as $index => $syarat)
+                @php
+                    $sortedSyaratPerkara = $syaratPerkara->sortBy('urutan');
+                    $no = 1; // Mulai dari nomor 1
+                @endphp
+            
+                @forelse ($sortedSyaratPerkara as $syarat)
                     <tr>
-                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $no++ }}</td> <!-- Gunakan variabel $no untuk nomor urut -->
                         <td>{{ $syarat->name_syarat }}</td>
                         <td>{{ $syarat->discretion_syarat }}</td>
                         <td><a href="{{ $syarat->url_syarat }}" target="_blank">Lihat Syarat</a></td>
-                        <td>{{ $syarat->urutan }}</td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-primary">Edit</a>
-                            <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                            <div class="d-flex align-items-center">
+                                <div class="ml-2">
+                                    <!-- Icon panah atas -->
+                                    <a href="{{ route('syaratPerkara.moveUp', $syarat->id) }}" class="text-primary">
+                                        <i class='bx bx-up-arrow-alt'></i>
+                                    </a> | 
+                                    <!-- Icon panah bawah -->
+                                    <a href="{{ route('syaratPerkara.moveDown', $syarat->id) }}" class="text-primary">
+                                        <i class='bx bx-down-arrow-alt'></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <!-- Tombol untuk membuka modal edit -->
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ $syarat->id }}">
+                                Edit
+                            </button>
+                            <a href="{{ route('syarat.destroy', ['id' => $syarat->id]) }}" class="btn btn-sm btn-danger">Delete</a>
                         </td>
                     </tr>
+            
+                    <!-- Modal Edit untuk setiap syarat -->
+                    <div class="modal fade" id="editModal{{ $syarat->id }}" tabindex="-1" aria-labelledby="editModalLabel{{ $syarat->id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editModalLabel{{ $syarat->id }}">Edit Syarat</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="POST" action="{{ route('syarat.update') }}">
+                                        @csrf
+                                        <!-- Hidden input untuk mengirimkan id syarat -->
+                                        <input type="hidden" name="id" value="{{ $syarat->id }}">
+                                    
+                                        <div class="mb-3">
+                                            <label for="name_syarat" class="form-label">Nama Syarat</label>
+                                            <input type="text" class="form-control" id="name_syarat{{ $syarat->id }}" name="name_syarat" value="{{ $syarat->name_syarat }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="discretion_syarat" class="form-label">Deskripsi Syarat</label>
+                                            <textarea class="form-control" id="discretion_syarat{{ $syarat->id }}" name="discretion_syarat" required>{{ $syarat->discretion_syarat }}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="url_syarat" class="form-label">Contoh Dokumen (URL)</label>
+                                            <input type="text" class="form-control" id="url_syarat{{ $syarat->id }}" name="url_syarat" value="{{ $syarat->url_syarat }}" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                    </form>                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 @empty
                     <tr>
                         <td colspan="6" class="text-center">Syarat Perkara belum ditambahkan</td>
                     </tr>
                 @endforelse
             </tbody>
+            
+            
           </table>
         </div>
       </section>
@@ -127,8 +184,7 @@
                         </div>
                         <input type="hidden" class="form-control" id="id_perkara" name="id_perkara" value="{{ $perkara->id }}">
                         <button type="submit" class="btn btn-primary">Simpan Syarat</button>
-                    </form>
-                                   
+                    </form>           
                 </div>
             </div>
         </div>
@@ -140,4 +196,26 @@
     <script src="{{ asset('assets') }}/js/front-page-landing.js"></script>
     <script src="{{ asset('assets') }}/vendor/libs/sweetalert2/sweetalert2.js"></script>   
     <script src="{{ asset('assets') }}/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script>
+        document.getElementById('formTambahSyarat').addEventListener('submit', function() {
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true; // Disable tombol submit
+            submitButton.innerHTML = 'Menyimpan...'; // Ubah teks menjadi "Menyimpan..." (opsional)
+        });
+
+        function showSweetAlert(response) {
+            Swal.fire({
+                icon: response.success ? 'success' : 'error',
+                title: response.title,
+                text: response.message,
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('response'))
+                var response = @json(session('response'));
+                showSweetAlert(response);
+            @endif
+        });
+    </script>    
 @endpush
