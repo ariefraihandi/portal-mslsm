@@ -47,39 +47,39 @@
 @endpush
 
 @section('content')
-    <div data-bs-spy="scroll" class="scrollspy-example">
-      <!-- Hero: Start -->
-      <section id="hero-animation">
-        <div id="landingHero" class="section-py landing-hero position-relative">
-          <div class="container">
-            <div class="hero-text-box text-center">
-              <h1 class="text-primary hero-title display-8 fw-bold">{{$title}}<br>Perkara {{$perkara->perkara_name}}</h1>               
-              <!-- Tombol Tambah Syarat -->
-            <a href="{{ route('aplikasi.ptsp.informasi') }}" class="btn btn-success mt-3">
-                <i class='bx bx-down-arrow-circle'></i> Unduh Persyaratan
-            </a>            
+    <div data-bs-spy="scroll" class="scrollspy-example">   
+        <section id="hero-animation">
+            <div id="landingHero" class="section-py landing-hero position-relative">
+            <div class="container">
+                <div class="hero-text-box text-center">
+                <h1 class="text-primary hero-title display-8 fw-bold">{{$title}}<br>Perkara {{$perkara->perkara_name}}</h1>               
+                <!-- Tombol Tambah Syarat -->
+                <a href="{{ route('aplikasi.ptsp.informasi') }}" class="btn btn-success mt-3">
+                    <i class='bx bx-down-arrow-circle'></i> Unduh Persyaratan
+                </a>            
+                </div>
             </div>
-          </div>
-        </div>        
-      </section>
+            </div>        
+        </section>
              
-      <!-- Daftar Syarat dengan DataTables -->
-      <section id="syarat-list" class="section-py">
-        <div class="container">                 
-            <ul class="list-unstyled">
-                @foreach ($syarat->sortBy('urutan') as $index => $item)
-                    <li class="mb-3">
-                        <h2 class="text-primary">{{ $index + 1 }}. {{ $item->name_syarat }}</h2>
-                        <h5><strong>{{ $item->discretion_syarat }}</strong></h5>
-                        @if($item->url_syarat && $item->url_syarat !== '-')
-                            <a href="{{ $item->syarat_url }}" target="_blank" class="btn btn-info">Lihat Dokumen</a>
+        <section id="syarat-list" class="section-py">
+            <div class="container">                 
+                <ul class="list-unstyled">
+                    @foreach ($syarat->sortBy('urutan') as $item)
+                        <li class="mb-3">
+                            <h2 class="text-primary">{{ $loop->iteration }}. {{ $item->name_syarat }}</h2>
+                            <h5><strong>{{ $item->discretion_syarat }}</strong></h5>
+                            @if($item->url_syarat && $item->url_syarat !== '-')
+                                <a href="{{ $item->url_syarat }}" target="_blank" class="btn btn-info">Lihat Dokumen</a>
+                            @endif
+                        </li>
+                        @if(!$loop->last)
+                            <hr> <!-- Garis pembatas -->
                         @endif
-                    </li>
-                @endforeach
-            </ul>            
-        </div>
-    </section>
-    
+                    @endforeach
+                </ul>            
+            </div>
+        </section>             
     </div>
 
     <!-- Modal Tambah Syarat -->

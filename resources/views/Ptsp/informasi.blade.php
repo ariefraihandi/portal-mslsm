@@ -86,7 +86,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="card">
-                                            <h5 class="card-header">Daftar Tabel Pemohin Informasi</h5>
+                                            <h5 class="card-header">Daftar Tabel Pemohon Informasi</h5>
                                             <div class="table-responsive text-nowrap">
                                                 <table class="table" id="pemohonInformasi">
                                                     <thead>
