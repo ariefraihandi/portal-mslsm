@@ -43,8 +43,8 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
     Route::get('/user/account/cuti',                [UserController::class, 'showCuti'])->name('user.account.cuti');
     
     Route::get('/aplikasi/siramasakan',             [SiramasakanController::class, 'index'])->name('aplikasi.siramasakan');
-    Route::get('/aplikasi/ptsp/informasi',          [PtspController::class, 'index'])->name('aplikasi.ptsp.informasi');
-
+    Route::get('/aplikasi/ptsp/informasi',          [PtspController::class, 'showInformasi'])->name('aplikasi.ptsp.informasi');
+    Route::get('/aplikasi/ptsp/produk',             [PtspController::class, 'showProduk'])->name('aplikasi.ptsp.produk');
     
     Route::get('/admin/user/access',                [AdminController::class, 'showRole'])->name('admin.user.access');
     Route::get('/admin/user/list',                  [AdminController::class, 'showUserList'])->name('admin.user.list');
@@ -69,6 +69,16 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/perkara/update/{id}',             [PtspController::class, 'updatePerkara']);
     Route::post('/syarat/store',                    [PtspController::class, 'storeSyarat'])->name('syarat.store');
     Route::post('/permohonan/store',                [PtspController::class, 'permohonanStore'])->name('permohonan.store');
+    Route::post('/permohonan/download',             [PtspController::class, 'permohonanStore'])->name('pemohon.download');    //be
+    Route::get('/delete/pemohoninformasi',          [PtspController::class, 'deletePemohon'])->name('pemohon.delete');    
+    Route::post('/pemohon/upload/document',         [PtspController::class, 'uploadDocument'])->name('pemohon.upload.document');
+
+    Route::get('cetak/receipt/ubahstatus/{id}',     [SiramasakanController::class, 'cetakUbahStatus'])->name('receipt.ubahstatus');
+    Route::post('/update-status',                   [SiramasakanController::class, 'updateStatus'])->name('update.status.capil');
+    
+
+
+    
 
     Route::get('/kepegawaian/cuti/atasan',          [CutiController::class, 'showCutiDetailAtasanLangsung'])->name('kepegawaian.cuti.atasan');
     Route::get('/kepegawaian/cuti/pejabat',         [CutiController::class, 'showCutiDetailpejabat'])->name('kepegawaian.cuti.pejabat');
@@ -135,15 +145,17 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/getdata/cuti/list',                [CutiController::class, 'daftarCutigetData'])->name('cutis.daftarCutidetData');
     Route::get('/getdata/perkara',                  [PtspController::class, 'getPerkaraData'])->name('perkara.data');
     Route::get('pemohon-informasi-data',            [PtspController::class, 'getPemohonInformasiData'])->name('pemohon.informasi.data');
+    Route::get('pemohon-produk-data',               [PtspController::class, 'getPemohonUbahDataData'])->name('pemohon.ubahStatus.data');
 
 });
 
 
 Route::get('/cetak/cuti/{id}',                      [CutiController::class, 'cetakCuti'])->name('cetakCuti');
 Route::get('/barcode/scan',                         [BarcodeController::class, 'getSignData'])->name('barcode.scan');
+Route::get('/barcode/capil/scan',                   [BarcodeController::class, 'getSignData'])->name('barcodestatus.scan');
 Route::get('/get-jenis-perkara',                    [PtspController::class, 'getJenisPerkara'])->name('jenis.perkara');
 Route::get('/layanan-mandiri',                      [PtspController::class, 'layananMandiri'])->name('layanan.mandiri');
-Route::get('/syarat',                           [PtspController::class, 'show'])->name('syarat.show');
+Route::get('/syarat',                               [PtspController::class, 'show'])->name('syarat.show');
 
 
 

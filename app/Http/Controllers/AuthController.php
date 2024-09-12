@@ -48,9 +48,10 @@ class AuthController extends Controller
     
         // Coba melakukan autentikasi
         if (Auth::attempt($credentialsToAttempt)) {
-            // Periksa apakah akun pengguna telah diverifikasi melalui email
+            // Ambil data pengguna
             $user = User::where($loginField, $credentials['email-username'])->first();
     
+            // Periksa apakah akun pengguna telah diverifikasi melalui email dan WhatsApp
             if ($user && (!$user->email_verified_at || !$user->whatsapp_verified_at)) {
                 // Buat pesan kesalahan berdasarkan kondisi yang belum diverifikasi
                 $errorMessage = '';
@@ -60,7 +61,7 @@ class AuthController extends Controller
                 if (!$user->whatsapp_verified_at) {
                     $errorMessage .= 'WhatsApp belum diverifikasi.';
                 }
-            
+    
                 $response = [
                     'success' => false,
                     'title' => 'Gagal',
@@ -68,11 +69,22 @@ class AuthController extends Controller
                 ];
                 return redirect()->back()->with('response', $response);
             }
-            
-            
+    
+            // Cek role pengguna berdasarkan role_id
+            $roleName = Role::where('id', $user->role)->value('name'); // Ambil nama role dari tabel roles berdasarkan id
+    
+            if ($roleName === 'dukcapil') {
+                // Jika role adalah DUKCAPIL, arahkan ke route khusus
+                return redirect()->route('aplikasi.siramasakan')->with('response', [
+                    'success' => true,
+                    'title' => 'Berhasil',
+                    'message' => 'Anda berhasil login sebagai DUKCAPIL.',
+                ]);
+            }
+    
             // Ambil URL tujuan dari sesi atau default ke halaman profil
             $intendedUrl = Session::get('url.intended', route('user.account.detil'));
-            
+    
             // Bersihkan URL tujuan dari sesi
             Session::forget('url.intended');
     
@@ -81,7 +93,7 @@ class AuthController extends Controller
                 'title' => 'Berhasil',
                 'message' => 'Anda berhasil login.',
             ];
-            
+    
             // Redirect ke URL yang disimpan di sesi atau ke halaman profil
             return redirect()->intended($intendedUrl)->with('response', $response);
         }
@@ -99,6 +111,7 @@ class AuthController extends Controller
         // Kembalikan respons ke halaman login
         return redirect()->back()->with('response', $response);
     }
+    
 
     public function showRegisterForm()
     {

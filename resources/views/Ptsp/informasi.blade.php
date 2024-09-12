@@ -11,6 +11,22 @@
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/bootstrap-select/bootstrap-select.css" />
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/sweetalert2/sweetalert2.css" /> 
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/css/pages/ptsp.css" />  
+    <style>
+        table {
+            table-layout: fixed;
+            width: 100%;
+        }
+    
+        th, td {
+            word-wrap: break-word; /* Force long text to wrap inside the cell */
+        }
+    
+        td {
+            white-space: normal; /* Allow text to wrap */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -87,21 +103,19 @@
                                     <div class="row">
                                         <div class="card">
                                             <h5 class="card-header">Daftar Tabel Pemohon Informasi</h5>
-                                            <div class="table-responsive text-nowrap">
-                                                <table class="table" id="pemohonInformasi">
+                                            <div class="table-responsive text-nowrap" style="max-width: 100%; overflow-x: auto;">
+                                                <table class="table" id="pemohonInformasi" style="width: 100%; table-layout: fixed;">
                                                     <thead>
                                                         <tr>
-                                                            <th>Pemohon</th>
-                                                            <th>NIK</th>
-                                                            <th>Alamat</th>
-                                                            <th>Actions</th>
-                                                            <th>Download</th>
-                                                            <th>Status</th>
+                                                            <th style="width: 20%;">Pemohon</th> <!-- Adjust width as needed -->
+                                                            <th style="width: 50%;">Detail</th> <!-- Adjust width as needed -->
+                                                            <th style="width: 15%;">Perkara</th> <!-- Adjust width as needed -->
+                                                            <th style="width: 15%;">Actions</th> <!-- Adjust width as needed -->                                                           
                                                         </tr>
-                                                    </thead>                                                   
+                                                    </thead>
                                                 </table>
-                                                
                                             </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -339,21 +353,11 @@
                                     </label>
                                 </div>
                             </div>
-                        </div>  
-                        <div class="row mb-3">
-                            <div class="col-12">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="1" id="ubah_status" name="ubah_status">
-                                    <label class="form-check-label" for="ubah_status">
-                                        Ubah Status
-                                    </label>
-                                </div>
-                            </div>
-                        </div>                                              
+                        </div>                                          
                         <div class="row mb-3">
                             <div class="col-12">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="text" name="email" id="email" class="form-control">
+                                <input type="text" name="email" id="email" placeholder="Isi (-) Jika Tidak Memiliki Email" class="form-control">
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -372,8 +376,6 @@
                                 </select>
                             </div>
                         </div>
-                        
-                      
                         
                         <div class="row mb-3">
                             <div class="col-12">
@@ -442,6 +444,16 @@
                                 </select>
                             </div>
                         </div> 
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="1" id="ubah_status" name="ubah_status">
+                                    <label class="form-check-label" for="ubah_status">
+                                        Ubah Status (Hanya Centang Jika Pemohon Memilih perkara Dengan Ubah Status)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>      
                         <div class="row mb-3">
                             <div class="col-12">
                                 <label for="rincian-informasi" class="form-label">Rincian Informasi Yang Dibutuhkan (Optional)</label>
@@ -517,6 +529,7 @@
     </div>
 {{-- tambah Perkara --}}
 
+
 @endsection
 
 @push('footer-script')            
@@ -537,16 +550,48 @@
                 serverSide: true,
                 ajax: '{{ route('pemohon.informasi.data') }}',
                 columns: [
-                    { data: 'nama', name: 'nama' },
-                    { data: 'NIK', name: 'NIK' },
-                    { data: 'alamat', name: 'alamat' },
-                    { data: 'actions', name: 'actions', orderable: false, searchable: false },
-                    { data: 'download', name: 'download', orderable: false, searchable: false },
-                    { data: 'ubah_status', name: 'ubah_status' },
+                    { data: 'pemohon', name: 'pemohon' },
+                    { data: 'detail', name: 'detail' },
+                    { data: 'perkara', name: 'perkara' },
+                    { data: 'actions', name: 'actions', orderable: false, searchable: false },                                   
                 ]
             });
         });
+
+        function showSweetAlert(response) {
+            Swal.fire({
+                icon: response.success ? 'success' : 'error',
+                title: response.title,
+                text: response.message,
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('response'))
+                var response = @json(session('response'));
+                showSweetAlert(response);
+            @endif
+        });
     </script>
+
+    <script>
+        function confirmDelete(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This action cannot be undone!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to the delete URL with the ID as a query parameter
+                    window.location.href = '/delete/pemohoninformasi?id=' + id;
+                }
+            });
+        }
+    </script> 
 
     <script>
         $(document).ready(function() {
@@ -576,6 +621,7 @@
                             $('#pekerjaan').val(null).trigger('change');
                             $('#jenis_perkara_gugatan_select').val(null).trigger('change');
                             $('#jenis_perkara_permohonan_select').val(null).trigger('change');
+                            $('#pemohonInformasi').DataTable().ajax.reload();
                         } else {
                             Swal.fire('Gagal!', response.message, 'error');
                         }

@@ -5,13 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Perkara;
+use App\Models\Role;
 use App\Models\SyaratPerkara;
+use App\Models\PemohonUbahStatus;
+use App\Models\Pekerjaan;
+use App\Models\Pendidikan;
+use App\Models\SignsUbahStatus;
 use App\Models\PemohonInformasi;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use DataTables;
 
 class PtspController extends Controller
 {    
-    public function index(Request $request)
+    public function showInformasi(Request $request)
     {
         $accessMenus        = $request->get('accessMenus');
         $id                 = $request->session()->get('user_id');
@@ -25,6 +32,22 @@ class PtspController extends Controller
         ];
  
         return view('Ptsp.informasi', $data);
+    }
+   
+    public function showProduk(Request $request)
+    {
+        $accessMenus        = $request->get('accessMenus');
+        $id                 = $request->session()->get('user_id');
+        $user               = User::with('detail')->find($id); 
+ 
+        $data = [
+            'title'         => 'Produk',
+            'subtitle'      => 'Portal MS Lhokseumawe',
+            'sidebar'       => $accessMenus,
+            'users'         => $user,
+        ];
+ 
+        return view('Ptsp.produk', $data);
     }
 
     public function show(Request $request)
@@ -128,6 +151,174 @@ class PtspController extends Controller
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
             ], 500);
+        }
+    }
+
+    public function deletePemohon(Request $request)
+    {
+        // Retrieve the 'id' from the query string
+        $id = $request->query('id');
+
+        // Find the pemohon record by its ID
+        $pemohon = PemohonInformasi::find($id);
+
+        if ($pemohon) {
+            // Delete the record
+            $pemohon->delete();
+            
+            // Return a response with success, title, and message
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => true,
+                    'title' => 'Success',
+                    'message' => 'Pemohon berhasil dihapus',
+                ],
+            ]);
+        }
+
+        // If the record wasn't found, return an error response
+        return redirect()->back()->with([
+            'response' => [
+                'success' => false,
+                'title' => 'Error',
+                'message' => 'Pemohon tidak ditemukan',
+            ],
+        ]);
+    }
+
+    public function uploadDocument(Request $request)
+    {
+        DB::beginTransaction();
+    
+        try {
+            // Cari role ID berdasarkan nama 'DUKCAPIL'
+            $roleId = Role::where('name', 'DUKCAPIL')->value('id');
+    
+            $user = User::where('role', $roleId)->first();
+    
+            if ($user) {
+                // Ambil data pemohon berdasarkan pemohon_id
+                $pemohon = PemohonInformasi::find($request->input('pemohon_id'));
+
+                if ($pemohon) {
+                    $pengajuan = $request->has('ubah_alamat') ? 'Status & Alamat' : 'Status';
+    
+                    // Buat pesan
+                    $pesan = "Assalamualaikum,\n\n";
+                    $pesan .= "Pengajuan Perubahan ($pengajuan)\n";
+                    $pesan .= "Atas nama, $pemohon->nama.\n\n";
+                    $pesan .= "Tautan Aksi:\n";
+                    $pesan .= route('aplikasi.siramasakan');
+    
+                    $this->sendWhatsappMessageCapil($user->whatsapp, $pesan);
+    
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Pemohon tidak ditemukan.',
+                    ], 404);
+                }
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengguna dengan role DUKCAPIL tidak ditemukan.',
+                ], 404);
+            }
+    
+            // Lakukan validasi input dan simpan dokumen seperti biasa
+            $request->validate([
+                'pemohon_id' => 'required|exists:pemohon_informasi,id',
+                'upload_option' => 'required|in:manual,url',
+                'document' => 'nullable|file|mimes:pdf|max:5120',
+                'external_url' => 'nullable|url',
+                'status_awal' => 'nullable|string|max:255',
+                'status_baru' => 'nullable|string|max:255',
+                'jalan_awal' => 'nullable|string|max:255',
+                'jalan_baru' => 'nullable|string|max:255',
+                'rt_rw_awal' => 'nullable|string|max:255',
+                'rt_rw_baru' => 'nullable|string|max:255',
+                'kel_des_awal' => 'nullable|string|max:255',
+                'kel_des_baru' => 'nullable|string|max:255',
+                'kec_awal' => 'nullable|string|max:255',
+                'kec_baru' => 'nullable|string|max:255',
+                'kab_kota_awal' => 'nullable|string|max:255',
+                'kab_kota_baru' => 'nullable|string|max:255',
+                'provinsi_awal' => 'nullable|string|max:255',
+                'provinsi_baru' => 'nullable|string|max:255',
+            ]);
+    
+            // Simpan dokumen dan update status seperti biasa
+            $url_document = null;
+
+            if ($request->input('upload_option') === 'manual' && $request->hasFile('document')) {
+                $document = $request->file('document');
+                $filename = time() . '-' . $document->getClientOriginalName();
+                $document->move(public_path('documents'), $filename);
+                
+                // Tambahkan full URL dengan route 'index'
+                $url_document = url('/') . '/documents/' . $filename;
+            }
+            
+            if ($request->input('upload_option') === 'url') {
+                $url_document = $request->input('external_url');
+            }
+    
+            // Buat pesan tanda tangan
+            $signMessage = "Saya yang bernama, " . $pemohon->nama . " dengan ini menyatakan telah mengajukan perubahan " . $pengajuan . " pada data Kependudukan Saya di Dinas Kependudukan dan Pencatatan Sipil Kota Lhokseumawe.";
+    
+            // Simpan pesan di tabel sign dengan user_id dari pemohon_id
+            $sign = SignsUbahStatus::create([
+                'pemohon_id' => $request->input('pemohon_id'), // Ambil pemohon_id sebagai user_id
+                'message' => $signMessage,
+            ]);
+    
+            // Simpan data PemohonUbahStatus
+            PemohonUbahStatus::create([
+                'id' => Str::uuid(),
+                'id_pemohon' => $request->input('pemohon_id'),
+                'cheklist_ubah_status' => $request->has('ubah_status'),
+                'cheklist_ubah_alamat' => $request->has('ubah_alamat'),
+                'url_document' => $url_document,
+                'status' => 1,
+                'status_awal' => $request->input('status_awal'),
+                'status_baru' => $request->input('status_baru'),
+                'jalan_awal' => $request->input('jalan_awal'),
+                'jalan_baru' => $request->input('jalan_baru'),
+                'rt_rw_awal' => $request->input('rt_rw_awal'),
+                'rt_rw_baru' => $request->input('rt_rw_baru'),
+                'kel_des_awal' => $request->input('kel_des_awal'),
+                'kel_des_baru' => $request->input('kel_des_baru'),
+                'kec_awal' => $request->input('kec_awal'),
+                'kec_baru' => $request->input('kec_baru'),
+                'kab_kota_awal' => $request->input('kab_kota_awal'),
+                'kab_kota_baru' => $request->input('kab_kota_baru'),
+                'provinsi_awal' => $request->input('provinsi_awal'),
+                'provinsi_baru' => $request->input('provinsi_baru'),
+                'catatan' => null,
+                'id_sign' => $sign->id,
+            ]);
+    
+            // Jika semua operasi berhasil, lakukan commit
+            DB::commit();
+    
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => true,
+                    'title' => 'Success',
+                    'message' => 'Document uploaded and status updated successfully',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            // Jika ada error, lakukan rollback
+            DB::rollBack();
+    
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => false,
+                    'title' => 'Error',
+                    'message' => 'Failed to upload document and update status. ' . $e->getMessage(),
+                ],
+            ]);
         }
     }
     
@@ -335,7 +526,6 @@ class PtspController extends Controller
         ]);
     }    
     
-    
     public function perkaraStore(Request $request)
     {
         // Validasi data
@@ -401,7 +591,6 @@ class PtspController extends Controller
         }
     }
 
-
     public function getPerkaraData()
     {
         // Ambil data perkara
@@ -444,21 +633,116 @@ class PtspController extends Controller
     public function getPemohonInformasiData(Request $request)
     {
         if ($request->ajax()) {
-            $data = PemohonInformasi::select(['id', 'nama', 'NIK', 'alamat', 'ubah_status']);
+            $data = PemohonInformasi::select(['id', 'nama','whatsapp', 'jenis_perkara_gugatan', 'jenis_perkara_permohonan', 'pekerjaan_id', 'pendidikan', 'email', 'NIK', 'alamat', 'ubah_status']);
             return DataTables::of($data)
+                ->addColumn('pemohon', function ($row) {
+                    // Combine 'nama', 'whatsapp', 'email', and 'NIK' in one column
+                    return $row->nama . '<br>' .
+                        $row->whatsapp . '<br>' .
+                        ($row->email ? $row->email . '<br>' : '') .
+                        $row->NIK;
+                })
+                ->addColumn('detail', function ($row) {
+                    // Manually fetch the pekerjaan based on pekerjaan_id
+                    $pekerjaan = Pekerjaan::find($row->pekerjaan_id);
+                    $pendidikan = Pendidikan::find($row->pendidikan); // Assume 'pendidikan' stores the pendidikan ID
+                    $nama_pekerjaan = $pekerjaan ? $pekerjaan->nama_pekerjaan : '-'; // If pekerjaan is found, show the name, else '-'
+                    $nama_pendidikan = $pendidikan ? $pendidikan->name : '-'; // If pendidikan is found, show the name, else '-'
+                
+                    // Display Pekerjaan, Pendidikan, and Alamat in the detail column
+                    return 'Pekerjaan: ' . $nama_pekerjaan . '<br>' .
+                           'Pendidikan: ' . $nama_pendidikan . '<br>' .
+                           'Alamat: ' . $row->alamat;
+                })       
+                ->addColumn('perkara', function ($row) {
+                    // First, check if 'jenis_perkara_gugatan' is set, otherwise check 'jenis_perkara_permohonan'
+                    $perkara_id = $row->jenis_perkara_gugatan ?? $row->jenis_perkara_permohonan;
+                    
+                    // Fetch the corresponding 'perkara_name' from the Perkara model
+                    $perkara = Perkara::find($perkara_id);
+                    $perkara_name = $perkara ? $perkara->perkara_name : '-'; // Fallback to '-' if no perkara found
+    
+                    return $perkara_name;
+                })         
                 ->addColumn('actions', function ($row) {
-                    // Customize your action buttons here
-                    return '<a href="" class="btn btn-primary btn-sm">View</a>';
+                    return '                      
+                        <a href="' . route('pemohon.download', $row->id) . '" target="_blank" class="btn btn-success btn-sm">
+                            <i class="bx bx-download"></i>
+                        </a><br>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(' . $row->id . ')">
+                            <i class="bx bx-trash"></i>
+                        </button>
+                    ';
                 })
-                ->addColumn('download', function ($row) {
-                    // Customize your download button here
-                    return '<a href="" class="btn btn-success btn-sm">Download</a>';
+                                
+                
+                ->rawColumns(['pemohon', 'perkara', 'detail', 'actions'])
+                ->make(true);
+        }
+    }
+    
+    public function getPemohonUbahDataData(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = PemohonInformasi::whereNotNull('ubah_status')
+                                    ->where('ubah_status', 1)
+                                    ->select([
+                                        'id', 'nama', 'whatsapp', 'jenis_perkara_gugatan', 
+                                        'jenis_perkara_permohonan', 'pekerjaan_id', 'pendidikan', 
+                                        'email', 'NIK', 'alamat', 'ubah_status'
+                                    ]);
+    
+            return DataTables::of($data)
+                ->addColumn('pemohon', function ($row) {
+                    // Combine 'nama', 'whatsapp', 'email', and 'NIK' in one column
+                    return $row->nama . '<br>' . 
+                           $row->whatsapp . '<br>' . 
+                           ($row->email ? $row->email . '<br>' : '') . 
+                           $row->NIK;
                 })
-                ->editColumn('ubah_status', function ($row) {
-                    // Show the status, could be as a label or status text
-                    return $row->ubah_status ? 'Aktif' : 'Tidak Aktif';
+                ->addColumn('perkara', function ($row) {
+                    // First, check if 'jenis_perkara_gugatan' is set, otherwise check 'jenis_perkara_permohonan'
+                    $perkara_id = $row->jenis_perkara_gugatan ?? $row->jenis_perkara_permohonan;
+    
+                    // Fetch the corresponding 'perkara_name' from the Perkara model
+                    $perkara = Perkara::find($perkara_id);
+                    return $perkara ? $perkara->perkara_name : '-';
                 })
-                ->rawColumns(['actions', 'download'])
+                ->addColumn('status', function ($row) {
+                    $ubahStatus = PemohonUbahStatus::where('id_pemohon', $row->id)->first();
+                
+                    if ($ubahStatus) {
+                        // Cek status dan tampilkan badge yang sesuai
+                        switch ($ubahStatus->status) {
+                            case '1':
+                                // Status: Sedang diproses
+                                return '<span class="badge bg-primary">Sedang Diproses</span>';
+                            case '2':
+                                // Status: Gagal Proses, tampilkan juga catatan jika ada
+                                return '<span class="badge bg-danger">Gagal Proses</span><br>' . ($ubahStatus->catatan ?? '');
+                            case '3':
+                                // Status: Selesai Proses tapi belum diambil
+                                return '<span class="badge bg-warning">Selesai Proses</span><br>Belum Ambil';
+                            case '4':
+                                // Status: SUCCESS
+                                return '<span class="badge bg-success">SUCCESS</span>';
+                            default:
+                                // Jika status tidak dikenal atau kosong
+                                return '<span class="badge bg-secondary">Status Tidak Diketahui</span>';
+                        }
+                    }
+                
+                    // Jika belum ada data ubah status
+                    return '<span class="badge bg-info">Belum Diproses</span>';
+                })
+                ->addColumn('actions', function ($row) {
+                    return '
+                        <button type="button" class="btn btn-warning btn-sm mb-3" onclick="openUploadModal(' . $row->id . ')">
+                            <i class="bx bx-upload"></i>
+                        </button>                       
+                    ';
+                })
+                ->rawColumns(['pemohon', 'perkara', 'status', 'actions'])
                 ->make(true);
         }
     }
@@ -501,6 +785,52 @@ class PtspController extends Controller
                 'device_id' => $device_id,
                 'number' => $number,
                 'message' => $message,
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+
+        if (curl_errno($curl)) {
+            $error_msg = curl_error($curl);
+            curl_close($curl);
+            throw new Exception($error_msg);
+        }
+
+        $http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        if ($http_status !== 200) {
+            throw new Exception("Failed to send WhatsApp message");
+        }
+
+        $response_data = json_decode($response, true);
+
+        if (isset($response_data['status']) && $response_data['status'] === true) {
+            return true;
+        } else {
+            throw new Exception("Failed to send WhatsApp message");
+        }
+    }
+    
+    protected function sendWhatsappMessageCapil($number, $pesan)
+    {
+        $device_id = env('DEVICE_ID', 'somedefaultvalue');
+    
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://app.whacenter.com/api/send',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => [
+                'device_id' => $device_id,
+                'number' => $number,
+                'message' => $pesan,
             ],
         ]);
 

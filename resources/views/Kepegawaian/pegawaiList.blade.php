@@ -249,6 +249,7 @@
                                     <option value="Calon Hakim">Calon Hakim</option>
                                     <option value="CPNS">CPNS</option>
                                     <option value="PPNPN">PPNPN</option>
+                                    <option value="DUKCAPIL">DUKCAPIL</option>
                                     <option value="Magang">Magang</option>
                                 </select>
                             </div>
@@ -263,6 +264,7 @@
                                     <option value="CAKIM">CAKIM</option>
                                     <option value="CPNS">CPNS</option>
                                     <option value="PPNPN">PPNPN</option>
+                                    <option value="DUKCAPIL">DUKCAPIL</option>                            
                                     <option value="MAGANG">Magang</option>                            
                                 </select>
                             </div>

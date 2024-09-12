@@ -8,6 +8,12 @@
   <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/@form-validation/umd/styles/index.min.css" />
   <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/sweetalert2/sweetalert2.css" /> 
   <link rel="stylesheet" href="{{ asset('assets') }}/vendor/css/pages/page-faq.css" />
+  <style>
+    .badge {
+        cursor: pointer;
+    }
+</style>
+
 @endpush
 
 @section('content')
@@ -29,30 +35,6 @@
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pengajuan">
                     <i class="bx bx-receipt faq-nav-icon me-1"></i>
                     <span class="align-middle">Pengajuan</span>
-                </button>
-                </li>
-                <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#delivery">
-                    <i class="bx bx-shopping-bag faq-nav-icon me-1"></i>
-                    <span class="align-middle">Delivery</span>
-                </button>
-                </li>
-                <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cancellation">
-                    <i class="bx bx-rotate-left faq-nav-icon me-1"></i>
-                    <span class="align-middle">Cancellation & Return</span>
-                </button>
-                </li>
-                <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#orders">
-                    <i class="bx bx-cube faq-nav-icon me-1"></i>
-                    <span class="align-middle">My Orders</span>
-                </button>
-                </li>
-                <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#product">
-                    <i class="bx bx-cog faq-nav-icon me-1"></i>
-                    <span class="align-middle">Product & Services</span>
                 </button>
                 </li>
             </ul>
@@ -106,8 +88,7 @@
                                                         </div>
                                                     </div>
                                                     <span class="fw-semibold d-block mb-1">Pengajuan Bulan Ini</span>
-                                                    <h3 class="card-title mb-2">4</h3>
-                                                    <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#siramasakan">Tambah Permohonan</button>
+                                                    <h3 class="card-title mb-2">{{ $pemohonUbahStatuses->count() }}</h3>
                                                 </div>
                                             </div>
                                         </div>                                        
@@ -119,8 +100,8 @@
                                                             <i class='bx bx-task' style="font-size: 40px; color: #0dfd5d;"></i>
                                                         </div>
                                                     </div>
-                                                    <span class="fw-semibold d-block mb-1">Permohonan Selesai Diproses</span>
-                                                    <h3 class="card-title mb-2">3</h3>
+                                                    <span class="fw-semibold d-block mb-1">Selesai Diproses</span>
+                                                    <h3 class="card-title mb-2">{{$successCount}}</h3>
                                                 </div>
                                             </div>
                                         </div>
@@ -132,8 +113,8 @@
                                                             <i class='bx bx-task' style="font-size: 40px; color: #fd0d0d;"></i>
                                                         </div>
                                                     </div>
-                                                    <span class="fw-semibold d-block mb-1">Permohonan Gagal/Belum Diproses</span>
-                                                    <h3 class="card-title mb-2">5</h3>
+                                                    <span class="fw-semibold d-block mb-1">Gagal/Sedang Diproses</span>
+                                                    <h3 class="card-title mb-2">{{$failedCount}}</h3>
                                                 </div>
                                             </div>
                                         </div>
@@ -146,238 +127,113 @@
                                                     <thead>
                                                         <tr>
                                                             <th>Pemohon</th>
-                                                            <th>NIK</th>
-                                                            <th>Alamat</th>
-                                                            <th>Actions</th>
-                                                            <th>Download</th>
+                                                            <th>Perubahan</th>
+                                                            <th>Receipt</th>
+                                                            <th>Document</th>                                                        
                                                             <th>Status</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <!-- Tabel body data -->
+                                                        @foreach ($pemohonUbahStatuses as $status)
+                                                        <tr>
+                                                            <!-- Pemohon -->
+                                                            <td>{{ $status->pemohon->nama ?? 'Tidak ditemukan' }}<br>{{ $status->pemohon->NIK ?? 'Tidak ditemukan' }}</td>
+                                            
+                                                            <!-- NIK -->
+                                                            <td>
+                                                                @if ($status->cheklist_ubah_status && $status->cheklist_ubah_alamat)
+                                                                    Ubah Status dan Alamat
+                                                                @elseif ($status->cheklist_ubah_status)
+                                                                    Ubah Status
+                                                                @elseif ($status->cheklist_ubah_alamat)
+                                                                    Ubah Alamat
+                                                                @else
+                                                                    Tidak ada perubahan
+                                                                @endif
+                                                            </td>
+                                                            <td>
+                                                                <a href="{{ url('cetak/receipt/ubahstatus', ['data' => $status->id]) }}" class="btn btn-sm btn-primary" target="_blank">Download</a>
+                                                            </td>                                                            
+                                                            <td>
+                                                                <a href="{{ url($status->url_document) }}" class="btn btn-sm btn-info" target="_blank">Download</a>
+                                                            </td>                                                                                                                                                                                                                                                                                          
+                                                            <td>
+                                                                @if ($status->status == 1)
+                                                                    <span class="badge bg-primary" data-bs-toggle="modal" data-bs-target="#modalStatus{{ $status->id }}">Sedang Diproses</span>
+                                                                @elseif ($status->status == 2)
+                                                                    <span class="badge bg-danger" data-bs-toggle="modal" data-bs-target="#modalStatus{{ $status->id }}">Gagal Proses</span><br>Catatan: {{ $status->catatan ?? '' }}
+                                                                @elseif ($status->status == 3)
+                                                                    <span class="badge bg-warning" data-bs-toggle="modal" data-bs-target="#modalStatus{{ $status->id }}">Selesai Proses</span><br>Belum Ambil
+                                                                @elseif ($status->status == 4)
+                                                                    <span class="badge bg-success" data-bs-toggle="modal" data-bs-target="#modalStatus{{ $status->id }}">SUCCESS</span>
+                                                                @elseif ($status->status == 5)
+                                                                    <span class="badge bg-warning" data-bs-toggle="modal" data-bs-target="#modalStatus{{ $status->id }}">Pending</span>
+                                                                @else
+                                                                    <span class="badge bg-secondary" data-bs-toggle="modal" data-bs-target="#modalStatus{{ $status->id }}">Status Tidak Diketahui</span>
+                                                                @endif
+                                                            </td>
+                                                                                                                        
+                                                        </tr>
+                                                       <!-- Modal for changing status -->
+<div class="modal fade" id="modalStatus{{ $status->id }}" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">Ubah Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Traditional form submission -->
+                <form action="{{ route('update.status.capil') }}" method="POST" id="formStatus{{ $status->id }}">                
+                    @csrf
+                    <!-- Hidden field to pass the pemohon ID -->
+                    <input type="hidden" name="id" value="{{ $status->id }}">
+
+                    <div class="mb-3">
+                        <label for="selectStatus{{ $status->id }}" class="form-label">Pilih Status:</label>
+                        <select name="status" id="selectStatus{{ $status->id }}" class="form-select">
+                            <option value="1" {{ $status->status == 1 ? 'selected' : '' }}>Sedang Diproses</option>
+                            <option value="2" {{ $status->status == 2 ? 'selected' : '' }}>Gagal Proses</option>
+                            <option value="3" {{ $status->status == 3 ? 'selected' : '' }}>Selesai Proses</option>                            
+                        </select>
+                    </div>
+
+                    <!-- Notes field (only appears if "Gagal Proses" is selected) -->
+                    <div class="mb-3" id="catatanField{{ $status->id }}" style="display: none;">
+                        <label for="catatan{{ $status->id }}" class="form-label">Catatan:</label>
+                        <textarea name="catatan" id="catatan{{ $status->id }}" class="form-control" placeholder="Masukkan catatan"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <!-- Submit form via traditional form submission -->
+                <button type="submit" form="formStatus{{ $status->id }}" class="btn btn-primary">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+                                                        @endforeach
                                                     </tbody>
                                                 </table>
                                             </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-        
-                        <!-- Accordion Item 2 -->
-                        <div class="card accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionPayment-2" aria-controls="accordionPayment-2">
-                                    How do I pay for my order?
-                                </button>
-                            </h2>
-                            <div id="accordionPayment-2" class="accordion-collapse collapse">
-                                <div class="accordion-body">
-                                    We accept Visa®, MasterCard®, American Express®, and PayPal®. Our servers encrypt all information submitted to them, so you can be confident that your credit card information will be kept safe and secure.
-                                </div>
-                            </div>
-                        </div>
-        
-                        <!-- Tambahan Accordion Item lainnya -->
                     </div>
                 </div>
-        
-                <!-- Tambahan Tab lainnya -->
             </div>
         </div>
         
-        <!-- /FAQ's -->
         </div>
 
-        <!-- Contact -->
-        <div class="row mt-5">
-        <div class="col-12 text-center mb-4">
-            <div class="badge bg-label-primary">Question?</div>
-            <h4 class="my-2">You still have a question?</h4>
-            <p>If you can't find question in our FAQ, you can contact us. We'll answer you shortly!</p>
-        </div>
-        </div>
-        <div class="row text-center justify-content-center gap-sm-0 gap-3">
-        <div class="col-sm-6">
-            <div class="py-3 rounded bg-faq-section text-center">
-            <span class="badge bg-label-primary rounded-2 my-3">
-                <i class="bx bx-phone bx-sm"></i>
-            </span>
-            <h4 class="mb-2"><a class="h4" href="tel:+(810)25482568">+ (810) 2548 2568</a></h4>
-            <p>We are always happy to help</p>
-            </div>
-        </div>
-        <div class="col-sm-6">
-            <div class="py-3 rounded bg-faq-section text-center">
-            <span class="badge bg-label-primary rounded-2 my-3">
-                <i class="bx bx-envelope bx-sm"></i>
-            </span>
-            <h4 class="mb-2"><a class="h4" href="mailto:help@help.com">help@help.com</a></h4>
-            <p>Best way to get a quick answer</p>
-            </div>
-        </div>
-        </div>
-        <!-- /Contact -->
-    </div>
-
-
-    <div class="modal fade" id="siramasakan" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addSubMenuTitle">Tambah Permohonan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
     
-                <!-- Laravel Blade Form -->
-                <form action="" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col mb-3">
-                            <label for="name" class="form-label">Nama Lengkap</label>
-                            <input type="text" name="name" id="name" class="form-control" placeholder="Nama Lengkap" required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col mb-3">
-                            <label for="nik" class="form-label">NIK</label>
-                            <input type="text" name="nik" id="nik" class="form-control" placeholder="NIK" required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col mb-3">
-                            <label for="whatsapp" class="form-label">Nomor WhatsApp</label>
-                            <input type="text" name="whatsapp" id="whatsapp" class="form-control" placeholder="08xx-xxxx-xxxx" required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col mb-3">
-                            <label for="alamat" class="form-label">Alamat KTP</label>
-                            <input type="text" name="alamat" id="alamat" class="form-control" placeholder="Alamat KTP" required>
-                        </div>
-                    </div>
-    
-                    <!-- Checkbox and Conditional Fields for Ganti Status -->
-                    <div class="form-check">
-                        <input type="checkbox" name="gantiStatus" id="gantiStatus" class="form-check-input" value="5">
-                        <label for="gantiStatus" class="form-check-label">Ganti Status</label>
-                    </div>
-                    <div id="gantiStatusFields" class="col mb-3" style="display: none;">
-                        <div class="row g-2">
-                            <div class="col mb-0">
-                                <label for="semula_lima" class="form-label">SEMULA</label>
-                                <input type="text" id="semula_lima" name="semula_lima" class="form-control" placeholder="Status Awal"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="menjadi_lima" class="form-label">MENJADI</label>
-                                <input type="text" id="menjadi_lima" name="menjadi_lima" class="form-control" placeholder="Menjadi"/>
-                            </div>
-                        </div>
-                        <div class="row g-2">
-                            <div class="col mb-0">
-                                <label for="dasa_lima" class="form-label">DASAR</label>
-                                <input type="text" id="dasa_lima" name="dasar_lima" class="form-control" placeholder="Nomor Surat Keputusan"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="tgl_lima" class="form-label">TANGGAL</label>
-                                <input type="date" id="tgl_lima" name="tgl_lima" class="form-control"/>
-                            </div>
-                        </div>
-                    </div>
-    
-                    <!-- Checkbox and Conditional Fields for Ganti Pindah Tempat Tinggal -->
-                    <div class="form-check">
-                        <input type="checkbox" name="gantiPindahTempatTinggal" id="gantiPindahTempatTinggal" class="form-check-input" value="6">
-                        <label for="gantiPindahTempatTinggal" class="form-check-label">Ganti Pindah Tempat Tinggal</label>
-                    </div>
-                    <div id="gantiPindahTempatTinggalFields" class="col mb-3" style="display: none;">
-                        <label for="gantiPindahTempatTinggalFields" class="form-label">Semula</label>
-                        <div class="row g-3">
-                            <div class="col mb-0">
-                                <label for="jalan" class="form-label">Jalan</label>
-                                <input type="text" id="jalan" name="jalan" class="form-control" placeholder="Jalan Awal"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="desa" class="form-label">Desa</label>
-                                <input type="text" id="desa" name="desa" class="form-control" placeholder="Desa Awal"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="rt" class="form-label">RT</label>
-                                <input type="text" id="rt" name="rt" class="form-control" placeholder="RT Awal"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="rw" class="form-label">RW</label>
-                                <input type="text" id="rw" name="rw" class="form-control" placeholder="RW Awal"/>
-                            </div>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col mb-0">
-                                <label for="kec" class="form-label">Kecamatan</label>
-                                <input type="text" id="kec" name="kec" class="form-control" placeholder="Kecamatan Awal"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="kab" class="form-label">Kabupaten</label>
-                                <input type="text" id="kab" name="kab" class="form-control" placeholder="Kabupaten Awal"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="prov" class="form-label">Provinsi</label>
-                                <input type="text" id="prov" name="prov" class="form-control" placeholder="Provinsi Awal"/>
-                            </div>
-                        </div>
-                        <label for="gantiPindahTempatTinggalFields" class="form-label">Menjadi</label>
-                        <div class="row g-3">
-                            <div class="col mb-0">
-                                <label for="jalan_satu" class="form-label">Jalan</label>
-                                <input type="text" id="jalan_satu" name="jalan_satu" class="form-control" placeholder="Jalan Baru"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="desa_satu" class="form-label">Desa</label>
-                                <input type="text" id="desa_satu" name="desa_satu" class="form-control" placeholder="Desa Baru"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="rt_satu" class="form-label">RT</label>
-                                <input type="text" id="rt_satu" name="rt_satu" class="form-control" placeholder="RT Baru"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="rw_satu" class="form-label">RW</label>
-                                <input type="text" id="rw_satu" name="rw_satu" class="form-control" placeholder="RW Baru"/>
-                            </div>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col mb-0">
-                                <label for="kec_satu" class="form-label">Kecamatan</label>
-                                <input type="text" id="kec_satu" name="kec_satu" class="form-control" placeholder="Kecamatan Baru"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="kab_satu" class="form-label">Kabupaten</label>
-                                <input type="text" id="kab_satu" name="kab_satu" class="form-control" placeholder="Kabupaten Baru"/>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="prov_satu" class="form-label">Provinsi</label>
-                                <input type="text" id="prov_satu" name="prov_satu" class="form-control" placeholder="Provinsi Baru"/>
-                            </div>
-                        </div>
-                    </div>
-    
-                    <!-- File Input -->
-                    <div class="row">
-                        <label for="permohonan" class="form-label">Lampiran</label>
-                        <div class="col mb-3">
-                            <input type="file" id="permohonan" name="permohonan" accept=".pdf" required/>
-                        </div>
-                    </div>
-                </div>
-    
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success">Proses</button>
-                </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
+    </div>    
 @endsection
 
 @push('footer-script')            
@@ -450,4 +306,28 @@
         });
     });
 </script>
+
+<script>
+    $(document).ready(function() {
+        // Function to handle when the modal is opened
+        $('[id^=modalStatus]').on('show.bs.modal', function (event) {
+            var modalId = $(this).attr('id');
+            var selectElement = $('#' + modalId + ' select');
+            var catatanField = $('#' + modalId + ' #catatanField' + modalId.replace('modalStatus', ''));
+
+            // When select changes, show or hide the notes field
+            selectElement.change(function() {
+                if ($(this).val() == '2') {
+                    catatanField.show();
+                } else {
+                    catatanField.hide();
+                }
+            });
+
+            // Trigger the change event on modal open to reset visibility of catatan field
+            selectElement.trigger('change');
+        });
+    });
+</script>
+
 @endpush
