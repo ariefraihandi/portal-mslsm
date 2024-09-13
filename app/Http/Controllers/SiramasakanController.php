@@ -27,11 +27,8 @@ class SiramasakanController extends Controller
             ->whereYear('created_at', $currentYear)
             ->get();
     
-        // Count records where status = 2 (failed process)
         $failedCount = PemohonUbahStatus::whereIn('status', [1, 2])->count();
-
     
-        // Count records where status = 4 (successfully processed)
         $successCount = PemohonUbahStatus::where('status', 4)->count();
     
         $data = [

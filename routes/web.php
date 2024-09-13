@@ -68,17 +68,13 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/perkara/store',                   [PtspController::class, 'perkaraStore'])->name('perkara.store');   
     Route::post('/perkara/update/{id}',             [PtspController::class, 'updatePerkara']);
     Route::post('/syarat/store',                    [PtspController::class, 'storeSyarat'])->name('syarat.store');
-    Route::post('/permohonan/store',                [PtspController::class, 'permohonanStore'])->name('permohonan.store');
+    
     Route::post('/permohonan/download',             [PtspController::class, 'permohonanStore'])->name('pemohon.download');    //be
     Route::get('/delete/pemohoninformasi',          [PtspController::class, 'deletePemohon'])->name('pemohon.delete');    
     Route::post('/pemohon/upload/document',         [PtspController::class, 'uploadDocument'])->name('pemohon.upload.document');
 
     Route::get('cetak/receipt/ubahstatus/{id}',     [SiramasakanController::class, 'cetakUbahStatus'])->name('receipt.ubahstatus');
-    Route::post('/update-status',                   [SiramasakanController::class, 'updateStatus'])->name('update.status.capil');
-    
-
-
-    
+    Route::post('/update-status',                   [SiramasakanController::class, 'updateStatus'])->name('update.status.capil');   
 
     Route::get('/kepegawaian/cuti/atasan',          [CutiController::class, 'showCutiDetailAtasanLangsung'])->name('kepegawaian.cuti.atasan');
     Route::get('/kepegawaian/cuti/pejabat',         [CutiController::class, 'showCutiDetailpejabat'])->name('kepegawaian.cuti.pejabat');
@@ -149,7 +145,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
 
 });
 
-
+Route::post('/permohonan/store',                    [PtspController::class, 'permohonanStore'])->name('permohonan.store');
 Route::get('/cetak/cuti/{id}',                      [CutiController::class, 'cetakCuti'])->name('cetakCuti');
 Route::get('/barcode/scan',                         [BarcodeController::class, 'getSignData'])->name('barcode.scan');
 Route::get('/barcode/capil/scan',                   [BarcodeController::class, 'getSignData'])->name('barcodestatus.scan');
