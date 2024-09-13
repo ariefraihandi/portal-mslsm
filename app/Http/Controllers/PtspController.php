@@ -79,7 +79,7 @@ class PtspController extends Controller
     public function layananMandiri()
     {
         $data = [
-            'title'         => 'Layanan Mandiri',
+            'title'         => 'S-3 (Self Service System)',
             'subtitle'      => 'Portal MS Lhokseumawe',               
         ];
         
