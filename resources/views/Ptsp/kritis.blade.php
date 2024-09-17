@@ -133,18 +133,26 @@
 @push('footer-Sec-script')
 <script>
     $(document).ready(function() {
-        $('#pemohonInformasi').DataTable({
+        $('#kritis').DataTable({
             processing: true,
             serverSide: true,
-            ajax: '{{ route('pemohon.ubahStatus.data') }}',
+            ajax: '{{ route('kritis.data') }}',
             columns: [
-                { data: 'pemohon', name: 'pemohon' },                  
-                { data: 'perkara', name: 'perkara' },
-                { data: 'status', name: 'status' },
-                { data: 'actions', name: 'actions', orderable: false, searchable: false },                                   
+                { data: 'nama', name: 'nama' },
+                { data: 'whatsapp', name: 'whatsapp' },
+                { data: 'email', name: 'email' },
+                { data: 'kritik', name: 'kritik' },
+                { data: 'saran', name: 'saran' },
+                { data: 'image', name: 'image', render: function(data, type, row) {         
+                    var imagePath = '/assets/img/feedbacks/' + data; 
+                    return '<img src="' + imagePath + '" alt="Gambar" width="50" height="50" />';
+                }},
+
+                { data: 'actions', name: 'actions', orderable: false, searchable: false }
             ]
         });
     });
+  
 
     function showSweetAlert(response) {
             Swal.fire({
@@ -160,5 +168,25 @@
                 showSweetAlert(response);
             @endif
         });
+</script>
+<script>
+    function confirmDelete(id) {
+        console.log('Delete confirmation triggered for id: ' + id);
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Data ini akan dihapus!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {                
+                window.location.href = '/delete/feedback/?id=' + id;
+            }
+            });
+    }
+
 </script>
 @endpush

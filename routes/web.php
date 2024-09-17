@@ -73,6 +73,8 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/permohonan/download',             [PtspController::class, 'permohonanStore'])->name('pemohon.download');    //be
     Route::get('/delete/pemohoninformasi',          [PtspController::class, 'deletePemohon'])->name('pemohon.delete');    
     Route::post('/pemohon/upload/document',         [PtspController::class, 'uploadDocument'])->name('pemohon.upload.document');
+    Route::get('/delete/feedback',                  [PtspController::class, 'deleteFeedback'])->name('feedback.delete');
+    
 
     Route::get('cetak/receipt/ubahstatus/{id}',     [SiramasakanController::class, 'cetakUbahStatus'])->name('receipt.ubahstatus');
     Route::post('/update-status',                   [SiramasakanController::class, 'updateStatus'])->name('update.status.capil');   
@@ -143,6 +145,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/getdata/perkara',                  [PtspController::class, 'getPerkaraData'])->name('perkara.data');
     Route::get('pemohon-informasi-data',            [PtspController::class, 'getPemohonInformasiData'])->name('pemohon.informasi.data');
     Route::get('pemohon-produk-data',               [PtspController::class, 'getPemohonUbahDataData'])->name('pemohon.ubahStatus.data');
+    Route::get('/getdata/kritir',                   [PtspController::class, 'kritirData'])->name('kritis.data');
 
 });
 

@@ -210,6 +210,46 @@ class PtspController extends Controller
         }
     }
 
+    public function deleteFeedback(Request $request)
+    {
+        // Mendapatkan ID dari URL
+        $id = $request->get('id');
+
+        // Cari feedback berdasarkan UUID yang diterima
+        $feedback = Feedback::where('id', $id)->first();
+
+        // Periksa apakah feedback ditemukan
+        if (!$feedback) {
+            // Jika feedback tidak ditemukan, redirect dengan pesan error
+            return redirect()->back()->with('response', [
+                'success' => false,
+                'title' => 'Gagal!',
+                'message' => 'Feedback tidak ditemukan.'
+            ]);
+        }
+
+        // Mendapatkan nama file gambar yang terkait
+        $imageName = $feedback->image;
+
+        // Lokasi direktori file gambar
+        $imagePath = public_path('assets/img/feedbacks/' . $imageName);
+
+        // Hapus file gambar jika ada dan file tersebut eksis
+        if (File::exists($imagePath)) {
+            File::delete($imagePath);
+        }
+
+        // Hapus feedback dari database
+        $feedback->delete();
+
+        // Redirect dengan pesan sukses
+        return redirect()->back()->with('response', [
+            'success' => true,
+            'title' => 'Berhasil!',
+            'message' => 'Feedback berhasil dihapus.'
+        ]);
+    }
+
     public function permohonanStore(Request $request)
     {
         $request->validate([
@@ -870,6 +910,26 @@ class PtspController extends Controller
                 ->make(true);
         }
     }
+
+    public function kritirData(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = Feedback::all(); // Ambil semua data feedback
+            return DataTables::of($data)
+                ->addColumn('actions', function($row) {
+                    return '
+                    <button type="button" class="btn btn-danger btn-sm mb-3" onclick="confirmDelete(\'' . $row->id . '\')">
+                        <i class="bx bx-trash"></i> Hapus
+                    </button>
+                ';
+                
+                })
+                ->rawColumns(['actions'])
+                ->make(true);
+        }
+        return view('feedback.index'); // Ganti dengan view yang sesuai
+    }
+    
     
     protected function sendWhatsappMessage($number, $name, $jenis_perkara_uuid, $jenis_kelamin)
     {
