@@ -8,13 +8,19 @@ use App\Models\Perkara;
 use App\Models\Role;
 use App\Models\SyaratPerkara;
 use App\Models\PemohonUbahStatus;
+use App\Models\Feedback;
 use App\Models\Pekerjaan;
 use App\Models\Pendidikan;
 use App\Models\SignsUbahStatus;
 use App\Models\PemohonInformasi;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\WebpEncoder;
+use Illuminate\Support\Facades\File;
 use DataTables;
+use Exception;
 
 class PtspController extends Controller
 {    
@@ -84,6 +90,108 @@ class PtspController extends Controller
         ];
         
         return view('LandingPage.PTSP.layananMandiri', $data);
+    }
+    
+    public function kirtis()
+    {
+        $data = [
+            'title'         => 'KRITIS (Kritik & Saran Otomatis)',
+            'subtitle'      => 'Portal MS Lhokseumawe',               
+        ];
+        
+        return view('LandingPage.PTSP.kritis', $data);
+    }
+
+    public function storeKirtis(Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'nama'     => 'required|string|max:255',
+            'whatsapp' => 'required|string|max:15',
+            'email'    => 'required|email|max:255',
+            'kritik'   => 'nullable|string',
+            'saran'    => 'nullable|string',
+            'image'    => 'nullable|image|max:5048', // Terima semua format gambar
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Cek apakah identitas ingin disembunyikan
+            if ($request->has('hide_identity')) {
+                $nama = 'Anonim';
+                $whatsapp = substr($request->whatsapp, 0, 4) . '********'; 
+                $email = substr($request->email, 0, 3) . '********' . strstr($request->email, '@');
+            } else {
+                $nama = $request->nama;
+                $whatsapp = $request->whatsapp;
+                $email = $request->email;
+            }
+
+            $imageName = null;
+
+            // Proses upload gambar jika ada
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $imageName = time() . '.' . $file->getClientOriginalExtension();
+                $newName = Str::random(12) . '.webp';
+
+                // Pindahkan gambar sementara ke folder temp
+                $file->move(public_path('temp'), $imageName);
+
+                // Menggunakan Intervention Image untuk mengonversi ke format WebP
+                $imgManager = new ImageManager(new Driver());
+                $profile = $imgManager->read(public_path('temp/' . $imageName));
+
+                // Encode gambar ke format WebP dengan kualitas 65
+                $encodedImage = $profile->encode(new WebpEncoder(quality: 65));
+
+                // Simpan gambar ke direktori target
+                $encodedImage->save(public_path('assets/img/feedbacks/' . $newName));
+
+                // Hapus gambar sementara
+                File::delete(public_path('temp/' . $imageName));
+
+                // Set nama file gambar baru
+                $imageName = $newName;
+            }
+
+            // Simpan data ke database
+            Feedback::create([
+                'nama'     => $nama,
+                'whatsapp' => $whatsapp,
+                'email'    => $email,
+                'kritik'   => $request->kritik,
+                'saran'    => $request->saran,
+                'image'    => $imageName, // Simpan nama file saja
+            ]);
+
+            // Commit transaksi jika semua proses sukses
+            DB::commit();
+
+            // Kirim pesan WhatsApp setelah transaksi berhasil
+            $pesan = "*KRITIS*\n\nNama: {$request->nama}\nWhatsApp: {$request->whatsapp}\nEmail: {$request->email}\nKritik: {$request->kritik}\nSaran: {$request->saran}";
+            $this->sendWhatsappMessageCapil('081263838956', $pesan);
+
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => true,
+                    'title'   => 'Success',
+                    'message' => 'Kritik dan saran berhasil dikirim',
+                ],
+            ]);
+        } catch (Exception $e) {
+            // Rollback transaksi jika ada error
+            DB::rollBack();
+
+            return redirect()->back()->with([
+                'response' => [
+                    'success' => false,
+                    'title'   => 'Error',
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                ],
+            ]);
+        }
     }
 
     public function permohonanStore(Request $request)

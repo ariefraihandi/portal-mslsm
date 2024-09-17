@@ -151,6 +151,9 @@ Route::get('/barcode/scan',                         [BarcodeController::class, '
 Route::get('/barcode/capil/scan',                   [BarcodeController::class, 'getSignData'])->name('barcodestatus.scan');
 Route::get('/get-jenis-perkara',                    [PtspController::class, 'getJenisPerkara'])->name('jenis.perkara');
 Route::get('/layanan-mandiri',                      [PtspController::class, 'layananMandiri'])->name('layanan.mandiri');
+Route::get('/dashboard/kritis',                     [PtspController::class, 'kirtis'])->name('kritis');
+Route::post('/feedback/store',                      [PtspController::class, 'storeKirtis'])->name('store.Kirtis');
+
 Route::get('/syarat',                               [PtspController::class, 'show'])->name('syarat.show');
 
 
