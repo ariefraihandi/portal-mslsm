@@ -45,6 +45,7 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
     Route::get('/aplikasi/siramasakan',             [SiramasakanController::class, 'index'])->name('aplikasi.siramasakan');
     Route::get('/aplikasi/ptsp/informasi',          [PtspController::class, 'showInformasi'])->name('aplikasi.ptsp.informasi');
     Route::get('/aplikasi/ptsp/produk',             [PtspController::class, 'showProduk'])->name('aplikasi.ptsp.produk');
+    Route::get('/aplikasi/kritis',                  [PtspController::class, 'showKritis'])->name('aplikasi.kritis');
     
     Route::get('/admin/user/access',                [AdminController::class, 'showRole'])->name('admin.user.access');
     Route::get('/admin/user/list',                  [AdminController::class, 'showUserList'])->name('admin.user.list');

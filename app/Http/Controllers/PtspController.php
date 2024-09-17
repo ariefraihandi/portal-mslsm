@@ -55,6 +55,22 @@ class PtspController extends Controller
  
         return view('Ptsp.produk', $data);
     }
+  
+    public function showKritis(Request $request)
+    {
+        $accessMenus        = $request->get('accessMenus');
+        $id                 = $request->session()->get('user_id');
+        $user               = User::with('detail')->find($id); 
+ 
+        $data = [
+            'title'         => 'Kritis',
+            'subtitle'      => 'Portal MS Lhokseumawe',
+            'sidebar'       => $accessMenus,
+            'users'         => $user,
+        ];
+ 
+        return view('Ptsp.kritis', $data);
+    }
 
     public function show(Request $request)
     {
@@ -111,7 +127,7 @@ class PtspController extends Controller
             'email'    => 'required|email|max:255',
             'kritik'   => 'nullable|string',
             'saran'    => 'nullable|string',
-            'image'    => 'nullable|image|max:5048', // Terima semua format gambar
+            'image'    => 'nullable|image|max:10048',
         ]);
 
         DB::beginTransaction();
