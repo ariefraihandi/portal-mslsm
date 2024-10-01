@@ -16,20 +16,18 @@ use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\CutiController;
 use App\Http\Controllers\SiramasakanController;
 
-Route::get('/',                                 [MaintenanceController::class, 'index'])->name('index');
-Route::get('/buku-tamu',                        [GuestBookController::class, 'showBukuTamu'])->name('show.bukutamu');
-Route::post('/submit-guestbook',                [GuestbookController::class, 'submit'])->name('submit-guestbook');
+Route::get('/',                                     [MaintenanceController::class, 'index'])->name('index');
+Route::get('/buku-tamu',                            [GuestBookController::class, 'showBukuTamu'])->name('show.bukutamu');
+Route::post('/submit-guestbook',                    [GuestbookController::class, 'submit'])->name('submit-guestbook');
 
-Route::get('/auth',                             [AuthController::class, 'showLoginForm'])->name('login.view')->middleware(RedirectIfAuthenticated::class);
-Route::get('/register',                         [AuthController::class, 'showRegisterForm'])->name('register.view')->middleware(RedirectIfAuthenticated::class);
-Route::get('/logout',                           [AuthController::class, 'logout'])->name('logout');
-Route::post('/login',                           [AuthController::class, 'login'])->name('submitLogin');
+Route::get('/auth',                                 [AuthController::class, 'showLoginForm'])->name('login.view')->middleware(RedirectIfAuthenticated::class);
+Route::get('/register',                             [AuthController::class, 'showRegisterForm'])->name('register.view')->middleware(RedirectIfAuthenticated::class);
+Route::get('/logout',                               [AuthController::class, 'logout'])->name('logout');
+Route::post('/login',                               [AuthController::class, 'login'])->name('submitLogin');
 
-Route::post('/register',                        [AuthController::class, 'register'])->name('register');
-Route::get('/email/verify',                     [AuthController::class, 'verifyEmail'])->name('email.verify');
-Route::get('/whatsapp/verify',                  [AuthController::class, 'verifyWhatsapp'])->name('whatsapp.verify');
-
-
+Route::post('/register',                            [AuthController::class, 'register'])->name('register');
+Route::get('/email/verify',                         [AuthController::class, 'verifyEmail'])->name('email.verify');
+Route::get('/whatsapp/verify',                      [AuthController::class, 'verifyWhatsapp'])->name('whatsapp.verify');
 
 Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(function () {
     Route::get('/kepegawaian/pegawai/list',         [KepegawaianController::class, 'showPegawaiList'])->name('kepegawaian.pegawai.list');
@@ -37,7 +35,6 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
     Route::get('/kepegawaian/cuti/permohonan',      [CutiController::class, 'showCutiPermohonan'])->name('kepegawaian.cuti.permohonan');
     Route::get('/kepegawaian/cuti/detail',          [CutiController::class, 'showCutiDetail'])->name('kepegawaian.cuti.detail');
     
-
     Route::get('/user/account/detil',               [UserController::class, 'showAccount'])->name('user.account.detil');
     Route::get('/user/account/activity',            [UserController::class, 'showActivity'])->name('user.account.activity');
     Route::get('/user/account/cuti',                [UserController::class, 'showCuti'])->name('user.account.cuti');
@@ -55,7 +52,6 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
     Route::get('/admin/menu/role',                  [AdminController::class, 'showRoleList'])->name('admin.menu.role');
     Route::get('/admin/instansi',                   [AdminController::class, 'showInstasi'])->name('admin.instansi');
 });
-        
         
 Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/syarat',                           [PtspController::class, 'show'])->name('syarat.show');
@@ -92,7 +88,6 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/delete/menu',                      [AdminController::class, 'deleteMenu'])->name('delete.menu');
     Route::get('/delete/childsubmenu',              [AdminController::class, 'deleteChildSubMenu'])->name('delete.ChildSubmenu');
     Route::post('/instansi/store',                  [AdminController::class, 'instansiStore'])->name('instansi.store');
-
 
     Route::post('/role/add',                        [AdminController::class, 'addRole'])->name('role.add');
     Route::post('/role/edit',                       [AdminController::class, 'editRole'])->name('role.edit');

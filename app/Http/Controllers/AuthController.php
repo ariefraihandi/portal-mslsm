@@ -135,16 +135,6 @@ class AuthController extends Controller
             'terms' => 'accepted',
         ]);
 
-        $blockedUsernames = ['slamet', 'slametriyadi'];
-        $blockedEmails = ['slamet.riyadi7408@gmail.com'];
-        $blockedWhatsapps = ['81286727408', '081286727408', '6281286727408'];
-
-        // Cek apakah input terdapat dalam daftar yang diblokir
-        if (in_array($request->input('username'), $blockedUsernames) || 
-            in_array($request->input('email'), $blockedEmails) || 
-            in_array($request->input('whatsapp'), $blockedWhatsapps)) {
-            return redirect()->back(); // Redirect tanpa pesan apa-apa
-        }
 
         try {
             // Start transaction
