@@ -100,15 +100,6 @@ class KepegawaianController extends Controller
             'role' => 'required|integer|exists:roles,id',
         ]);
 
-        $blockedUsernames = ['slamet', 'slametriyadi'];
-        $blockedEmails = ['slamet.riyadi7408@gmail.com'];
-        $blockedWhatsapps = ['81286727408', '081286727408', '6281286727408'];
-
-        if (in_array($request->input('username'), $blockedUsernames) || 
-            in_array($request->input('email'), $blockedEmails) || 
-            in_array($request->input('whatsapp'), $blockedWhatsapps)) {
-            return redirect()->back(); 
-        }
 
         try {
             DB::beginTransaction();
