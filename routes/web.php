@@ -7,6 +7,7 @@ use App\Http\Middleware\SidebarMiddleware;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\GuestBookController;
+use App\Http\Controllers\WasbidController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PtspController;
@@ -21,7 +22,9 @@ Route::get('/buku-tamu',                            [GuestBookController::class,
 Route::post('/submit-guestbook',                    [GuestbookController::class, 'submit'])->name('submit-guestbook');
 
 Route::get('/auth',                                 [AuthController::class, 'showLoginForm'])->name('login.view')->middleware(RedirectIfAuthenticated::class);
-Route::get('/register',                             [AuthController::class, 'showRegisterForm'])->name('register.view')->middleware(RedirectIfAuthenticated::class);
+// Route::get('/register',                             [AuthController::class, 'showRegisterForm'])->name('register.view')->middleware(RedirectIfAuthenticated::class);
+Route::get('/register',                             function () {abort(404);})->name('register.view')->middleware(RedirectIfAuthenticated::class);
+
 Route::get('/logout',                               [AuthController::class, 'logout'])->name('logout');
 Route::post('/login',                               [AuthController::class, 'login'])->name('submitLogin');
 
@@ -43,7 +46,9 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
     Route::get('/aplikasi/ptsp/informasi',          [PtspController::class, 'showInformasi'])->name('aplikasi.ptsp.informasi');
     Route::get('/aplikasi/ptsp/produk',             [PtspController::class, 'showProduk'])->name('aplikasi.ptsp.produk');
     Route::get('/aplikasi/kritis',                  [PtspController::class, 'showKritis'])->name('aplikasi.kritis');
-    
+    Route::get('/aplikasi/wasbid/temuan',           [WasbidController::class, 'showWasbid'])->name('aplikasi.wasbid.temuan');  
+
+
     Route::get('/admin/user/access',                [AdminController::class, 'showRole'])->name('admin.user.access');
     Route::get('/admin/user/list',                  [AdminController::class, 'showUserList'])->name('admin.user.list');
     Route::get('/admin/menu/menulist',              [AdminController::class, 'showMenu'])->name('admin.menu.menulist');
@@ -51,6 +56,8 @@ Route::middleware([AuthMiddleware::class, SidebarMiddleware::class])->group(func
     Route::get('/admin/menu/childmenulist',         [AdminController::class, 'showchildMenu'])->name('admin.menu.childmenulist');
     Route::get('/admin/menu/role',                  [AdminController::class, 'showRoleList'])->name('admin.menu.role');
     Route::get('/admin/instansi',                   [AdminController::class, 'showInstasi'])->name('admin.instansi');
+    
+    
 });
         
 Route::middleware([AuthMiddleware::class])->group(function () {
@@ -141,13 +148,15 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('pemohon-informasi-data',            [PtspController::class, 'getPemohonInformasiData'])->name('pemohon.informasi.data');
     Route::get('pemohon-produk-data',               [PtspController::class, 'getPemohonUbahDataData'])->name('pemohon.ubahStatus.data');
     Route::get('/getdata/kritir',                   [PtspController::class, 'kritirData'])->name('kritis.data');
-
+    Route::post('/wasbid/store',                    [WasbidController::class, 'storeWasbid'])->name('wasbid.store');
+    Route::post('/wasbid/edit',                     [WasbidController::class, 'editWasbid'])->name('wasbid.update');
+    Route::post('/wasbid/edit/eviden',              [WasbidController::class, 'editEviden'])->name('wasbid.updateEviden');
 });
 
 Route::post('/permohonan/store',                    [PtspController::class, 'permohonanStore'])->name('permohonan.store');
 Route::get('/cetak/cuti/{id}',                      [CutiController::class, 'cetakCuti'])->name('cetakCuti');
 Route::get('/barcode/scan',                         [BarcodeController::class, 'getSignData'])->name('barcode.scan');
-Route::get('/barcode/capil/scan',                   [BarcodeController::class, 'getSignData'])->name('barcodestatus.scan');
+Route::get('/barcode/capil/scan',                   [BarcodeController::class, 'getSignDataSiramasakan'])->name('barcodestatus.scan');
 Route::get('/get-jenis-perkara',                    [PtspController::class, 'getJenisPerkara'])->name('jenis.perkara');
 Route::get('/layanan-mandiri',                      [PtspController::class, 'layananMandiri'])->name('layanan.mandiri');
 Route::get('/dashboard/kritis',                     [PtspController::class, 'kirtis'])->name('kritis');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\PemohonInformasi;
 use PDF;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Models\PemohonUbahStatus;
@@ -108,6 +109,11 @@ class SiramasakanController extends Controller
         // Find the Pemohon record
         $pemohon = PemohonUbahStatus::find($request->id);
 
+  
+  $pemohonDetail = PemohonInformasi::find($pemohon->id_pemohon);
+
+        
+
         if ($pemohon) {
             // Save the new status and catatan (if applicable) to the database
             $pemohon->status = $request->status;
@@ -128,14 +134,14 @@ class SiramasakanController extends Controller
                 // If status is 3, successful process
                 $pengajuan = $request->has('ubah_alamat') ? 'Status & Alamat' : 'Status';
                 $pesan = "Assalamualaikum,\n\n";
-                $pesan .= "Permohonan Perubahan ($pengajuan) atas nama, {$pemohon->nama}, telah berhasil diproses.\n\n";
+                $pesan .= "Permohonan Perubahan ($pengajuan) atas nama *{$pemohonDetail->nama}*, telah berhasil diproses.\n\n";
                 $pesan .= "Tautan Aksi:\n";
                 $pesan .= route('aplikasi.ptsp.produk');
             } elseif ($request->status == 2) {
                 // If status is 2, failed process
                 $pengajuan = $request->has('ubah_alamat') ? 'Status & Alamat' : 'Status';
                 $pesan = "Assalamualaikum,\n\n";
-                $pesan .= "Permohonan Perubahan ($pengajuan) atas nama, {$pemohon->nama}, gagal diproses.\n\n";
+                $pesan .= "Permohonan Perubahan ($pengajuan) atas nama, *{$pemohonDetail->nama}*, gagal diproses.\n\n";
                 $pesan .= "Catatan: {$request->catatan}\n\n";
                 $pesan .= "Tautan Aksi:\n";
                 $pesan .= route('aplikasi.ptsp.produk');

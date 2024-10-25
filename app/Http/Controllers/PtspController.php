@@ -797,7 +797,8 @@ class PtspController extends Controller
     public function getPemohonInformasiData(Request $request)
     {
         if ($request->ajax()) {
-            $data = PemohonInformasi::select(['id', 'nama','whatsapp', 'jenis_perkara_gugatan', 'jenis_perkara_permohonan', 'pekerjaan_id', 'pendidikan', 'email', 'NIK', 'alamat', 'ubah_status']);
+            $data = PemohonInformasi::select(['id', 'nama', 'whatsapp', 'jenis_perkara_gugatan', 'jenis_perkara_permohonan', 'pekerjaan_id', 'pendidikan', 'email', 'NIK', 'alamat', 'ubah_status'])
+            ->orderBy('created_at', 'desc'); 
             return DataTables::of($data)
                 ->addColumn('pemohon', function ($row) {
                     // Combine 'nama', 'whatsapp', 'email', and 'NIK' in one column
@@ -832,7 +833,7 @@ class PtspController extends Controller
                     return '                      
                         <a href="' . route('pemohon.download', $row->id) . '" target="_blank" class="btn btn-success btn-sm">
                             <i class="bx bx-download"></i>
-                        </a><br>
+                        </a><br><br>
                         <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(' . $row->id . ')">
                             <i class="bx bx-trash"></i>
                         </button>
@@ -854,7 +855,7 @@ class PtspController extends Controller
                                         'id', 'nama', 'whatsapp', 'jenis_perkara_gugatan', 
                                         'jenis_perkara_permohonan', 'pekerjaan_id', 'pendidikan', 
                                         'email', 'NIK', 'alamat', 'ubah_status'
-                                    ]);
+                                    ])->orderBy('created_at', 'desc'); 
     
             return DataTables::of($data)
                 ->addColumn('pemohon', function ($row) {
