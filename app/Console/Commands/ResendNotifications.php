@@ -304,7 +304,7 @@ class ResendNotifications extends Command
         ];
 
         try {
-            Mail::send('emails.emergency', $data, function ($message) {
+            Mail::send('Emails.emergency', $data, function ($message) {
                 $message->to('raihandi93@gmail.com')
                         ->subject('Emergency: Notification Sending Failed');
             });
