@@ -148,6 +148,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('pemohon-informasi-data',            [PtspController::class, 'getPemohonInformasiData'])->name('pemohon.informasi.data');
     Route::get('pemohon-produk-data',               [PtspController::class, 'getPemohonUbahDataData'])->name('pemohon.ubahStatus.data');
     Route::get('/getdata/kritir',                   [PtspController::class, 'kritirData'])->name('kritis.data');
+    Route::post('/cancel/siramasakan',                   [PtspController::class, 'batalkanPengajuan'])->name('batal.siramasakan');
     Route::post('/wasbid/store',                    [WasbidController::class, 'storeWasbid'])->name('wasbid.store');
     Route::post('/wasbid/edit',                     [WasbidController::class, 'editWasbid'])->name('wasbid.update');
     Route::post('/wasbid/edit/eviden',              [WasbidController::class, 'editEviden'])->name('wasbid.updateEviden');

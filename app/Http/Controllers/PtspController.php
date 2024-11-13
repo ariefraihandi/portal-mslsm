@@ -250,73 +250,150 @@ class PtspController extends Controller
         ]);
     }
 
+    // public function permohonanStore(Request $request)
+    // {
+    //     $request->validate([
+    //         'nama' => 'required|string|max:255',
+    //         'alamat' => 'required|string',
+    //         'pekerjaan' => 'required|integer',
+    //         'whatsapp' => 'required|string',
+    //         'jenis_permohonan' => 'required|string',
+    //         'pendidikan' => 'required|integer',
+    //         'NIK' => 'required|string|unique:pemohon_informasi,NIK',
+    //         'umur' => 'required|integer',
+    //         'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+    //     ]);
+    
+    //     try {
+    //         // Create the pemohon record
+    //         $pemohon = PemohonInformasi::create([
+    //             'nama' => $request->nama,
+    //             'alamat' => $request->alamat,
+    //             'pekerjaan_id' => $request->pekerjaan,
+    //             'whatsapp' => $request->whatsapp,
+    //             'whatsapp_connected' => $request->has('whatsapp_connected'),
+    //             'email' => $request->email,
+    //             'jenis_permohonan' => $request->jenis_permohonan,
+    //             'jenis_perkara_gugatan' => $request->jenis_permohonan === 'Gugatan' ? $request->jenis_perkara_gugatan : null,
+    //             'jenis_perkara_permohonan' => $request->jenis_permohonan === 'Permohonan' ? $request->jenis_perkara_permohonan : null,
+    //             'rincian_informasi' => $request->input('rincian_informasi'),
+    //             'tujuan_penggunaan' => $request->input('tujuan_penggunaan'),
+    //             'ubah_status' => $request->has('ubah_status') ? '1' : null,
+    //             'pendidikan' => $request->pendidikan,
+    //             'NIK' => $request->NIK,
+    //             'umur' => $request->umur,
+    //             'jenis_kelamin' => $request->jenis_kelamin,
+    //         ]);
+    
+    //         // Determine which perkara UUID to use
+    //         $jenis_perkara_uuid = $request->jenis_permohonan === 'Gugatan' ? $pemohon->jenis_perkara_gugatan : $pemohon->jenis_perkara_permohonan;
+    
+    //         // Fetch the perkara details using the UUID
+    //         $perkara = Perkara::where('id', $jenis_perkara_uuid)->first();
+    
+    //         if (!$perkara) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Perkara tidak ditemukan.',
+    //             ], 404);
+    //         }
+    
+    //         if ($request->has('whatsapp_connected')) {
+    //             // Send WhatsApp message with the correct perkara information
+    //             $this->sendWhatsappMessage($pemohon->whatsapp, $pemohon->nama, $perkara->id, $pemohon->jenis_kelamin);
+    //         }
+    
+    //         // Return success response
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Permohonan berhasil disimpan dan pesan WhatsApp berhasil dikirim.',
+    //         ]);
+    
+    //     } catch (\Exception $e) {
+    //         // Return error response
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
     public function permohonanStore(Request $request)
     {
-        $request->validate([
+        // Validasi input
+        $validatedData = $request->validate([
             'nama' => 'required|string|max:255',
             'alamat' => 'required|string',
             'pekerjaan' => 'required|integer',
             'whatsapp' => 'required|string',
-            'jenis_permohonan' => 'required|string',
+            'jenis_permohonan' => 'required|string|in:Gugatan,Permohonan',
             'pendidikan' => 'required|integer',
             'NIK' => 'required|string|unique:pemohon_informasi,NIK',
-            'umur' => 'required|integer',
+            'umur' => 'required|integer|min:1',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+            'email' => 'nullable|email',
+            'jenis_perkara_gugatan' => 'nullable|integer',
+            'jenis_perkara_permohonan' => 'nullable|integer',
+            'rincian_informasi' => 'nullable|string',
+            'tujuan_penggunaan' => 'nullable|string',
         ]);
+
+        dd($request->all());
     
         try {
-            // Create the pemohon record
+            // Menyimpan data pemohon
             $pemohon = PemohonInformasi::create([
-                'nama' => $request->nama,
-                'alamat' => $request->alamat,
-                'pekerjaan_id' => $request->pekerjaan,
-                'whatsapp' => $request->whatsapp,
+                'nama' => $validatedData['nama'],
+                'alamat' => $validatedData['alamat'],
+                'pekerjaan_id' => $validatedData['pekerjaan'],
+                'whatsapp' => $validatedData['whatsapp'],
                 'whatsapp_connected' => $request->has('whatsapp_connected'),
-                'email' => $request->email,
-                'jenis_permohonan' => $request->jenis_permohonan,
-                'jenis_perkara_gugatan' => $request->jenis_permohonan === 'Gugatan' ? $request->jenis_perkara_gugatan : null,
-                'jenis_perkara_permohonan' => $request->jenis_permohonan === 'Permohonan' ? $request->jenis_perkara_permohonan : null,
-                'rincian_informasi' => $request->input('rincian_informasi'),
-                'tujuan_penggunaan' => $request->input('tujuan_penggunaan'),
+                'email' => $validatedData['email'] ?? '-',
+                'jenis_permohonan' => $validatedData['jenis_permohonan'],
+                'jenis_perkara_gugatan' => $validatedData['jenis_permohonan'] === 'Gugatan' ? $validatedData['jenis_perkara_gugatan'] : null,
+                'jenis_perkara_permohonan' => $validatedData['jenis_permohonan'] === 'Permohonan' ? $validatedData['jenis_perkara_permohonan'] : null,
+                'rincian_informasi' => $validatedData['rincian_informasi'] ?? null,
+                'tujuan_penggunaan' => $validatedData['tujuan_penggunaan'] ?? null,
                 'ubah_status' => $request->has('ubah_status') ? '1' : null,
-                'pendidikan' => $request->pendidikan,
-                'NIK' => $request->NIK,
-                'umur' => $request->umur,
-                'jenis_kelamin' => $request->jenis_kelamin,
+                'pendidikan' => $validatedData['pendidikan'],
+                'NIK' => $validatedData['NIK'],
+                'umur' => $validatedData['umur'],
+                'jenis_kelamin' => $validatedData['jenis_kelamin'],
             ]);
     
-            // Determine which perkara UUID to use
-            $jenis_perkara_uuid = $request->jenis_permohonan === 'Gugatan' ? $pemohon->jenis_perkara_gugatan : $pemohon->jenis_perkara_permohonan;
+            // Memastikan UUID untuk jenis perkara
+            $jenis_perkara_uuid = $validatedData['jenis_permohonan'] === 'Gugatan' ? $pemohon->jenis_perkara_gugatan : $pemohon->jenis_perkara_permohonan;
     
-            // Fetch the perkara details using the UUID
-            $perkara = Perkara::where('id', $jenis_perkara_uuid)->first();
+            // Mendapatkan data perkara yang sesuai dengan UUID
+            $perkara = Perkara::find($jenis_perkara_uuid);
     
+            // Validasi jika perkara tidak ditemukan
             if (!$perkara) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Perkara tidak ditemukan.',
+                    'message' => 'Jenis perkara tidak ditemukan.',
                 ], 404);
             }
     
+            // Mengirim pesan WhatsApp jika terkoneksi
             if ($request->has('whatsapp_connected')) {
-                // Send WhatsApp message with the correct perkara information
                 $this->sendWhatsappMessage($pemohon->whatsapp, $pemohon->nama, $perkara->id, $pemohon->jenis_kelamin);
             }
     
-            // Return success response
+            // Respons berhasil
             return response()->json([
                 'success' => true,
                 'message' => 'Permohonan berhasil disimpan dan pesan WhatsApp berhasil dikirim.',
-            ]);
+            ], 200);
     
         } catch (\Exception $e) {
-            // Return error response
+            // Respons jika terjadi kesalahan
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage(),
             ], 500);
         }
     }
+    
 
     public function deletePemohon(Request $request)
     {
@@ -866,7 +943,6 @@ class PtspController extends Controller
                            $row->NIK;
                 })
                 ->addColumn('perkara', function ($row) {
-                    // First, check if 'jenis_perkara_gugatan' is set, otherwise check 'jenis_perkara_permohonan'
                     $perkara_id = $row->jenis_perkara_gugatan ?? $row->jenis_perkara_permohonan;
     
                     // Fetch the corresponding 'perkara_name' from the Perkara model
@@ -901,16 +977,52 @@ class PtspController extends Controller
                     return '<span class="badge bg-info">Belum Diproses</span>';
                 })
                 ->addColumn('actions', function ($row) {
-                    return '
-                        <button type="button" class="btn btn-warning btn-sm mb-3" onclick="openUploadModal(' . $row->id . ')">
-                            <i class="bx bx-upload"></i>
-                        </button>                       
-                    ';
+                    $ubahStatus = PemohonUbahStatus::where('id_pemohon', $row->id)->first();
+                    
+                    $actions = '';
+                
+                    // Tampilkan tombol "Upload" jika belum ada data ubah status
+                    if (!$ubahStatus) {
+                        $actions .= '
+                            <button type="button" class="btn btn-warning btn-sm mb-3" onclick="openUploadModal(' . $row->id . ')">
+                                <i class="bx bx-upload"></i>
+                            </button>
+                        ';
+                    }
+                
+                    if ($ubahStatus && $ubahStatus->status == '1') {
+                        $actions .= '
+                            <button type="button" class="btn btn-danger btn-sm mb-3" onclick="cancelSubmission(' . $row->id . ')">
+                                <i class="bx bx-x"></i>
+                            </button>
+                        ';
+                    }
+                
+                    return $actions;
                 })
+                
                 ->rawColumns(['pemohon', 'perkara', 'status', 'actions'])
                 ->make(true);
         }
     }
+
+    public function batalkanPengajuan(Request $request)
+    {
+        $id = $request->input('id');   
+        
+        // Cek apakah ada data di PemohonUbahStatus berdasarkan id_pemohon
+        $status = PemohonUbahStatus::where('id_pemohon', $id)->first();
+    
+        if ($status) {
+            // Jika data ditemukan, hapus data tersebut
+            $status->delete();
+            return response()->json(['success' => true, 'message' => 'Pengajuan berhasil dibatalkan dan data dihapus']);
+        } else {
+            // Jika data tidak ditemukan
+            return response()->json(['success' => false, 'message' => 'Data tidak ditemukan, pengajuan tidak dapat dibatalkan']);
+        }
+    }
+
 
     public function kritirData(Request $request)
     {

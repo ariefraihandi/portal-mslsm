@@ -327,26 +327,75 @@
         });
     });
 
-    // Toggle between upload options (manual and URL)
+    function cancelSubmission(id) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Pengajuan dengan ID " + id + " akan dibatalkan.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, batalkan!',
+            cancelButtonText: 'Tidak'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Jika pengguna mengkonfirmasi, lakukan permintaan POST
+                fetch("{{ route('batal.siramasakan') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}" // Token CSRF
+                    },
+                    body: JSON.stringify({ id: id }) // Data ID yang dikirim
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire(
+                            'Dibatalkan!',
+                            'Pengajuan berhasil dibatalkan.',
+                            'success'
+                        ).then(() => {
+                            // Reload DataTable setelah konfirmasi sukses dari SweetAlert
+                            $('#pemohonInformasi').DataTable().ajax.reload();
+                        });
+                    } else {
+                        Swal.fire(
+                            'Gagal',
+                            'Pengajuan gagal dibatalkan.',
+                            'error'
+                        );
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    Swal.fire(
+                        'Error',
+                        'Terjadi kesalahan pada server.',
+                        'error'
+                    );
+                });
+            }
+        });
+    }
+
+
     function toggleUploadOption() {
         const uploadOption = document.getElementById('uploadOption').value;
         document.getElementById('manualUploadDiv').style.display = uploadOption === 'manual' ? 'block' : 'none';
         document.getElementById('urlUploadDiv').style.display = uploadOption === 'url' ? 'block' : 'none';
     }
 
-    // Show or hide status fields based on "Ubah Status" checkbox
     function toggleStatusFields() {
         const isChecked = document.getElementById('ubahStatus').checked;
         document.getElementById('statusFields').style.display = isChecked ? 'flex' : 'none';
     }
 
-    // Show or hide alamat fields based on "Ubah Alamat" checkbox
     function toggleAlamatFields() {
         const isChecked = document.getElementById('ubahAlamat').checked;
         document.getElementById('alamatFields').style.display = isChecked ? 'block' : 'none';
     }
 
-    // Attach the toggle functions to the checkboxes change event
     document.getElementById('ubahStatus').addEventListener('change', toggleStatusFields);
     document.getElementById('ubahAlamat').addEventListener('change', toggleAlamatFields);
 

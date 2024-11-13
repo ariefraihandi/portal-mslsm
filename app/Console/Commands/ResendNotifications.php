@@ -135,7 +135,6 @@ class ResendNotifications extends Command
      
     private function sendWhatsAppNotification($notification)
     {
-        // Pastikan nomor WhatsApp ada
         if (empty($notification->whatsapp)) {
             $notification->update(['error_wa' => 'WhatsApp number not available']);
             return;
