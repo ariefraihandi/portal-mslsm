@@ -635,7 +635,6 @@
                         document.getElementById("permohonanEdit").checked = true;
                     }
 
-
                     let pekerjaanSelect = document.getElementById("editPekerjaan");
                     pekerjaanSelect.innerHTML = "";
 

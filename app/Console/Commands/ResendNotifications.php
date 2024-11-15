@@ -71,25 +71,25 @@ class ResendNotifications extends Command
                 }
             }
     
-            if ($notification->is_sent_onesignal == 0) {
-                try {
-                    $this->sendOneSignalNotification($notification);
-                    // Jika berhasil kirim OneSignal, hentikan proses tanpa mencoba Email
-                    return;
-                } catch (Exception $e) {
-                    // Jika OneSignal gagal, lanjutkan ke Email
-                }
-            }
+            // if ($notification->is_sent_onesignal == 0) {
+            //     try {
+            //         $this->sendOneSignalNotification($notification);
+            //         // Jika berhasil kirim OneSignal, hentikan proses tanpa mencoba Email
+            //         return;
+            //     } catch (Exception $e) {
+            //         // Jika OneSignal gagal, lanjutkan ke Email
+            //     }
+            // }
     
             // Jika WA dan OneSignal gagal, dan belum dikirim via Email
-            if ($notification->is_sent_email == 0) {
-                try {
-                    $this->sendEmailNotification($notification);
-                    // Email adalah upaya terakhir, tidak ada langkah lanjutan.
-                } catch (Exception $e) {
-                    // Jika Email juga gagal, tangani kesalahan sesuai kebutuhan
-                }
-            }
+            // if ($notification->is_sent_email == 0) {
+            //     try {
+            //         $this->sendEmailNotification($notification);
+            //         // Email adalah upaya terakhir, tidak ada langkah lanjutan.
+            //     } catch (Exception $e) {
+            //         // Jika Email juga gagal, tangani kesalahan sesuai kebutuhan
+            //     }
+            // }
     
             // Semua metode telah dicoba, pastikan statusnya diperbarui dalam metode masing-masing
         }
@@ -111,25 +111,25 @@ class ResendNotifications extends Command
             }
     
             // Cek jika WA gagal atau tidak terkoneksi, dan belum dikirim via OneSignal
-            if ($notification->is_sent_onesignal == 0) {
-                try {
-                    $this->sendOneSignalNotification($notification);
-                    // Jika berhasil kirim OneSignal, hentikan proses tanpa mencoba Email
-                    return;
-                } catch (Exception $e) {
-                    // Jika OneSignal gagal, lanjutkan ke Email
-                }
-            }
+            // if ($notification->is_sent_onesignal == 0) {
+            //     try {
+            //         $this->sendOneSignalNotification($notification);
+            //         // Jika berhasil kirim OneSignal, hentikan proses tanpa mencoba Email
+            //         return;
+            //     } catch (Exception $e) {
+            //         // Jika OneSignal gagal, lanjutkan ke Email
+            //     }
+            // }
     
             // Jika WA dan OneSignal gagal, dan belum dikirim via Email
-            if ($notification->is_sent_email == 0) {
-                try {
-                    $this->sendEmailNotification($notification);
-                    // Email adalah upaya terakhir, tidak ada langkah lanjutan.
-                } catch (Exception $e) {
-                    // Jika Email juga gagal, tangani kesalahan sesuai kebutuhan
-                }
-            }
+            // if ($notification->is_sent_email == 0) {
+            //     try {
+            //         $this->sendEmailNotification($notification);
+            //         // Email adalah upaya terakhir, tidak ada langkah lanjutan.
+            //     } catch (Exception $e) {
+            //         // Jika Email juga gagal, tangani kesalahan sesuai kebutuhan
+            //     }
+            // }
         }
     }
      
