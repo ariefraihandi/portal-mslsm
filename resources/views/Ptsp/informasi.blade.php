@@ -102,15 +102,14 @@
                                                     <table class="table" id="pemohonInformasi" style="width: 100%; table-layout: fixed;">
                                                         <thead>
                                                             <tr>
-                                                                <th style="width: 20%;">Pemohon</th> <!-- Adjust width as needed -->
-                                                                <th style="width: 50%;">Detail</th> <!-- Adjust width as needed -->
-                                                                <th style="width: 15%;">Perkara</th> <!-- Adjust width as needed -->
-                                                                <th style="width: 15%;">Actions</th> <!-- Adjust width as needed -->                                                           
+                                                                <th style="width: 20%;">Pemohon</th> 
+                                                                <th style="width: 50%;">Detail</th> 
+                                                                <th style="width: 15%;">Perkara</th>
+                                                                <th style="width: 15%;">Actions</th> 
                                                             </tr>
                                                         </thead>
                                                     </table>
                                                 </div>
-                                                
                                             </div>
                                         </div>
                                     </div>
@@ -493,6 +492,96 @@
         </div>
     {{-- tambah Perkara --}}
 
+    <!-- Modal Bootstrap -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel">Edit Data</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>                    
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editNama" class="form-label">Nama:</label>
+                            <input type="text" class="form-control" id="editNama" name="EditNama">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editAlamat" class="form-label">Alamat:</label>
+                            <input type="text" class="form-control" id="editAlamat" name="EditAlamat">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPekerjaan" class="form-label">Pekerjaan:</label>
+                            <select class="form-control" id="editPekerjaan" name="EditPekerjaan">
+                                <!-- Options will be dynamically loaded from JavaScript -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editWhatsapp" class="form-label">WhatsApp:</label>
+                            <input type="text" class="form-control" id="editWhatsapp" name="EditWhatsapp">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label">Email:</label>
+                            <input type="email" class="form-control" id="editEmail" name="EditEmail">
+                        </div>
+                        <div class="row mb-3">
+                            <label for="jenis_permohonan" class="form-label">Jenis Permohonan</label>
+                            <div class="col-md-6 mb-md-0 mb-2">
+                                <div class="form-check custom-option custom-option-basic">
+                                    <label class="form-check-label custom-option-content" for="gugatan">
+                                        <input
+                                            name="jenis_permohonan"
+                                            class="form-check-input"
+                                            type="radio"
+                                            value="Gugatan"
+                                            id="gugatanEdit"
+                                            required
+                                        /> 
+                                        <span class="custom-option-header">
+                                            <span class="h6 mb-0">Gugatan</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check custom-option custom-option-basic">
+                                    <label class="form-check-label custom-option-content" for="permohonan">
+                                        <input
+                                            name="jenis_permohonan"
+                                            class="form-check-input"
+                                            type="radio"
+                                            value="Permohonan"
+                                            id="permohonanEdit"
+                                            required
+                                        />
+                                        <span class="custom-option-header">
+                                            <span class="h6 mb-0">Permohonan</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p>Jenis Permohonan: <span id="modalJenisPermohonan"></span></p>
+                        <p>Jenis Perkara Gugatan: <span id="modalJenisPerkaraGugatan"></span></p>
+                        <p>Jenis Perkara Permohonan: <span id="modalJenisPerkaraPermohonan"></span></p>
+                        <p>Rincian Informasi: <span id="modalRincianInformasi"></span></p>
+                        <p>Ubah Status: <span id="modalUbahStatus"></span></p>
+                        <p>Pendidikan: <span id="modalPendidikan"></span></p>
+                        <p>NIK: <span id="modalNIK"></span></p>
+                        <p>Umur: <span id="modalUmur"></span></p>
+                        <p>Jenis Kelamin: <span id="modalJenisKelamin"></span></p>
+                        <p>Tujuan Penggunaan: <span id="modalTujuanPenggunaan"></span></p>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
 @endsection
 
 @push('footer-script')            
@@ -520,6 +609,51 @@
                 ]
             });
         });
+
+        function showModal(id) {
+            fetch(`/pemohon/${id}/info`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("editNama").value = data.pemohon.nama;
+                    document.getElementById("editAlamat").value = data.pemohon.alamat;
+                    document.getElementById("editWhatsapp").value = data.pemohon.whatsapp;
+                    document.getElementById("editEmail").value = data.pemohon.email;
+                    document.getElementById("modalJenisPermohonan").innerText = data.pemohon.jenis_permohonan;
+                    document.getElementById("modalJenisPerkaraGugatan").innerText = data.pemohon.jenis_perkara_gugatan;
+                    document.getElementById("modalJenisPerkaraPermohonan").innerText = data.pemohon.jenis_perkara_permohonan;
+                    document.getElementById("modalRincianInformasi").innerText = data.pemohon.rincian_informasi;
+                    document.getElementById("modalUbahStatus").innerText = data.pemohon.ubah_status;
+                    document.getElementById("modalPendidikan").innerText = data.pemohon.pendidikan;
+                    document.getElementById("modalNIK").innerText = data.pemohon.NIK;
+                    document.getElementById("modalUmur").innerText = data.pemohon.umur;
+                    document.getElementById("modalJenisKelamin").innerText = data.pemohon.jenis_kelamin;
+                    document.getElementById("modalTujuanPenggunaan").innerText = data.pemohon.tujuan_penggunaan;
+
+                    if (data.pemohon.jenis_perkara_gugatan) {
+                        document.getElementById("gugatanEdit").checked = true;
+                    } else if (data.pemohon.jenis_perkara_permohonan) {
+                        document.getElementById("permohonanEdit").checked = true;
+                    }
+
+
+                    let pekerjaanSelect = document.getElementById("editPekerjaan");
+                    pekerjaanSelect.innerHTML = "";
+
+                    data.pekerjaanOptions.forEach(option => {
+                        let selected = option.id === data.pemohon.pekerjaan_id ? "selected" : "";
+                        let optElement = `<option value="${option.id}" ${selected}>${option.nama_pekerjaan}</option>`;
+                        pekerjaanSelect.insertAdjacentHTML('beforeend', optElement);
+                    });
+                    
+                     $('#editPekerjaan').select2({ dropdownParent: $('#editModal .modal-content'), width: '100%' });
+
+                    // Show the modal
+                    $('#editModal').modal('show');
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
 
         function showSweetAlert(response) {
             Swal.fire({
@@ -558,17 +692,11 @@
 
     <script>
         $(document).ready(function() {
-            // Initialize select2 for 'Pekerjaan' dropdown
-            $('#informasi').on('shown.bs.modal', function () {
-                $('#pekerjaan').select2({
-                    placeholder: $('#pekerjaan').data('placeholder'),
-                    allowClear: true,
-                    dropdownParent: $('#informasi .modal-content'),
-                    width: '100%'
-                });
-            });
-            
-            // Initialize select2 for 'Jenis Perkara Gugatan' dropdown
+            // Initialize select2 for pekerjaan and pendidikan
+            $('#pekerjaan').select2({ dropdownParent: $('#informasi .modal-content'), width: '100%' });
+            $('#pendidikan').select2({ dropdownParent: $('#informasi .modal-content'), width: '100%' });
+        
+            // Initialize select2 for jenis perkara gugatan
             $('#jenis_perkara_gugatan_select').select2({
                 placeholder: 'Pilih jenis perkara gugatan',
                 allowClear: true,
@@ -576,9 +704,7 @@
                     url: "{{ route('jenis.perkara') }}",
                     dataType: 'json',
                     data: function () {
-                        return {
-                            tipe: 'Gugatan'
-                        };
+                        return { tipe: 'Gugatan' };
                     },
                     processResults: function (data) {
                         return {
@@ -591,8 +717,8 @@
                 dropdownParent: $('#informasi .modal-content'),
                 width: '100%'
             });
-
-            // Initialize select2 for 'Jenis Perkara Permohonan' dropdown
+        
+            // Initialize select2 for jenis perkara permohonan
             $('#jenis_perkara_permohonan_select').select2({
                 placeholder: 'Pilih jenis perkara permohonan',
                 allowClear: true,
@@ -600,9 +726,7 @@
                     url: "{{ route('jenis.perkara') }}",
                     dataType: 'json',
                     data: function () {
-                        return {
-                            tipe: 'Permohonan'
-                        };
+                        return { tipe: 'Permohonan' };
                     },
                     processResults: function (data) {
                         return {
@@ -615,37 +739,74 @@
                 dropdownParent: $('#informasi .modal-content'),
                 width: '100%'
             });
-
+        
+            // Toggle select options based on jenis permohonan
             function toggleSelectOptions() {
-                var gugatanChecked = $('#gugatan').is(':checked');
-                var permohonanChecked = $('#permohonan').is(':checked');
-
+                const gugatanChecked = $('#gugatan').is(':checked');
+                const permohonanChecked = $('#permohonan').is(':checked');
+                
                 if (gugatanChecked) {
                     $('#jenis_perkara_gugatan').show();
                     $('#jenis_perkara_permohonan').hide();
+                    $('#jenis_perkara_permohonan_select').val(null).trigger('change'); // Reset permohonan value
                 } else if (permohonanChecked) {
-                    $('#jenis_perkara_gugatan').hide();
                     $('#jenis_perkara_permohonan').show();
-                } else {
                     $('#jenis_perkara_gugatan').hide();
-                    $('#jenis_perkara_permohonan').hide();
+                    $('#jenis_perkara_gugatan_select').val(null).trigger('change'); // Reset gugatan value
                 }
             }
-
+        
+            $('input[name="jenis_permohonan"]').on('change', toggleSelectOptions);
+            toggleSelectOptions(); // Run on page load to set initial state
+        
             $('#formTambahPermohonan').on('submit', function(e) {
-                // Menampilkan SweetAlert dengan loading spinner
+                e.preventDefault();
+        
                 Swal.fire({
                     title: 'Processing...',
                     text: 'Permohonan Anda sedang dikirim',
                     allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
+                    didOpen: () => Swal.showLoading()
+                });
+        
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('permohonan.store') }}",
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: response.message,
+                            }).then(() => {                            
+                                $('#informasi').modal('hide');
+                                $('#formTambahPermohonan')[0].reset();
+                                if ($.fn.DataTable.isDataTable('#pemohonInformasi')) {
+                                    $('#pemohonInformasi').DataTable().ajax.reload();
+                                } else {
+                                    reloadPemohonInformasiTable();
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: response.message || 'Terjadi kesalahan yang tidak diketahui',
+                            });
+                        }
+                    },
+
+                    error: function(xhr) {
+                        const errorMessage = xhr.responseJSON?.message || 'Terjadi kesalahan pada server.';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: errorMessage,
+                        });
                     }
                 });
             });
-
-            toggleSelectOptions();
-            $('input[name="jenis_permohonan"]').on('change', toggleSelectOptions);
         });
     </script>
 

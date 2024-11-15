@@ -319,7 +319,6 @@ class PtspController extends Controller
     // }
     public function permohonanStore(Request $request)
     {
-        // Validasi input
         $validatedData = $request->validate([
             'nama' => 'required|string|max:255',
             'alamat' => 'required|string',
@@ -331,16 +330,13 @@ class PtspController extends Controller
             'umur' => 'required|integer|min:1',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'email' => 'nullable|email',
-            'jenis_perkara_gugatan' => 'nullable|integer',
-            'jenis_perkara_permohonan' => 'nullable|integer',
+            'jenis_perkara_gugatan' => 'nullable',
+            'jenis_perkara_permohonan' => 'nullable',
             'rincian_informasi' => 'nullable|string',
             'tujuan_penggunaan' => 'nullable|string',
         ]);
-
-        dd($request->all());
     
         try {
-            // Menyimpan data pemohon
             $pemohon = PemohonInformasi::create([
                 'nama' => $validatedData['nama'],
                 'alamat' => $validatedData['alamat'],
@@ -360,13 +356,9 @@ class PtspController extends Controller
                 'jenis_kelamin' => $validatedData['jenis_kelamin'],
             ]);
     
-            // Memastikan UUID untuk jenis perkara
             $jenis_perkara_uuid = $validatedData['jenis_permohonan'] === 'Gugatan' ? $pemohon->jenis_perkara_gugatan : $pemohon->jenis_perkara_permohonan;
-    
-            // Mendapatkan data perkara yang sesuai dengan UUID
             $perkara = Perkara::find($jenis_perkara_uuid);
     
-            // Validasi jika perkara tidak ditemukan
             if (!$perkara) {
                 return response()->json([
                     'success' => false,
@@ -374,25 +366,23 @@ class PtspController extends Controller
                 ], 404);
             }
     
-            // Mengirim pesan WhatsApp jika terkoneksi
             if ($request->has('whatsapp_connected')) {
                 $this->sendWhatsappMessage($pemohon->whatsapp, $pemohon->nama, $perkara->id, $pemohon->jenis_kelamin);
             }
     
-            // Respons berhasil
             return response()->json([
                 'success' => true,
                 'message' => 'Permohonan berhasil disimpan dan pesan WhatsApp berhasil dikirim.',
             ], 200);
     
         } catch (\Exception $e) {
-            // Respons jika terjadi kesalahan
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage(),
             ], 500);
         }
     }
+    
     
 
     public function deletePemohon(Request $request)
@@ -437,8 +427,7 @@ class PtspController extends Controller
     
             $user = User::where('role', $roleId)->first();
     
-            if ($user) {
-                // Ambil data pemohon berdasarkan pemohon_id
+            if ($user) {                
                 $pemohon = PemohonInformasi::find($request->input('pemohon_id'));
 
                 if ($pemohon) {
@@ -466,7 +455,6 @@ class PtspController extends Controller
                 ], 404);
             }
     
-            // Lakukan validasi input dan simpan dokumen seperti biasa
             $request->validate([
                 'pemohon_id' => 'required|exists:pemohon_informasi,id',
                 'upload_option' => 'required|in:manual,url',
@@ -488,15 +476,13 @@ class PtspController extends Controller
                 'provinsi_baru' => 'nullable|string|max:255',
             ]);
     
-            // Simpan dokumen dan update status seperti biasa
             $url_document = null;
 
             if ($request->input('upload_option') === 'manual' && $request->hasFile('document')) {
                 $document = $request->file('document');
                 $filename = time() . '-' . $document->getClientOriginalName();
                 $document->move(public_path('documents'), $filename);
-                
-                // Tambahkan full URL dengan route 'index'
+                                
                 $url_document = url('/') . '/documents/' . $filename;
             }
             
@@ -513,7 +499,6 @@ class PtspController extends Controller
                 'message' => $signMessage,
             ]);
     
-            // Simpan data PemohonUbahStatus
             PemohonUbahStatus::create([
                 'id' => Str::uuid(),
                 'id_pemohon' => $request->input('pemohon_id'),
@@ -539,7 +524,6 @@ class PtspController extends Controller
                 'id_sign' => $sign->id,
             ]);
     
-            // Jika semua operasi berhasil, lakukan commit
             DB::commit();
     
             return redirect()->back()->with([
@@ -877,32 +861,26 @@ class PtspController extends Controller
             $data = PemohonInformasi::select(['id', 'nama', 'whatsapp', 'jenis_perkara_gugatan', 'jenis_perkara_permohonan', 'pekerjaan_id', 'pendidikan', 'email', 'NIK', 'alamat', 'ubah_status'])
             ->orderBy('created_at', 'desc'); 
             return DataTables::of($data)
-                ->addColumn('pemohon', function ($row) {
-                    // Combine 'nama', 'whatsapp', 'email', and 'NIK' in one column
+                ->addColumn('pemohon', function ($row) {                    
                     return $row->nama . '<br>' .
                         $row->whatsapp . '<br>' .
                         ($row->email ? $row->email . '<br>' : '') .
                         $row->NIK;
                 })
                 ->addColumn('detail', function ($row) {
-                    // Manually fetch the pekerjaan based on pekerjaan_id
                     $pekerjaan = Pekerjaan::find($row->pekerjaan_id);
                     $pendidikan = Pendidikan::find($row->pendidikan); // Assume 'pendidikan' stores the pendidikan ID
                     $nama_pekerjaan = $pekerjaan ? $pekerjaan->nama_pekerjaan : '-'; // If pekerjaan is found, show the name, else '-'
                     $nama_pendidikan = $pendidikan ? $pendidikan->name : '-'; // If pendidikan is found, show the name, else '-'
                 
-                    // Display Pekerjaan, Pendidikan, and Alamat in the detail column
                     return 'Pekerjaan: ' . $nama_pekerjaan . '<br>' .
                            'Pendidikan: ' . $nama_pendidikan . '<br>' .
                            'Alamat: ' . $row->alamat;
                 })       
                 ->addColumn('perkara', function ($row) {
-                    // First, check if 'jenis_perkara_gugatan' is set, otherwise check 'jenis_perkara_permohonan'
-                    $perkara_id = $row->jenis_perkara_gugatan ?? $row->jenis_perkara_permohonan;
-                    
-                    // Fetch the corresponding 'perkara_name' from the Perkara model
+                    $perkara_id = $row->jenis_perkara_gugatan ?? $row->jenis_perkara_permohonan;                    
                     $perkara = Perkara::find($perkara_id);
-                    $perkara_name = $perkara ? $perkara->perkara_name : '-'; // Fallback to '-' if no perkara found
+                    $perkara_name = $perkara ? $perkara->perkara_name : '-';
     
                     return $perkara_name;
                 })         
@@ -911,16 +889,24 @@ class PtspController extends Controller
                         <a href="' . route('pemohon.download', $row->id) . '" target="_blank" class="btn btn-success btn-sm">
                             <i class="bx bx-download"></i>
                         </a><br><br>
+                         <button type="button" class="btn btn-warning btn-sm" onclick="showModal(' . $row->id . ')">
+                            <i class="bx bx-edit"></i>
+                        </button><br><br> 
                         <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(' . $row->id . ')">
                             <i class="bx bx-trash"></i>
-                        </button>
+                        </button>                     
                     ';
-                })
-                                
-                
+                })               
                 ->rawColumns(['pemohon', 'perkara', 'detail', 'actions'])
                 ->make(true);
         }
+    }
+
+    public function getPemohonInfo($id)
+    {
+        $pemohon = PemohonInformasi::with('pekerjaan')->find($id);
+        $pekerjaanOptions = Pekerjaan::all();
+        return response()->json(['pemohon' => $pemohon, 'pekerjaanOptions' => $pekerjaanOptions]);
     }
     
     public function getPemohonUbahDataData(Request $request)
@@ -982,7 +968,7 @@ class PtspController extends Controller
                     $actions = '';
                 
                     // Tampilkan tombol "Upload" jika belum ada data ubah status
-                    if (!$ubahStatus) {
+                    if (!$ubahStatus || $ubahStatus->status == '2') {
                         $actions .= '
                             <button type="button" class="btn btn-warning btn-sm mb-3" onclick="openUploadModal(' . $row->id . ')">
                                 <i class="bx bx-upload"></i>
