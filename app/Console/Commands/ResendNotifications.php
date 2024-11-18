@@ -27,7 +27,7 @@ class ResendNotifications extends Command
         // Dapatkan waktu saat ini
         $currentHour = Carbon::now()->format('H');
     
-        if ($currentHour < 8 || $currentHour >= 17) {
+        if ($currentHour < 8 || $currentHour >= 18) {
         // if ($currentHour >= 18) {
             $this->info('Notification processing skipped outside of working hours.');
             return;
@@ -49,7 +49,7 @@ class ResendNotifications extends Command
                 } elseif ($notification->priority == 'high') {
                     $this->processHighPriority($notification);
                 }
-                sleep(5); // Tunda 5 detik antar notifikasi
+                sleep(2); // Tunda 5 detik antar notifikasi
             }
         }
         
