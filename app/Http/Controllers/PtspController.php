@@ -1203,7 +1203,7 @@ class PtspController extends Controller
         $message .= "{$syaratUrl}\n\n";
         $message .= "*WhatsApp ini hanya bersifat notifikasi.*\n";
         $message .= "Jika ada pertanyaan lebih lanjut, {$salutation} bisa menghubungi nomor berikut:\n";
-        $message .= "📞 wa.me/6282276624504 (Linda, MS Lhokseumawe)";
+        $message .= "📞 wa.me/6281263838956 (Linda, MS Lhokseumawe)";
 
         // Build the CURL request
         $curl = curl_init();
