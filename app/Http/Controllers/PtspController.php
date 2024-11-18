@@ -329,7 +329,7 @@ class PtspController extends Controller
             'NIK' => 'required|string|unique:pemohon_informasi,NIK',
             'umur' => 'required|integer|min:1',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'email' => 'nullable|email',
+            'email' => 'nullable',
             'jenis_perkara_gugatan' => 'nullable',
             'jenis_perkara_permohonan' => 'nullable',
             'rincian_informasi' => 'nullable|string',
