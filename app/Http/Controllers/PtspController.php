@@ -19,6 +19,8 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\WebpEncoder;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
+
 use DataTables;
 use Exception;
 
@@ -337,6 +339,28 @@ class PtspController extends Controller
         ]);
     
         try {
+            $response = Http::get('https://app.whacenter.com/api/statusDevice', [
+                'device_id' => env('DEVICE_ID', 'default_device_id'),
+            ]);
+    
+            if (!$response->successful() || !$response->json()['status']) {
+                $deviceStatus = $response->json()['data']['status'] ?? 'UNKNOWN';
+                $errorMsg = $deviceStatus === 'UNKNOWN' ? 'Tidak dapat memeriksa status perangkat' : "Status perangkat: $deviceStatus";
+    
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sistem Notifikasi Otomasi Sedang dalam gangguan. Harap memberikan persyaratan secara manual. ' . $errorMsg,
+                ], 500);
+            }
+    
+            $deviceStatus = $response->json()['data']['status'];
+            if ($deviceStatus !== 'CONNECTED') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sistem Notifikasi Otomasi Sedang dalam gangguan. Harap memberikan persyaratan secara manual. Status perangkat: ' . $deviceStatus,
+                ], 500);
+            }
+
             $pemohon = PemohonInformasi::create([
                 'nama' => $validatedData['nama'],
                 'alamat' => $validatedData['alamat'],
@@ -1174,8 +1198,12 @@ class PtspController extends Controller
 
         // Customize the message
         $message = "Assalamualaikum, {$salutation} *{$name}*\n\n";
-        $message .= "Berikut adalah syarat yang harus dilengkapi untuk mendaftarkan perkara: {$perkara->perkara_name}.\n\n";
-        $message .= "Persyaratan dapat diakses melalui tautan berikut:\n\n {$syaratUrl}";
+        $message .= "Berikut adalah syarat yang harus dilengkapi untuk mendaftarkan perkara: *{$perkara->perkara_name}*.\n\n";
+        $message .= "Persyaratan dapat diakses melalui tautan berikut:\n\n";
+        $message .= "{$syaratUrl}\n\n";
+        $message .= "*WhatsApp ini hanya bersifat notifikasi.*\n";
+        $message .= "Jika ada pertanyaan lebih lanjut, {$salutation} bisa menghubungi nomor berikut:\n";
+        $message .= "📞 wa.me/6282276624504 (Linda, MS Lhokseumawe)";
 
         // Build the CURL request
         $curl = curl_init();

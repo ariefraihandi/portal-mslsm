@@ -325,7 +325,7 @@ class ResendNotifications extends Command
     {
         try {
             $response = Http::get('https://app.whacenter.com/api/statusDevice', [
-                'device_id' => env('DEVICE_ID', 'default_device_id'), // Ganti dengan device ID dari .env
+                'device_id' => env('DEVICE_ID', 'default_device_id'), 
             ]);
 
             if ($response->successful()) {

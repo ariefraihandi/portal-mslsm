@@ -901,13 +901,7 @@
                                 title: 'Berhasil',
                                 text: response.message,
                             }).then(() => {                            
-                                $('#informasi').modal('hide');
-                                $('#formTambahPermohonan')[0].reset();
-                                if ($.fn.DataTable.isDataTable('#pemohonInformasi')) {
-                                    $('#pemohonInformasi').DataTable().ajax.reload();
-                                } else {
-                                    reloadPemohonInformasiTable();
-                                }
+                                location.reload();
                             });
                         } else {
                             Swal.fire({
