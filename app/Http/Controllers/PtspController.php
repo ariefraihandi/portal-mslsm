@@ -382,6 +382,88 @@ class PtspController extends Controller
             ], 500);
         }
     }
+
+    public function pemohonEdit(Request $request)
+    {
+        try {
+            // Ambil data pemohon yang sudah ada berdasarkan ID
+            $pemohon = PemohonInformasi::find($request->input('editId'));
+    
+            // Jika tidak ditemukan, kembalikan response error
+            if (!$pemohon) {
+                return redirect()->back()->with('response', [
+                    'success' => false,
+                    'title' => 'Gagal!',
+                    'message' => 'Pemohon tidak ditemukan!'
+                ]);
+            }
+    
+            // Ambil data yang dikirimkan dari form (request)
+            $validatedData = $request->only([
+                'EditNama', 'editNIK', 'editUmur', 'EditAlamat', 'EditPekerjaan', 
+                'editPendidikan', 'jenis_kelamin_edit', 'EditWhatsapp', 'EditEmail', 
+                'ubah_status_edit', 'rincian_informasi_edit', 'tujuan_penggunaan_edit'
+            ]);
+    
+            // Bandingkan dan hanya update yang berubah
+            if ($pemohon->nama != $validatedData['EditNama']) {
+                $pemohon->nama = $validatedData['EditNama'];
+            }
+            if ($pemohon->NIK != $validatedData['editNIK']) {
+                $pemohon->NIK = $validatedData['editNIK'];
+            }
+            if ($pemohon->umur != $validatedData['editUmur']) {
+                $pemohon->umur = $validatedData['editUmur'];
+            }
+            if ($pemohon->alamat != $validatedData['EditAlamat']) {
+                $pemohon->alamat = $validatedData['EditAlamat'];
+            }
+            if ($pemohon->pekerjaan_id != $validatedData['EditPekerjaan']) {
+                $pemohon->pekerjaan_id = $validatedData['EditPekerjaan'];
+            }
+            if ($pemohon->pendidikan != $validatedData['editPendidikan']) {
+                $pemohon->pendidikan = $validatedData['editPendidikan'];
+            }
+            if ($pemohon->jenis_kelamin != $validatedData['jenis_kelamin_edit']) {
+                $pemohon->jenis_kelamin = $validatedData['jenis_kelamin_edit'];
+            }
+            if ($pemohon->whatsapp != $validatedData['EditWhatsapp']) {
+                $pemohon->whatsapp = $validatedData['EditWhatsapp'];
+            }
+            if ($pemohon->email != $validatedData['EditEmail']) {
+                $pemohon->email = $validatedData['EditEmail'];
+            }
+            if ($pemohon->rincian_informasi != $validatedData['rincian_informasi_edit']) {
+                $pemohon->rincian_informasi = $validatedData['rincian_informasi_edit'];
+            }
+            if ($pemohon->tujuan_penggunaan != $validatedData['tujuan_penggunaan_edit']) {
+                $pemohon->tujuan_penggunaan = $validatedData['tujuan_penggunaan_edit'];
+            }
+    
+            // Cek dan update status jika ada perubahan
+            if ($pemohon->ubah_status != $request->has('ubah_status_edit')) {
+                $pemohon->ubah_status = $request->has('ubah_status_edit') ? '1' : null;
+            }
+    
+            // Simpan perubahan
+            $pemohon->save();
+    
+            // Jika berhasil, kembalikan response sukses
+            return redirect()->back()->with('response', [
+                'success' => true,
+                'title' => 'Berhasil!',
+                'message' => 'Data Pemohon Berhasil Di Perbaharui.'
+            ]);
+        } catch (\Exception $e) {
+            // Tangani jika ada error dan kembalikan response error
+            return redirect()->back()->with('response', [
+                'success' => false,
+                'title' => 'Gagal!',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
     
     
 
@@ -858,8 +940,26 @@ class PtspController extends Controller
     public function getPemohonInformasiData(Request $request)
     {
         if ($request->ajax()) {
-            $data = PemohonInformasi::select(['id', 'nama', 'whatsapp', 'jenis_perkara_gugatan', 'jenis_perkara_permohonan', 'pekerjaan_id', 'pendidikan', 'email', 'NIK', 'alamat', 'ubah_status'])
-            ->orderBy('created_at', 'desc'); 
+            // Base query untuk data
+            $data = PemohonInformasi::query()
+                ->select([
+                    'id', 'nama', 'whatsapp', 'jenis_perkara_gugatan', 
+                    'jenis_perkara_permohonan', 'pekerjaan_id', 
+                    'pendidikan', 'email', 'NIK', 'alamat', 'ubah_status'
+                ])
+                ->orderBy('created_at', 'desc'); 
+    
+            // Tambahkan pencarian (search) jika ada input
+            if ($search = $request->input('search.value')) {
+                $data->where(function ($query) use ($search) {
+                    $query->where('nama', 'LIKE', "%$search%")
+                          ->orWhere('whatsapp', 'LIKE', "%$search%")
+                          ->orWhere('email', 'LIKE', "%$search%")
+                          ->orWhere('NIK', 'LIKE', "%$search%");
+                });
+            }
+    
+            // Gunakan DataTables untuk memformat data
             return DataTables::of($data)
                 ->addColumn('pemohon', function ($row) {                    
                     return $row->nama . '<br>' .
@@ -868,23 +968,26 @@ class PtspController extends Controller
                         $row->NIK;
                 })
                 ->addColumn('detail', function ($row) {
+                    // Ambil data pekerjaan dan pendidikan
                     $pekerjaan = Pekerjaan::find($row->pekerjaan_id);
-                    $pendidikan = Pendidikan::find($row->pendidikan); // Assume 'pendidikan' stores the pendidikan ID
-                    $nama_pekerjaan = $pekerjaan ? $pekerjaan->nama_pekerjaan : '-'; // If pekerjaan is found, show the name, else '-'
-                    $nama_pendidikan = $pendidikan ? $pendidikan->name : '-'; // If pendidikan is found, show the name, else '-'
+                    $pendidikan = Pendidikan::find($row->pendidikan);
+                    $nama_pekerjaan = $pekerjaan ? $pekerjaan->nama_pekerjaan : '-';
+                    $nama_pendidikan = $pendidikan ? $pendidikan->name : '-';
                 
                     return 'Pekerjaan: ' . $nama_pekerjaan . '<br>' .
                            'Pendidikan: ' . $nama_pendidikan . '<br>' .
                            'Alamat: ' . $row->alamat;
                 })       
                 ->addColumn('perkara', function ($row) {
-                    $perkara_id = $row->jenis_perkara_gugatan ?? $row->jenis_perkara_permohonan;                    
+                    // Ambil nama perkara berdasarkan jenis perkara
+                    $perkara_id = $row->jenis_perkara_gugatan ?? $row->jenis_perkara_permohonan;
                     $perkara = Perkara::find($perkara_id);
                     $perkara_name = $perkara ? $perkara->perkara_name : '-';
     
                     return $perkara_name;
                 })         
                 ->addColumn('actions', function ($row) {
+                    // Tambahkan aksi download, edit, dan delete
                     return '                      
                         <a href="' . route('pemohon.download', $row->id) . '" target="_blank" class="btn btn-success btn-sm">
                             <i class="bx bx-download"></i>
@@ -901,13 +1004,35 @@ class PtspController extends Controller
                 ->make(true);
         }
     }
+    
 
     public function getPemohonInfo($id)
     {
+        // Ambil data pemohon dengan relasi pekerjaan
         $pemohon = PemohonInformasi::with('pekerjaan')->find($id);
+
+        // Ambil semua opsi pekerjaan dan pendidikan
         $pekerjaanOptions = Pekerjaan::all();
-        return response()->json(['pemohon' => $pemohon, 'pekerjaanOptions' => $pekerjaanOptions]);
+        $pendidikanOptions = Pendidikan::all(); // Ambil data pendidikan
+
+        // Kirim data dalam format JSON
+        return response()->json([
+            'pemohon' => $pemohon,
+            'pekerjaanOptions' => $pekerjaanOptions,
+            'pendidikanOptions' => $pendidikanOptions // Tambahkan opsi pendidikan
+        ]);
     }
+
+    public function getPerkaraNameById($id)
+    {
+        $perkara = Perkara::find($id);
+        if ($perkara) {
+            return response()->json($perkara);
+        }
+        return response()->json(['perkara_name' => 'Nama perkara tidak ditemukan'], 404);
+    }
+    
+
     
     public function getPemohonUbahDataData(Request $request)
     {

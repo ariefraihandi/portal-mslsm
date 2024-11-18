@@ -492,95 +492,149 @@
         </div>
     {{-- tambah Perkara --}}
 
-    <!-- Modal Bootstrap -->
+    <!-- Modal Edit Pihak -->
         <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="editModalLabel">Edit Data</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>                    
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="editNama" class="form-label">Nama:</label>
-                            <input type="text" class="form-control" id="editNama" name="EditNama">
-                        </div>
-                        <div class="mb-3">
-                            <label for="editAlamat" class="form-label">Alamat:</label>
-                            <input type="text" class="form-control" id="editAlamat" name="EditAlamat">
-                        </div>
-                        <div class="mb-3">
-                            <label for="editPekerjaan" class="form-label">Pekerjaan:</label>
-                            <select class="form-control" id="editPekerjaan" name="EditPekerjaan">
-                                <!-- Options will be dynamically loaded from JavaScript -->
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editWhatsapp" class="form-label">WhatsApp:</label>
-                            <input type="text" class="form-control" id="editWhatsapp" name="EditWhatsapp">
-                        </div>
-                        <div class="mb-3">
-                            <label for="editEmail" class="form-label">Email:</label>
-                            <input type="email" class="form-control" id="editEmail" name="EditEmail">
-                        </div>
-                        <div class="row mb-3">
-                            <label for="jenis_permohonan" class="form-label">Jenis Permohonan</label>
-                            <div class="col-md-6 mb-md-0 mb-2">
-                                <div class="form-check custom-option custom-option-basic">
-                                    <label class="form-check-label custom-option-content" for="gugatan">
-                                        <input
-                                            name="jenis_permohonan"
-                                            class="form-check-input"
-                                            type="radio"
-                                            value="Gugatan"
-                                            id="gugatanEdit"
-                                            required
-                                        /> 
-                                        <span class="custom-option-header">
-                                            <span class="h6 mb-0">Gugatan</span>
-                                        </span>
-                                    </label>
+                    </div>           
+                    <form action="{{ route('pemohon.edit') }}" method="POST" id="editPemohonForm">
+                        @csrf         
+                        <div class="modal-body">
+                            <input type="hidden" class="form-control" id="editId" name="editId">
+                            <div class="mb-3">
+                                <label for="editNama" class="form-label">Nama:</label>
+                                <input type="text" class="form-control" id="editNama" name="EditNama">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editNIK" class="form-label">NIK:</label>
+                                <input type="text" class="form-control" id="editNIK" name="editNIK">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editUmur" class="form-label">Umur:</label>
+                                <input type="text" class="form-control" id="editUmur" name="editUmur">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editAlamat" class="form-label">Alamat:</label>
+                                <input type="text" class="form-control" id="editAlamat" name="EditAlamat">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editPekerjaan" class="form-label">Pekerjaan:</label>
+                                <select class="form-control" id="editPekerjaan" name="EditPekerjaan">
+                                    <!-- Options will be dynamically loaded from JavaScript -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editPendidikan" class="form-label">Pendidikan:</label>
+                                <select class="form-control" id="editPendidikan" name="editPendidikan">
+                                    <!-- Options will be dynamically loaded from JavaScript -->
+                                </select>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="jenis_kelamin_edit" class="form-label">Jenis Kelamin</label> 
+                                    <select id="jenis_kelamin_edit" name="jenis_kelamin_edit" class="form-select" required>
+                                        <option value="Laki-laki">Laki-laki</option>
+                                        <option value="Perempuan">Perempuan</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-check custom-option custom-option-basic">
-                                    <label class="form-check-label custom-option-content" for="permohonan">
-                                        <input
-                                            name="jenis_permohonan"
-                                            class="form-check-input"
-                                            type="radio"
-                                            value="Permohonan"
-                                            id="permohonanEdit"
-                                            required
-                                        />
-                                        <span class="custom-option-header">
-                                            <span class="h6 mb-0">Permohonan</span>
-                                        </span>
-                                    </label>
+                            <div class="mb-3">
+                                <label for="editWhatsapp" class="form-label">WhatsApp:</label>
+                                <input type="text" class="form-control" id="editWhatsapp" name="EditWhatsapp">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editEmail" class="form-label">Email:</label>
+                                <input type="email" class="form-control" id="editEmail" name="EditEmail">
+                            </div>
+                            <div class="row mb-3">
+                                <label for="jenis_permohonan" class="form-label">Jenis Permohonan</label>
+                                <div class="col-md-6 mb-md-0 mb-2">
+                                    <div class="form-check custom-option custom-option-basic">
+                                        <label class="form-check-label custom-option-content" for="gugatanEdit">
+                                            <input
+                                                name="jenis_permohonan"
+                                                class="form-check-input"
+                                                type="radio"
+                                                value="Gugatan"
+                                                id="gugatanEdit"
+                                                name="gugatanEdit"
+                                                disabled
+                                            /> 
+                                            <span class="custom-option-header">
+                                                <span class="h6 mb-0">Gugatan</span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check custom-option custom-option-basic">
+                                        <label class="form-check-label custom-option-content" for="permohonanEdit">
+                                            <input name="jenis_permohonan" class="form-check-input" type="radio" value="Permohonan" id="permohonanEdit" name="permohonanEdit" disabled/>
+                                            <span class="custom-option-header">
+                                                <span class="h6 mb-0">Permohonan</span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3" id="jenis_perkara_gugatan_edit" style="display: none;">
+                                <div class="col-12">
+                                    <label for="jenis_perkara_gugatan_edit_select" class="form-label">Jenis Perkara Gugatan</label>
+                                    <select id="jenis_perkara_gugatan_edit_select" name="jenis_perkara_gugatan" class="form-select" disabled>
+                                        <option value="">Pilih jenis perkara gugatan</option>
+                                        <!-- Opsi perkara gugatan akan dimuat di sini -->
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3" id="jenis_perkara_permohonan_edit" style="display: none;">
+                                <div class="col-12">
+                                    <label for="jenis_perkara_permohonan_select_edit" class="form-label">Jenis Perkara Permohonan</label>
+                                    <select id="jenis_perkara_permohonan_select_edit" name="jenis_perkara_permohonan" class="form-select" disabled>
+                                        <option value="">Pilih jenis perkara permohonan</option>
+                                        <!-- Opsi perkara permohonan akan dimuat di sini -->
+                                    </select>
+                                </div>
+                            </div>      
+
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="1" id="ubah_status_edit" name="ubah_status_edit">
+                                        <label class="form-check-label" for="ubah_status_edit"> 
+                                            Ubah Status
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                                            
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="rincian_informasi_edit" class="form-label">Rincian Informasi Yang Dibutuhkan (Optional)</label>
+                                    <textarea name="rincian_informasi_edit" id="rincian_informasi_edit" class="form-control" rows="3"></textarea> 
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="tujuan_penggunaan_edit" class="form-label">Tujuan Penggunaan Informasi</label>
+                                    <textarea name="tujuan_penggunaan_edit" id="tujuan_penggunaan_edit" class="form-control" rows="3"></textarea> 
                                 </div>
                             </div>
                         </div>
-                        
-                        <p>Jenis Permohonan: <span id="modalJenisPermohonan"></span></p>
-                        <p>Jenis Perkara Gugatan: <span id="modalJenisPerkaraGugatan"></span></p>
-                        <p>Jenis Perkara Permohonan: <span id="modalJenisPerkaraPermohonan"></span></p>
-                        <p>Rincian Informasi: <span id="modalRincianInformasi"></span></p>
-                        <p>Ubah Status: <span id="modalUbahStatus"></span></p>
-                        <p>Pendidikan: <span id="modalPendidikan"></span></p>
-                        <p>NIK: <span id="modalNIK"></span></p>
-                        <p>Umur: <span id="modalUmur"></span></p>
-                        <p>Jenis Kelamin: <span id="modalJenisKelamin"></span></p>
-                        <p>Tujuan Penggunaan: <span id="modalTujuanPenggunaan"></span></p>
-                    </div>
                     
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
-                    </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-
+    <!-- /Modal Edit Pihak -->
 
 @endsection
 
@@ -614,26 +668,14 @@
             fetch(`/pemohon/${id}/info`)
                 .then(response => response.json())
                 .then(data => {
+                    document.getElementById("editId").value = data.pemohon.id;
                     document.getElementById("editNama").value = data.pemohon.nama;
                     document.getElementById("editAlamat").value = data.pemohon.alamat;
                     document.getElementById("editWhatsapp").value = data.pemohon.whatsapp;
-                    document.getElementById("editEmail").value = data.pemohon.email;
-                    document.getElementById("modalJenisPermohonan").innerText = data.pemohon.jenis_permohonan;
-                    document.getElementById("modalJenisPerkaraGugatan").innerText = data.pemohon.jenis_perkara_gugatan;
-                    document.getElementById("modalJenisPerkaraPermohonan").innerText = data.pemohon.jenis_perkara_permohonan;
-                    document.getElementById("modalRincianInformasi").innerText = data.pemohon.rincian_informasi;
-                    document.getElementById("modalUbahStatus").innerText = data.pemohon.ubah_status;
-                    document.getElementById("modalPendidikan").innerText = data.pemohon.pendidikan;
-                    document.getElementById("modalNIK").innerText = data.pemohon.NIK;
-                    document.getElementById("modalUmur").innerText = data.pemohon.umur;
-                    document.getElementById("modalJenisKelamin").innerText = data.pemohon.jenis_kelamin;
-                    document.getElementById("modalTujuanPenggunaan").innerText = data.pemohon.tujuan_penggunaan;
-
-                    if (data.pemohon.jenis_perkara_gugatan) {
-                        document.getElementById("gugatanEdit").checked = true;
-                    } else if (data.pemohon.jenis_perkara_permohonan) {
-                        document.getElementById("permohonanEdit").checked = true;
-                    }
+                    document.getElementById("editEmail").value = data.pemohon.email;                                                                                
+                    document.getElementById("editNIK").value = data.pemohon.NIK;
+                    document.getElementById("editUmur").value = data.pemohon.umur;
+                    
 
                     let pekerjaanSelect = document.getElementById("editPekerjaan");
                     pekerjaanSelect.innerHTML = "";
@@ -644,9 +686,89 @@
                         pekerjaanSelect.insertAdjacentHTML('beforeend', optElement);
                     });
                     
-                     $('#editPekerjaan').select2({ dropdownParent: $('#editModal .modal-content'), width: '100%' });
+                    let pendidikanSelect = document.getElementById("editPendidikan");
+                    pendidikanSelect.innerHTML = "";
+                    data.pendidikanOptions.forEach(option => {
+                        let selected = option.id === data.pemohon.pendidikan ? "selected" : "";
+                        let optElement = `<option value="${option.id}" ${selected}>${option.name}</option>`;
+                        pendidikanSelect.insertAdjacentHTML('beforeend', optElement);
+                    });
+                    
+                    let jenisPerkaraGugatan = data.pemohon.jenis_perkara_gugatan;
+                    let jenisPerkaraPermohonan = data.pemohon.jenis_perkara_permohonan;
 
-                    // Show the modal
+                    if (jenisPerkaraGugatan) {
+                        // Menampilkan select gugatan dan menyembunyikan select permohonan
+                        document.getElementById("jenis_perkara_gugatan_edit").style.display = 'block';
+                        document.getElementById("jenis_perkara_permohonan_edit").style.display = 'none';
+
+                        // Fetch nama perkara berdasarkan ID gugatan
+                        fetch(`/perkara/${jenisPerkaraGugatan}`)
+                            .then(response => response.json())
+                            .then(perkaraData => {
+                                let selectGugatan = document.getElementById("jenis_perkara_gugatan_edit_select");
+                                selectGugatan.innerHTML = ''; // Clear existing options
+                                let optElement = document.createElement('option');
+                                optElement.value = jenisPerkaraGugatan;
+                                optElement.text = perkaraData.perkara_name || "Nama perkara tidak ditemukan";
+                                optElement.selected = true;
+                                selectGugatan.appendChild(optElement);
+                            })
+                            .catch(error => {
+                                console.error('Error fetching data:', error);
+                            });
+                    } else if (jenisPerkaraPermohonan) {
+                        // Menampilkan select permohonan dan menyembunyikan select gugatan
+                        document.getElementById("jenis_perkara_gugatan_edit").style.display = 'none';
+                        document.getElementById("jenis_perkara_permohonan_edit").style.display = 'block';
+
+                        // Fetch nama perkara berdasarkan ID permohonan
+                        fetch(`/perkara/${jenisPerkaraPermohonan}`)
+                            .then(response => response.json())
+                            .then(perkaraData => {
+                                let selectPermohonan = document.getElementById("jenis_perkara_permohonan_select_edit");
+                                selectPermohonan.innerHTML = ''; // Clear existing options
+                                let optElement = document.createElement('option');
+                                optElement.value = jenisPerkaraPermohonan;
+                                optElement.text = perkaraData.perkara_name || "Nama perkara tidak ditemukan";
+                                optElement.selected = true;
+                                selectPermohonan.appendChild(optElement);
+                            })
+                            .catch(error => {
+                                console.error('Error fetching data:', error);
+                            });
+                    }
+                    
+                    if (jenisPerkaraGugatan) {
+                        document.getElementById("gugatanEdit").checked = true;
+                    } else if (jenisPerkaraPermohonan) {
+                        document.getElementById("permohonanEdit").checked = true;
+                    }
+
+                    let ubahStatusCheckbox = document.getElementById("ubah_status_edit");
+                    if (data.pemohon.ubah_status === "1") {
+                        ubahStatusCheckbox.checked = true;
+                    } else {
+                        ubahStatusCheckbox.checked = false; 
+                    }
+
+                    let jenisKelaminSelect = document.getElementById("jenis_kelamin_edit");
+                    let jenisKelamin = data.pemohon.jenis_kelamin;
+
+                    if (jenisKelamin === "Laki-laki") {
+                        jenisKelaminSelect.value = "Laki-laki";
+                    } else if (jenisKelamin === "Perempuan") {
+                        jenisKelaminSelect.value = "Perempuan";
+                    }
+
+                    document.getElementById("rincian_informasi_edit").value = data.pemohon.rincian_informasi;
+                    document.getElementById("tujuan_penggunaan_edit").value = data.pemohon.tujuan_penggunaan;
+
+
+
+                     $('#editPekerjaan').select2({ dropdownParent: $('#editModal .modal-content'), width: '100%' });
+                     $('#editPendidikan').select2({ dropdownParent: $('#editModal .modal-content'), width: '100%' });
+                     
                     $('#editModal').modal('show');
                 })
                 .catch(error => {
