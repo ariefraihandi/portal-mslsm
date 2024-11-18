@@ -49,7 +49,7 @@ class ResendNotifications extends Command
                 } elseif ($notification->priority == 'high') {
                     $this->processHighPriority($notification);
                 }
-                sleep(2); // Tunda 5 detik antar notifikasi
+                // sleep(2); // Tunda 5 detik antar notifikasi
             }
         }
         
