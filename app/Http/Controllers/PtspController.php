@@ -20,7 +20,9 @@ use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\WebpEncoder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
+use PDF;
 use DataTables;
 use Exception;
 
@@ -252,73 +254,6 @@ class PtspController extends Controller
         ]);
     }
 
-    // public function permohonanStore(Request $request)
-    // {
-    //     $request->validate([
-    //         'nama' => 'required|string|max:255',
-    //         'alamat' => 'required|string',
-    //         'pekerjaan' => 'required|integer',
-    //         'whatsapp' => 'required|string',
-    //         'jenis_permohonan' => 'required|string',
-    //         'pendidikan' => 'required|integer',
-    //         'NIK' => 'required|string|unique:pemohon_informasi,NIK',
-    //         'umur' => 'required|integer',
-    //         'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-    //     ]);
-    
-    //     try {
-    //         // Create the pemohon record
-    //         $pemohon = PemohonInformasi::create([
-    //             'nama' => $request->nama,
-    //             'alamat' => $request->alamat,
-    //             'pekerjaan_id' => $request->pekerjaan,
-    //             'whatsapp' => $request->whatsapp,
-    //             'whatsapp_connected' => $request->has('whatsapp_connected'),
-    //             'email' => $request->email,
-    //             'jenis_permohonan' => $request->jenis_permohonan,
-    //             'jenis_perkara_gugatan' => $request->jenis_permohonan === 'Gugatan' ? $request->jenis_perkara_gugatan : null,
-    //             'jenis_perkara_permohonan' => $request->jenis_permohonan === 'Permohonan' ? $request->jenis_perkara_permohonan : null,
-    //             'rincian_informasi' => $request->input('rincian_informasi'),
-    //             'tujuan_penggunaan' => $request->input('tujuan_penggunaan'),
-    //             'ubah_status' => $request->has('ubah_status') ? '1' : null,
-    //             'pendidikan' => $request->pendidikan,
-    //             'NIK' => $request->NIK,
-    //             'umur' => $request->umur,
-    //             'jenis_kelamin' => $request->jenis_kelamin,
-    //         ]);
-    
-    //         // Determine which perkara UUID to use
-    //         $jenis_perkara_uuid = $request->jenis_permohonan === 'Gugatan' ? $pemohon->jenis_perkara_gugatan : $pemohon->jenis_perkara_permohonan;
-    
-    //         // Fetch the perkara details using the UUID
-    //         $perkara = Perkara::where('id', $jenis_perkara_uuid)->first();
-    
-    //         if (!$perkara) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Perkara tidak ditemukan.',
-    //             ], 404);
-    //         }
-    
-    //         if ($request->has('whatsapp_connected')) {
-    //             // Send WhatsApp message with the correct perkara information
-    //             $this->sendWhatsappMessage($pemohon->whatsapp, $pemohon->nama, $perkara->id, $pemohon->jenis_kelamin);
-    //         }
-    
-    //         // Return success response
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Permohonan berhasil disimpan dan pesan WhatsApp berhasil dikirim.',
-    //         ]);
-    
-    //     } catch (\Exception $e) {
-    //         // Return error response
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
     public function permohonanStore(Request $request)
     {
         $validatedData = $request->validate([
@@ -487,9 +422,6 @@ class PtspController extends Controller
             ]);
         }
     }
-    
-    
-    
 
     public function deletePemohon(Request $request)
     {
@@ -1029,7 +961,6 @@ class PtspController extends Controller
         }
     }
     
-
     public function getPemohonInfo($id)
     {
         // Ambil data pemohon dengan relasi pekerjaan
@@ -1055,8 +986,6 @@ class PtspController extends Controller
         }
         return response()->json(['perkara_name' => 'Nama perkara tidak ditemukan'], 404);
     }
-    
-
     
     public function getPemohonUbahDataData(Request $request)
     {
@@ -1098,10 +1027,13 @@ class PtspController extends Controller
                                 return '<span class="badge bg-danger">Gagal Proses</span><br>' . ($ubahStatus->catatan ?? '');
                             case '3':
                                 // Status: Selesai Proses tapi belum diambil
-                                return '<span class="badge bg-warning">Selesai Proses</span><br>Belum Ambil';
+                                return '<span class="badge bg-warning">Selesai Proses<br><br>Belum Ambil</span>';
                             case '4':
                                 // Status: SUCCESS
                                 return '<span class="badge bg-success">SUCCESS</span>';
+                            case '5':
+                                // Status: Gagal Proses, tampilkan juga catatan jika ada
+                                return '<span class="badge bg-danger">Diabatalkan</span><br>' . ($ubahStatus->catatan ?? '');
                             default:
                                 // Jika status tidak dikenal atau kosong
                                 return '<span class="badge bg-secondary">Status Tidak Diketahui</span>';
@@ -1142,21 +1074,52 @@ class PtspController extends Controller
     }
 
     public function batalkanPengajuan(Request $request)
-    {
-        $id = $request->input('id');   
-        
-        // Cek apakah ada data di PemohonUbahStatus berdasarkan id_pemohon
-        $status = PemohonUbahStatus::where('id_pemohon', $id)->first();
-    
-        if ($status) {
-            // Jika data ditemukan, hapus data tersebut
-            $status->delete();
-            return response()->json(['success' => true, 'message' => 'Pengajuan berhasil dibatalkan dan data dihapus']);
-        } else {
-            // Jika data tidak ditemukan
-            return response()->json(['success' => false, 'message' => 'Data tidak ditemukan, pengajuan tidak dapat dibatalkan']);
+{
+    $request->validate([
+        'id' => 'required|exists:pemohon_ubahstatus,id_pemohon',
+        'reason' => 'required|string|max:255',
+    ]);
+
+    // Ambil data berdasarkan ID
+    $pemohonStatus = PemohonUbahStatus::where('id_pemohon', $request->id)->first();
+
+    if ($pemohonStatus) {
+        // Update status dan catatan
+        $pemohonStatus->status = 5;
+        $pemohonStatus->catatan = $request->reason;
+        $pemohonStatus->save();
+
+        // Cari pengguna DUKCAPIL
+        $roleId = Role::where('name', 'DUKCAPIL')->value('id');
+        $user = User::where('role', $roleId)->first();
+
+        if ($user) {
+            // Ambil data pemohon untuk pesan
+            $pemohon = PemohonInformasi::find($request->id);
+
+            // Format pesan WhatsApp
+            $pesan = "Assalamualaikum,\n\n";
+            $pesan .= "Pengajuan Perubahan Identitas telah DIBATALKAN.\n";
+            $pesan .= "Atas nama: {$pemohon->nama}.\n";
+            $pesan .= "Alasan pembatalan: {$request->reason}.\n\n";
+            $pesan .= "Tautan Aksi:\n";
+            $pesan .= route('aplikasi.siramasakan');
+
+            // Kirim pesan WhatsApp
+            $this->sendWhatsappMessageCapil($user->whatsapp, $pesan);
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status berhasil diperbarui menjadi dibatalkan dan pesan telah dikirim ke DUKCAPIL.',
+        ]);
+    } else {
+        return response()->json([
+            'success' => false,
+            'message' => 'Data pemohon tidak ditemukan.',
+        ]);
     }
+}
 
 
     public function kritirData(Request $request)
@@ -1176,6 +1139,35 @@ class PtspController extends Controller
                 ->make(true);
         }
         return view('feedback.index'); // Ganti dengan view yang sesuai
+    }
+
+    public function cetakPermohonanInformasi(Request $request, $id)
+    {        
+        $pemohon = PemohonInformasi::with('pekerjaan')->findOrFail($id);
+    
+        if (!$pemohon) {
+            return abort(404, 'Data not found');
+        }       
+    
+        // Generate QR Code
+        $urlToBarcodePemohon = route('barcodestatus.scan') . '?eSign=' . urlencode($pemohon->id_sign);
+        $qrCodePemohon = base64_encode(QrCode::format('svg')
+            ->size(70)
+            ->errorCorrection('M')
+            ->generate($urlToBarcodePemohon));
+    
+        $createdAtFormatted = \Carbon\Carbon::parse($pemohon->created_at)->translatedFormat('d F Y');
+    
+        $data = [
+            'pemohon' => $pemohon,            
+            'qrCodePemohon' => $qrCodePemohon, // Add the QR code
+            'createdAtFormatted' => $createdAtFormatted // Add the formatted creation date
+        ];
+            
+        $pdf = PDF::loadView('Ptsp.cetakInformasi', $data);
+    
+        // Return the PDF for download
+        return $pdf->stream('Bukti Pengajuan Permohonan Informasi Atas Nama ' . $pemohon->nama . '.pdf');
     }
     
     

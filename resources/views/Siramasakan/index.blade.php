@@ -167,7 +167,7 @@
                                                                 @elseif ($status->status == 4)
                                                                     <span class="badge bg-success" data-bs-toggle="modal" data-bs-target="#modalStatus{{ $status->id }}">SUCCESS</span>
                                                                 @elseif ($status->status == 5)
-                                                                    <span class="badge bg-warning" data-bs-toggle="modal" data-bs-target="#modalStatus{{ $status->id }}">Pending</span>
+                                                                    <span class="badge bg-danger" data-bs-toggle="modal" data-bs-target="#{{ $status->id }}">Dibatalkan</span>
                                                                 @else
                                                                     <span class="badge bg-secondary" data-bs-toggle="modal" data-bs-target="#modalStatus{{ $status->id }}">Status Tidak Diketahui</span>
                                                                 @endif
@@ -175,44 +175,44 @@
                                                                                                                         
                                                         </tr>
                                                        <!-- Modal for changing status -->
-<div class="modal fade" id="modalStatus{{ $status->id }}" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="statusModalLabel">Ubah Status</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Traditional form submission -->
-                <form action="{{ route('update.status.capil') }}" method="POST" id="formStatus{{ $status->id }}">                
-                    @csrf
-                    <!-- Hidden field to pass the pemohon ID -->
-                    <input type="hidden" name="id" value="{{ $status->id }}">
+                                                            <div class="modal fade" id="modalStatus{{ $status->id }}" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+                                                                <div class="modal-dialog">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                            <h5 class="modal-title" id="statusModalLabel">Ubah Status</h5>
+                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                        </div>
+                                                                        <div class="modal-body">
+                                                                            <!-- Traditional form submission -->
+                                                                            <form action="{{ route('update.status.capil') }}" method="POST" id="formStatus{{ $status->id }}">                
+                                                                                @csrf
+                                                                                <!-- Hidden field to pass the pemohon ID -->
+                                                                                <input type="hidden" name="id" value="{{ $status->id }}">
 
-                    <div class="mb-3">
-                        <label for="selectStatus{{ $status->id }}" class="form-label">Pilih Status:</label>
-                        <select name="status" id="selectStatus{{ $status->id }}" class="form-select">
-                            <option value="1" {{ $status->status == 1 ? 'selected' : '' }}>Sedang Diproses</option>
-                            <option value="2" {{ $status->status == 2 ? 'selected' : '' }}>Gagal Proses</option>
-                            <option value="3" {{ $status->status == 3 ? 'selected' : '' }}>Selesai Proses</option>                            
-                        </select>
-                    </div>
+                                                                                <div class="mb-3">
+                                                                                    <label for="selectStatus{{ $status->id }}" class="form-label">Pilih Status:</label>
+                                                                                    <select name="status" id="selectStatus{{ $status->id }}" class="form-select">
+                                                                                        <option value="1" {{ $status->status == 1 ? 'selected' : '' }}>Sedang Diproses</option>
+                                                                                        <option value="2" {{ $status->status == 2 ? 'selected' : '' }}>Gagal Proses</option>
+                                                                                        <option value="3" {{ $status->status == 3 ? 'selected' : '' }}>Selesai Proses</option>                            
+                                                                                    </select>
+                                                                                </div>
 
-                    <!-- Notes field (only appears if "Gagal Proses" is selected) -->
-                    <div class="mb-3" id="catatanField{{ $status->id }}" style="display: none;">
-                        <label for="catatan{{ $status->id }}" class="form-label">Catatan:</label>
-                        <textarea name="catatan" id="catatan{{ $status->id }}" class="form-control" placeholder="Masukkan catatan"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                <!-- Submit form via traditional form submission -->
-                <button type="submit" form="formStatus{{ $status->id }}" class="btn btn-primary">Simpan</button>
-            </div>
-        </div>
-    </div>
-</div>
+                                                                                <!-- Notes field (only appears if "Gagal Proses" is selected) -->
+                                                                                <div class="mb-3" id="catatanField{{ $status->id }}" style="display: none;">
+                                                                                    <label for="catatan{{ $status->id }}" class="form-label">Catatan:</label>
+                                                                                    <textarea name="catatan" id="catatan{{ $status->id }}" class="form-control" placeholder="Masukkan catatan"></textarea>
+                                                                                </div>
+                                                                            </form>
+                                                                        </div>
+                                                                        <div class="modal-footer">
+                                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                                                            <!-- Submit form via traditional form submission -->
+                                                                            <button type="submit" form="formStatus{{ $status->id }}" class="btn btn-primary">Simpan</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
 
 
                                                         @endforeach

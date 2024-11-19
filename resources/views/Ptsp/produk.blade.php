@@ -330,7 +330,7 @@
     function cancelSubmission(id) {
         Swal.fire({
             title: 'Apakah Anda yakin?',
-            text: "Pengajuan dengan ID " + id + " akan dibatalkan.",
+            text: "Pengajuan dengan ini akan dibatalkan.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -339,45 +339,71 @@
             cancelButtonText: 'Tidak'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Jika pengguna mengkonfirmasi, lakukan permintaan POST
-                fetch("{{ route('batal.siramasakan') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}" // Token CSRF
+                // Jika pengguna mengonfirmasi, tampilkan input textarea
+                Swal.fire({
+                    title: 'Alasan Pembatalan',
+                    input: 'textarea',
+                    inputPlaceholder: 'Masukkan alasan pembatalan di sini...',
+                    inputAttributes: {
+                        'aria-label': 'Masukkan alasan pembatalan'
                     },
-                    body: JSON.stringify({ id: id }) // Data ID yang dikirim
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire(
-                            'Dibatalkan!',
-                            'Pengajuan berhasil dibatalkan.',
-                            'success'
-                        ).then(() => {
-                            // Reload DataTable setelah konfirmasi sukses dari SweetAlert
-                            $('#pemohonInformasi').DataTable().ajax.reload();
-                        });
-                    } else {
-                        Swal.fire(
-                            'Gagal',
-                            'Pengajuan gagal dibatalkan.',
-                            'error'
-                        );
+                    showCancelButton: true,
+                    confirmButtonText: 'Kirim',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    preConfirm: (reason) => {
+                        if (!reason) {
+                            Swal.showValidationMessage('Alasan pembatalan wajib diisi!');
+                            return false;
+                        }
+                        return reason;
                     }
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    Swal.fire(
-                        'Error',
-                        'Terjadi kesalahan pada server.',
-                        'error'
-                    );
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const reason = result.value; // Alasan pembatalan dari textarea
+                        // Lakukan permintaan POST
+                        fetch("{{ route('batal.siramasakan') }}", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-TOKEN": "{{ csrf_token() }}" // Token CSRF
+                            },
+                            body: JSON.stringify({ id: id, reason: reason }) // Kirim ID dan alasan
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Dibatalkan!',
+                                    'Pengajuan berhasil dibatalkan.',
+                                    'success'
+                                ).then(() => {
+                                    // Reload DataTable setelah sukses
+                                    $('#pemohonInformasi').DataTable().ajax.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Gagal',
+                                    'Pengajuan gagal dibatalkan.',
+                                    'error'
+                                );
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire(
+                                'Error',
+                                'Terjadi kesalahan pada server.',
+                                'error'
+                            );
+                        });
+                    }
                 });
             }
         });
     }
+
 
 
     function toggleUploadOption() {

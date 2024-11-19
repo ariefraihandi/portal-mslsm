@@ -47,16 +47,13 @@ class SiramasakanController extends Controller
     
 
     public function cetakUbahStatus(Request $request, $id)
-    {
-        // Fetch the specific record based on the passed id
+    {        
         $pemohon = PemohonUbahStatus::where('id', $id)->first();
     
-        // Check if the data is retrieved correctly
         if (!$pemohon) {
             return abort(404, 'Data not found');
         }
     
-        // Determine the type of request
         $detailPermohonan = '';
         if ($pemohon->cheklist_ubah_status && $pemohon->cheklist_ubah_alamat) {
             $detailPermohonan = 'Perubahan Status & Alamat';
@@ -75,10 +72,8 @@ class SiramasakanController extends Controller
             ->errorCorrection('M')
             ->generate($urlToBarcodePemohon));
     
-        // Format the created_at date to Indonesian format
         $createdAtFormatted = \Carbon\Carbon::parse($pemohon->created_at)->translatedFormat('d F Y');
     
-        // Prepare data for view
         $data = [
             'pemohon' => $pemohon,
             'detailPermohonan' => $detailPermohonan, // Add the request detail
