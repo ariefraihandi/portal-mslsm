@@ -164,6 +164,8 @@ Route::middleware([AuthMiddleware::class])->group(function () {
 Route::post('/permohonan/store',                    [PtspController::class, 'permohonanStore'])->name('permohonan.store');
 Route::get('/cetak/cuti/{id}',                      [CutiController::class, 'cetakCuti'])->name('cetakCuti');
 Route::get('/barcode/scan',                         [BarcodeController::class, 'getSignData'])->name('barcode.scan');
+Route::get('/barcode/informasi',                    [BarcodeController::class, 'getSIgnInformasi'])->name('barcode.scan.informasi');
+Route::get('/barcode/p/informasi',                  [BarcodeController::class, 'getSIgnPetugasInformasi'])->name('barcode.scan.petugas.info');
 Route::get('/barcode/capil/scan',                   [BarcodeController::class, 'getSignDataSiramasakan'])->name('barcodestatus.scan');
 Route::get('/get-jenis-perkara',                    [PtspController::class, 'getJenisPerkara'])->name('jenis.perkara');
 Route::get('/layanan-mandiri',                      [PtspController::class, 'layananMandiri'])->name('layanan.mandiri');

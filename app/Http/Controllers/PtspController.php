@@ -21,7 +21,7 @@ use Intervention\Image\Encoders\WebpEncoder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-
+use Carbon\Carbon;
 use PDF;
 use DataTables;
 use Exception;
@@ -33,12 +33,50 @@ class PtspController extends Controller
         $accessMenus        = $request->get('accessMenus');
         $id                 = $request->session()->get('user_id');
         $user               = User::with('detail')->find($id); 
- 
+
+        Carbon::setLocale('id');
+
+        $bulan                          = Carbon::now()->translatedFormat('F');            
+        $tahun                          = Carbon::now()->year;
+        $bulanAngka                     = Carbon::now()->month;        
+        $tahunBulanLalu                 = Carbon::now()->subMonth()->year;
+        $bulanAngkaBulanLalu            = Carbon::now()->subMonth()->month;
+
+        $jumlahPemohonBulanIni          = PemohonInformasi::whereYear('created_at', $tahun)
+                                         ->whereMonth('created_at', $bulanAngka)
+                                         ->count();
+
+        $jumlahPemohonBulanLalu         = PemohonInformasi::whereYear('created_at', $tahunBulanLalu)
+                                         ->whereMonth('created_at', $bulanAngkaBulanLalu)
+                                         ->count();
+
+        $jumlahUbahStatusBulanIni       = PemohonInformasi::whereYear('created_at', $tahun)
+                                         ->whereMonth('created_at', $bulanAngka)
+                                         ->where('ubah_status', 1)
+                                         ->count();
+                         
+        $jumlahUbahStatusBulanLalu      = PemohonInformasi::whereYear('created_at', $tahunBulanLalu)
+                                         ->whereMonth('created_at', $bulanAngkaBulanLalu)
+                                         ->where('ubah_status', 1)
+                                         ->count();
+
+        $selisih                        = $jumlahPemohonBulanIni - $jumlahPemohonBulanLalu;
+        $persentase                     = $jumlahPemohonBulanLalu > 0 ? round(($selisih / $jumlahPemohonBulanLalu) * 100, 1) : ($jumlahPemohonBulanIni > 0 ? 100 : 0);
+        $selisihUbahStatus              = $jumlahUbahStatusBulanIni - $jumlahUbahStatusBulanLalu;
+        $persentaseUbahStatus           = $jumlahUbahStatusBulanLalu > 0 ? round(($selisihUbahStatus / $jumlahUbahStatusBulanLalu) * 100, 1) : ($jumlahUbahStatusBulanIni > 0 ? 100 : 0);
+                                     
         $data = [
-            'title'         => 'Informasi',
-            'subtitle'      => 'Portal MS Lhokseumawe',
-            'sidebar'       => $accessMenus,
-            'users'         => $user,
+            'title'                     => 'Informasi',
+            'subtitle'                  => 'Portal MS Lhokseumawe',
+            'sidebar'                   => $accessMenus,
+            'users'                     => $user,
+            'bulan'                     => $bulan,
+            'jumlahPemohonBulanIni'     => $jumlahPemohonBulanIni,
+            'selisih'                   => $selisih,
+            'persentase'                => $persentase,
+            'jumlahUbahStatusBulanIni'  => $jumlahUbahStatusBulanIni,
+            'selisihUbahStatus'         => $selisihUbahStatus,
+            'persentaseUbahStatus'      => $persentaseUbahStatus,
         ];
  
         return view('Ptsp.informasi', $data);
@@ -896,7 +934,6 @@ class PtspController extends Controller
     public function getPemohonInformasiData(Request $request)
     {
         if ($request->ajax()) {
-            // Base query untuk data
             $data = PemohonInformasi::query()
                 ->select([
                     'id', 'nama', 'whatsapp', 'jenis_perkara_gugatan', 
@@ -905,7 +942,6 @@ class PtspController extends Controller
                 ])
                 ->orderBy('created_at', 'desc'); 
     
-            // Tambahkan pencarian (search) jika ada input
             if ($search = $request->input('search.value')) {
                 $data->where(function ($query) use ($search) {
                     $query->where('nama', 'LIKE', "%$search%")
@@ -915,7 +951,6 @@ class PtspController extends Controller
                 });
             }
     
-            // Gunakan DataTables untuk memformat data
             return DataTables::of($data)
                 ->addColumn('pemohon', function ($row) {                    
                     return $row->nama . '<br>' .
@@ -924,7 +959,6 @@ class PtspController extends Controller
                         $row->NIK;
                 })
                 ->addColumn('detail', function ($row) {
-                    // Ambil data pekerjaan dan pendidikan
                     $pekerjaan = Pekerjaan::find($row->pekerjaan_id);
                     $pendidikan = Pendidikan::find($row->pendidikan);
                     $nama_pekerjaan = $pekerjaan ? $pekerjaan->nama_pekerjaan : '-';
@@ -945,7 +979,7 @@ class PtspController extends Controller
                 ->addColumn('actions', function ($row) {
                     // Tambahkan aksi download, edit, dan delete
                     return '                      
-                        <a href="' . route('pemohon.download', $row->id) . '" target="_blank" class="btn btn-success btn-sm">
+                       <a href="' . route('cetak.permohonan', $row->id) . '" target="_blank" class="btn btn-success btn-sm">
                             <i class="bx bx-download"></i>
                         </a><br><br>
                          <button type="button" class="btn btn-warning btn-sm" onclick="showModal(' . $row->id . ')">
@@ -1074,53 +1108,52 @@ class PtspController extends Controller
     }
 
     public function batalkanPengajuan(Request $request)
-{
-    $request->validate([
-        'id' => 'required|exists:pemohon_ubahstatus,id_pemohon',
-        'reason' => 'required|string|max:255',
-    ]);
+    {
+        $request->validate([
+            'id' => 'required|exists:pemohon_ubahstatus,id_pemohon',
+            'reason' => 'required|string|max:255',
+        ]);
 
-    // Ambil data berdasarkan ID
-    $pemohonStatus = PemohonUbahStatus::where('id_pemohon', $request->id)->first();
+        // Ambil data berdasarkan ID
+        $pemohonStatus = PemohonUbahStatus::where('id_pemohon', $request->id)->first();
 
-    if ($pemohonStatus) {
-        // Update status dan catatan
-        $pemohonStatus->status = 5;
-        $pemohonStatus->catatan = $request->reason;
-        $pemohonStatus->save();
+        if ($pemohonStatus) {
+            // Update status dan catatan
+            $pemohonStatus->status = 5;
+            $pemohonStatus->catatan = $request->reason;
+            $pemohonStatus->save();
 
-        // Cari pengguna DUKCAPIL
-        $roleId = Role::where('name', 'DUKCAPIL')->value('id');
-        $user = User::where('role', $roleId)->first();
+            // Cari pengguna DUKCAPIL
+            $roleId = Role::where('name', 'DUKCAPIL')->value('id');
+            $user = User::where('role', $roleId)->first();
 
-        if ($user) {
-            // Ambil data pemohon untuk pesan
-            $pemohon = PemohonInformasi::find($request->id);
+            if ($user) {
+                // Ambil data pemohon untuk pesan
+                $pemohon = PemohonInformasi::find($request->id);
 
-            // Format pesan WhatsApp
-            $pesan = "Assalamualaikum,\n\n";
-            $pesan .= "Pengajuan Perubahan Identitas telah DIBATALKAN.\n";
-            $pesan .= "Atas nama: {$pemohon->nama}.\n";
-            $pesan .= "Alasan pembatalan: {$request->reason}.\n\n";
-            $pesan .= "Tautan Aksi:\n";
-            $pesan .= route('aplikasi.siramasakan');
+                // Format pesan WhatsApp
+                $pesan = "Assalamualaikum,\n\n";
+                $pesan .= "Pengajuan Perubahan Identitas telah DIBATALKAN.\n";
+                $pesan .= "Atas nama: {$pemohon->nama}.\n";
+                $pesan .= "Alasan pembatalan: {$request->reason}.\n\n";
+                $pesan .= "Tautan Aksi:\n";
+                $pesan .= route('aplikasi.siramasakan');
 
-            // Kirim pesan WhatsApp
-            $this->sendWhatsappMessageCapil($user->whatsapp, $pesan);
+                // Kirim pesan WhatsApp
+                $this->sendWhatsappMessageCapil($user->whatsapp, $pesan);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diperbarui menjadi dibatalkan dan pesan telah dikirim ke DUKCAPIL.',
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data pemohon tidak ditemukan.',
+            ]);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Status berhasil diperbarui menjadi dibatalkan dan pesan telah dikirim ke DUKCAPIL.',
-        ]);
-    } else {
-        return response()->json([
-            'success' => false,
-            'message' => 'Data pemohon tidak ditemukan.',
-        ]);
     }
-}
-
 
     public function kritirData(Request $request)
     {
@@ -1142,7 +1175,7 @@ class PtspController extends Controller
     }
 
     public function cetakPermohonanInformasi(Request $request, $id)
-    {        
+    {               
         $pemohon = PemohonInformasi::with('pekerjaan')->findOrFail($id);
     
         if (!$pemohon) {
@@ -1150,18 +1183,25 @@ class PtspController extends Controller
         }       
     
         // Generate QR Code
-        $urlToBarcodePemohon = route('barcodestatus.scan') . '?eSign=' . urlencode($pemohon->id_sign);
+        $urlToBarcodePemohon = route('barcode.scan.informasi') . '?eSign=' . urlencode($pemohon->id);
         $qrCodePemohon = base64_encode(QrCode::format('svg')
             ->size(70)
             ->errorCorrection('M')
             ->generate($urlToBarcodePemohon));
+        
+        $urlToBarcodePetugas = route('barcode.scan.petugas.info') . '?eSign=' . urlencode($pemohon->id);
+        $qrCodePetugas = base64_encode(QrCode::format('svg')
+            ->size(70)
+            ->errorCorrection('M')
+            ->generate($urlToBarcodePetugas));
     
         $createdAtFormatted = \Carbon\Carbon::parse($pemohon->created_at)->translatedFormat('d F Y');
     
         $data = [
             'pemohon' => $pemohon,            
-            'qrCodePemohon' => $qrCodePemohon, // Add the QR code
-            'createdAtFormatted' => $createdAtFormatted // Add the formatted creation date
+            'qrCodePemohon' => $qrCodePemohon,
+            'qrCodePetugas' => $qrCodePetugas,
+            'createdAtFormatted' => $createdAtFormatted 
         ];
             
         $pdf = PDF::loadView('Ptsp.cetakInformasi', $data);

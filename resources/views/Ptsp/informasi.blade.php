@@ -32,9 +32,57 @@
 @section('content')
 
     <div class="container-xxl flex-grow-1 container-p-y">
-        <div class="faq-header d-flex flex-column justify-content-center align-items-center">
+        <div class="faq-header d-flex flex-column justify-content-center align-items-center mb-3">
             <h1  class="text-center" style="color: white;">PTSP Elektronik</h1>        
             <p class="text-center mb-0 px-3" style="color: white;">Pelayanan Terpadu Satu Pintu Elektronik</p>            
+        </div>
+        <div class="card mb-4">
+            <div class="card-widget-separator-wrapper">
+              <div class="card-body card-widget-separator">
+                <div class="row gy-4 gy-sm-1">
+                  <div class="col-sm-6 col-lg-6">
+                    <div
+                      class="d-flex justify-content-between align-items-start card-widget-1 border-end pb-3 pb-sm-0">
+                      <div>
+                        <h6 class="mb-2">Pemohon Informasi<br>{{ $bulan }}</h6>
+                        <h4 class="mb-2">{{$jumlahPemohonBulanIni}} Pemohon</h4>
+                        <p class="mb-0">
+                            <span class="badge bg-label-{{ $persentase >= 0 ? 'success' : 'danger' }}">
+                              {{ $selisih >= 0 ? '+' : '' }}{{ $selisih }}  
+                              ({{ $persentase >= 0 ? '+' : '' }}{{ $persentase }}%)
+                            </span>
+                          </p>
+                      </div>
+                      <div class="avatar me-sm-4">
+                        <span class="avatar-initial rounded bg-label-secondary">
+                          <i class="bx bx-store-alt bx-sm"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <hr class="d-none d-sm-block d-lg-none me-4" />
+                  </div>                 
+                  <div class="col-sm-6 col-lg-6">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                        <h6 class="mb-2">Pemohon Ubah Status<br>{{ $bulan }}</h6>
+                        <h4 class="mb-2">{{ $jumlahUbahStatusBulanIni }} Pemohon</h4>
+                        <p class="mb-0">
+                          <span class="badge bg-label-{{ $persentaseUbahStatus >= 0 ? 'success' : 'danger' }}">
+                            {{ $selisihUbahStatus >= 0 ? '+' : '' }}{{ $selisihUbahStatus }}  
+                            ({{ $persentaseUbahStatus >= 0 ? '+' : '' }}{{ $persentaseUbahStatus }}%)
+                          </span>
+                        </p>
+                      </div>
+                      <div class="avatar">
+                        <span class="avatar-initial rounded bg-label-secondary">
+                          <i class="bx bx-wallet bx-sm"></i>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
         </div>
 
         <div class="row mt-4">

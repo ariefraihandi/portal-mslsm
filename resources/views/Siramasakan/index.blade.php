@@ -171,10 +171,9 @@
                                                                 @else
                                                                     <span class="badge bg-secondary" data-bs-toggle="modal" data-bs-target="#modalStatus{{ $status->id }}">Status Tidak Diketahui</span>
                                                                 @endif
-                                                            </td>
-                                                                                                                        
+                                                            </td>                                                            
                                                         </tr>
-                                                       <!-- Modal for changing status -->
+                                                        <!-- Modal for changing status -->
                                                             <div class="modal fade" id="modalStatus{{ $status->id }}" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
                                                                 <div class="modal-dialog">
                                                                     <div class="modal-content">
@@ -213,8 +212,7 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-
-
+                                                        <!-- Modal for changing status -->
                                                         @endforeach
                                                     </tbody>
                                                 </table>
