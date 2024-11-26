@@ -74,7 +74,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::post('/syarat/store',                    [PtspController::class, 'storeSyarat'])->name('syarat.store');
     
     Route::post('/permohonan/download',             [PtspController::class, 'permohonanStore'])->name('pemohon.download');    //be
-    Route::get('/cetak/pemohoninformasi/{id}',       [PtspController::class, 'cetakPermohonanInformasi'])->name('cetak.permohonan');    
+    Route::get('/cetak/pemohoninformasi/{id}',      [PtspController::class, 'cetakPermohonanInformasi'])->name('cetak.permohonan');    
     Route::get('/delete/pemohoninformasi',          [PtspController::class, 'deletePemohon'])->name('pemohon.delete');    
     Route::post('/pemohon/upload/document',         [PtspController::class, 'uploadDocument'])->name('pemohon.upload.document');
     Route::get('/delete/feedback',                  [PtspController::class, 'deleteFeedback'])->name('feedback.delete');

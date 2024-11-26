@@ -26,7 +26,7 @@
             font-size: 16px;
         }
         .receipt-table {
-            width: 70%;
+            width: 95%;
             border-collapse: collapse;
             margin: 0 auto;
         }
@@ -49,21 +49,29 @@
         <table class="receipt-table">
             <thead>
                 <tr>
+                    <th>No</th>
                     <th>Nama</th>
                     <th>Pekerjaan</th>
                     <th>Pendidikan</th>
                     <th>Perkara</th>
                     <th>Alamat</th>
+                    <th>Eviden</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($pemohon as $item)
                     <tr>
+                        <td>{{ $loop->iteration }}</td> <!-- Nomor Urut -->
                         <td>{{ $item['nama'] }}</td>
                         <td>{{ $item['pekerjaan'] }}</td>
                         <td>{{ $item['pendidikan'] }}</td>
                         <td>{{ $item['perkara'] }}</td>
                         <td>{{ $item['alamat'] }}</td>
+                        <td>
+                            <a href="{{ route('cetak.permohonan', ['id' => $item['id']]) }}" target="_blank">
+                                Eviden
+                            </a>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
