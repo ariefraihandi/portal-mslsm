@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/select2/select2.css" />
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/tagify/tagify.css" />
+    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/animate-css/animate.css" />
+    <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/flatpickr/flatpickr.css" />
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/bootstrap-select/bootstrap-select.css" />
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/libs/sweetalert2/sweetalert2.css" /> 
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor/css/pages/ptsp.css" />  
@@ -118,6 +120,7 @@
             <div class="col-lg-9 col-md-8 col-12">
                 <div class="tab-content py-0">
                     <div class="tab-pane fade show active" id="pengajuan" role="tabpanel">
+                        
                         <div class="d-flex mb-3 gap-3">
                             <div>
                                 <span class="badge bg-label-primary rounded-2">
@@ -140,10 +143,76 @@
                                 </h2>
                                 <div id="accordionPayment-1" class="accordion-collapse collapse show">
                                     <div class="card-body">
-                                        <div class="row">                                        
-                                            <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#informasi">Tambah Permohonan</button>
-                                            <hr>
+                                        <form class="dt_adv_search" method="POST">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div class="row g-3">
+                                                        <div class="col-12 col-sm-6 col-lg-6">
+                                                            <label class="form-label">Pilih Tanggal:</label>
+                                                            <div class="mb-0">
+                                                                <input
+                                                                    type="text"
+                                                                    class="form-control dt-date flatpickr-range dt-input"
+                                                                    data-column="6"
+                                                                    placeholder="StartDate to EndDate"
+                                                                    data-column-index="6"
+                                                                    name="dt_date" />
+                                                                <input
+                                                                    type="hidden"
+                                                                    class="form-control dt-date start_date dt-input"
+                                                                    data-column="6"
+                                                                    data-column-index="6"
+                                                                    name="value_from_start_date" />
+                                                                <input
+                                                                    type="hidden"
+                                                                    class="form-control dt-date end_date dt-input"
+                                                                    name="value_from_end_date"
+                                                                    data-column="6"
+                                                                    data-column-index="6" />
+                                                            </div>
+                                                        </div>
+                                                        @php
+                                                            $currentJenis = null;
+                                                        @endphp
+
+                                                        <div class="col-12 col-sm-6 col-lg-6">
+                                                            <label class="form-label">Perkara:</label>
+                                                            <select class="form-select" name="perkara_id">
+                                                                <option value="">Pilih Perkara</option>
+                                                                @foreach ($perkara as $item)
+                                                                    @if ($currentJenis !== $item->perkara_jenis)
+                                                                        @if ($currentJenis !== null)
+                                                                            </optgroup>
+                                                                        @endif
+                                                                        <optgroup label="{{ $item->perkara_jenis }}">
+                                                                        @php
+                                                                            $currentJenis = $item->perkara_jenis;
+                                                                        @endphp
+                                                                    @endif
+                                                                    <option value="{{ $item->id }}">{{ $item->perkara_name }}</option>
+                                                                @endforeach
+                                                                @if ($currentJenis !== null)
+                                                                    </optgroup>
+                                                                @endif
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="row g-3">
+                                                    <div class="col-12 col-sm-6 col-lg-6">
+                                                        <button class="btn btn-primary mt-3 w-100" data-bs-toggle="modal" data-bs-target="#informasi">Tambah Permohonan</button>
+                                                    </div>
+                                                    <div class="col-12 col-sm-6 col-lg-6">
+                                                        <button class="btn btn-success mt-3 w-100" data-bs-toggle="modal" data-bs-target="#cetak">Cetak Laporan</button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
+                                      
                                         <div class="row">
                                             <div class="card">                                            
                                                 <div class="table-responsive text-nowrap" style="max-width: 100%; overflow-x: auto;">
@@ -684,6 +753,57 @@
         </div>
     <!-- /Modal Edit Pihak -->
 
+    <div class="modal fade" id="cetak" tabindex="-1" aria-labelledby="cetakLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cetakLabel">Cetak Laporan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCetakLaporan" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="bulan" class="form-label">Pilih Bulan</label>
+                            <select class="form-select" id="bulan" name="bulan">
+                                <option value="">Pilih Bulan</option>
+                                <option value="01">Januari</option>
+                                <option value="02">Februari</option>
+                                <option value="03">Maret</option>
+                                <option value="04">April</option>
+                                <option value="05">Mei</option>
+                                <option value="06">Juni</option>
+                                <option value="07">Juli</option>
+                                <option value="08">Agustus</option>
+                                <option value="09">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tahun" class="form-label">Pilih Tahun</label>
+                            <select class="form-select" id="tahun" name="tahun">
+                                <option value="">Pilih Tahun</option>
+                                @php
+                                    $currentYear = date("Y");
+                                    $startYear = $currentYear - 5;
+                                @endphp
+                                @for ($year = $currentYear; $year >= $startYear; $year--)
+                                    <option value="{{ $year }}" @if ($year == $currentYear) selected @endif>{{ $year }}</option>
+                                @endfor
+                            </select>
+                        </div>                                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="button" id="submitCetakLaporan" class="btn btn-primary">Cetak</button>
+                    </div>
+                </form>                    
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('footer-script')            
@@ -693,24 +813,45 @@
     <script src="{{ asset('assets') }}/vendor/libs/bootstrap-select/bootstrap-select.js"></script>
     <script src="{{ asset('assets') }}/vendor/libs/typeahead-js/typeahead.js"></script>
     <script src="{{ asset('assets') }}/vendor/libs/bloodhound/bloodhound.js"></script>
+    <script src="{{ asset('assets') }}/vendor/libs/moment/moment.js"></script>
+    <script src="{{ asset('assets') }}/vendor/libs/flatpickr/flatpickr.js"></script>
     <script src="{{ asset('assets') }}/vendor/libs/sweetalert2/sweetalert2.js"></script>
 @endpush
 
 @push('footer-Sec-script')
     <script>
-        $(document).ready(function() {
-            $('#pemohonInformasi').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: '{{ route('pemohon.informasi.data') }}',
-                columns: [
-                    { data: 'pemohon', name: 'pemohon' },
-                    { data: 'detail', name: 'detail' },
-                    { data: 'perkara', name: 'perkara' },
-                    { data: 'actions', name: 'actions', orderable: false, searchable: false },                                   
-                ]
-            });
+        $(document).ready(function () {
+        var table = $('#pemohonInformasi').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: '{{ route('pemohon.informasi.data') }}',
+                data: function (d) {
+                    d.start_date = $('.start_date').val();
+                    d.end_date = $('.end_date').val();
+                    d.perkara_id = $('select[name="perkara_id"]').val(); // Ambil value perkara
+                }
+            },
+            columns: [
+                { data: 'pemohon', name: 'pemohon' },
+                { data: 'detail', name: 'detail' },
+                { data: 'perkara', name: 'perkara' },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false },
+            ]
         });
+
+        // Reload table on date range change
+        $('.flatpickr-range').on('change', function () {
+            table.ajax.reload();
+        });
+
+        // Reload table on perkara change
+        $('select[name="perkara_id"]').on('change', function () {
+            table.ajax.reload();
+        });
+    });
+
+
 
         function showModal(id) {
             fetch(`/pemohon/${id}/info`)
@@ -832,6 +973,24 @@
             });
         }
 
+        document.addEventListener('DOMContentLoaded', function () {
+            $('.flatpickr-range').flatpickr({
+                mode: 'range',
+                dateFormat: 'Y-m-d',
+                onChange: function (selectedDates, dateStr, instance) {
+                    // Logic saat tanggal dipilih, misalnya simpan ke input hidden
+                    const [start, end] = selectedDates;
+                    if (start) {
+                        document.querySelector('.start_date').value = instance.formatDate(start, 'Y-m-d');
+                    }
+                    if (end) {
+                        document.querySelector('.end_date').value = instance.formatDate(end, 'Y-m-d');
+                    }
+                }
+            });
+        });
+
+
         document.addEventListener('DOMContentLoaded', function() {
             @if(session('response'))
                 var response = @json(session('response'));
@@ -839,6 +998,74 @@
             @endif
         });
     </script>
+
+<script>
+    $(document).ready(function () {
+        $('#submitCetakLaporan').on('click', function (e) {
+            e.preventDefault();
+
+            var bulan = $('#bulan').val();
+            var tahun = $('#tahun').val();
+
+            if (bulan === "" || tahun === "") {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan!',
+                    text: 'Harap pilih bulan dan tahun.',
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Sedang memproses...',
+                text: 'Mohon tunggu...',
+                icon: 'info',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: "{{ route('cetak.laporan.informasi') }}",
+                method: "POST",
+                data: {
+                    bulan: bulan,
+                    tahun: tahun,
+                    _token: "{{ csrf_token() }}" // Menambahkan token CSRF
+                },
+                success: function (response) {
+                    Swal.close();
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Laporan Berhasil',
+                            text: response.message,
+                            showCancelButton: true,
+                            confirmButtonText: 'Buka Laporan',
+                            cancelButtonText: 'Tutup',
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.open(response.url, '_blank');
+                            }
+                        });
+                    }
+                },
+                error: function (xhr) {
+                    Swal.close();
+                    var errorMessage = xhr.responseJSON?.message || 'Terjadi kesalahan.';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi Kesalahan',
+                        text: errorMessage,
+                    });
+                }
+            });
+        });
+    });
+</script>
+
 
     <script>
         function confirmDelete(id) {

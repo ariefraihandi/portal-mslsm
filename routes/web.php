@@ -151,6 +151,11 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/getdata/kritir',                   [PtspController::class, 'kritirData'])->name('kritis.data');
     Route::get('/pemohon/{id}/info',                [PtspController::class, 'getPemohonInfo'])->name('pemohon.info');    
     Route::get('/perkara/{id}',                     [PtspController::class, 'getPerkaraNameById']);
+    Route::post('/cetak-laporan/informasi',         [PtspController::class, 'cetakLaporan'])->name('cetak.laporan.informasi');
+    Route::get('/cetak-laporan/pdf',                [PtspController::class, 'cetakLaporanPDF'])->name('cetak.informasi');
+
+
+    
 
 
     Route::post('/cancel/siramasakan',              [PtspController::class, 'batalkanPengajuan'])->name('batal.siramasakan');

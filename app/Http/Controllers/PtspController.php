@@ -64,6 +64,8 @@ class PtspController extends Controller
         $persentase                     = $jumlahPemohonBulanLalu > 0 ? round(($selisih / $jumlahPemohonBulanLalu) * 100, 1) : ($jumlahPemohonBulanIni > 0 ? 100 : 0);
         $selisihUbahStatus              = $jumlahUbahStatusBulanIni - $jumlahUbahStatusBulanLalu;
         $persentaseUbahStatus           = $jumlahUbahStatusBulanLalu > 0 ? round(($selisihUbahStatus / $jumlahUbahStatusBulanLalu) * 100, 1) : ($jumlahUbahStatusBulanIni > 0 ? 100 : 0);
+
+        $perkara                        = Perkara::orderBy('perkara_jenis')->orderBy('perkara_name')->get();
                                      
         $data = [
             'title'                     => 'Informasi',
@@ -74,6 +76,7 @@ class PtspController extends Controller
             'jumlahPemohonBulanIni'     => $jumlahPemohonBulanIni,
             'selisih'                   => $selisih,
             'persentase'                => $persentase,
+            'perkara'                => $perkara,
             'jumlahUbahStatusBulanIni'  => $jumlahUbahStatusBulanIni,
             'selisihUbahStatus'         => $selisihUbahStatus,
             'persentaseUbahStatus'      => $persentaseUbahStatus,
@@ -938,21 +941,38 @@ class PtspController extends Controller
                 ->select([
                     'id', 'nama', 'whatsapp', 'jenis_perkara_gugatan', 
                     'jenis_perkara_permohonan', 'pekerjaan_id', 
-                    'pendidikan', 'email', 'NIK', 'alamat', 'ubah_status'
+                    'pendidikan', 'email', 'NIK', 'alamat', 'ubah_status', 'created_at'
                 ])
-                ->orderBy('created_at', 'desc'); 
-    
+                ->orderBy('created_at', 'desc');
+
+            // Filter by date range
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+            if ($startDate && $endDate) {
+                $data->whereBetween('created_at', [$startDate, $endDate]);
+            }
+
+            // Filter by perkara ID
+            $perkaraId = $request->input('perkara_id');
+            if ($perkaraId) {
+                $data->where(function ($query) use ($perkaraId) {
+                    $query->where('jenis_perkara_gugatan', $perkaraId)
+                        ->orWhere('jenis_perkara_permohonan', $perkaraId);
+                });
+            }
+
+            // Filter by search value
             if ($search = $request->input('search.value')) {
                 $data->where(function ($query) use ($search) {
                     $query->where('nama', 'LIKE', "%$search%")
-                          ->orWhere('whatsapp', 'LIKE', "%$search%")
-                          ->orWhere('email', 'LIKE', "%$search%")
-                          ->orWhere('NIK', 'LIKE', "%$search%");
+                        ->orWhere('whatsapp', 'LIKE', "%$search%")
+                        ->orWhere('email', 'LIKE', "%$search%")
+                        ->orWhere('NIK', 'LIKE', "%$search%");
                 });
             }
-    
+
             return DataTables::of($data)
-                ->addColumn('pemohon', function ($row) {                    
+                ->addColumn('pemohon', function ($row) {
                     return $row->nama . '<br>' .
                         $row->whatsapp . '<br>' .
                         ($row->email ? $row->email . '<br>' : '') .
@@ -963,37 +983,123 @@ class PtspController extends Controller
                     $pendidikan = Pendidikan::find($row->pendidikan);
                     $nama_pekerjaan = $pekerjaan ? $pekerjaan->nama_pekerjaan : '-';
                     $nama_pendidikan = $pendidikan ? $pendidikan->name : '-';
-                
+
                     return 'Pekerjaan: ' . $nama_pekerjaan . '<br>' .
-                           'Pendidikan: ' . $nama_pendidikan . '<br>' .
-                           'Alamat: ' . $row->alamat;
-                })       
+                        'Pendidikan: ' . $nama_pendidikan . '<br>' .
+                        'Alamat: ' . $row->alamat;
+                })
                 ->addColumn('perkara', function ($row) {
-                    // Ambil nama perkara berdasarkan jenis perkara
                     $perkara_id = $row->jenis_perkara_gugatan ?? $row->jenis_perkara_permohonan;
                     $perkara = Perkara::find($perkara_id);
-                    $perkara_name = $perkara ? $perkara->perkara_name : '-';
-    
-                    return $perkara_name;
-                })         
+                    return $perkara ? $perkara->perkara_name : '-';
+                })
                 ->addColumn('actions', function ($row) {
-                    // Tambahkan aksi download, edit, dan delete
-                    return '                      
-                       <a href="' . route('cetak.permohonan', $row->id) . '" target="_blank" class="btn btn-success btn-sm">
+                    return '
+                        <a href="' . route('cetak.permohonan', $row->id) . '" target="_blank" class="btn btn-success btn-sm">
                             <i class="bx bx-download"></i>
                         </a><br><br>
-                         <button type="button" class="btn btn-warning btn-sm" onclick="showModal(' . $row->id . ')">
+                        <button type="button" class="btn btn-warning btn-sm" onclick="showModal(' . $row->id . ')">
                             <i class="bx bx-edit"></i>
-                        </button><br><br> 
+                        </button><br><br>
                         <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete(' . $row->id . ')">
                             <i class="bx bx-trash"></i>
-                        </button>                     
-                    ';
-                })               
-                ->rawColumns(['pemohon', 'perkara', 'detail', 'actions'])
+                        </button>';
+                })
+                ->rawColumns(['pemohon', 'detail', 'perkara', 'actions'])
                 ->make(true);
         }
     }
+
+    public function cetakLaporan(Request $request)
+    {
+        // Validasi input bulan dan tahun
+        $request->validate([
+            'bulan' => 'required|date_format:m',
+            'tahun' => 'required|date_format:Y',
+        ]);
+
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
+
+        \Carbon\Carbon::setLocale('id');
+
+        $bulanNama = \Carbon\Carbon::createFromFormat('!m', $bulan)->locale('id')->monthName;
+        $startDate = \Carbon\Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth();
+        $endDate = \Carbon\Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth();
+
+        $pemohon = PemohonInformasi::whereBetween('created_at', [$startDate, $endDate])->get();
+
+        if ($pemohon->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => "Data Pemohon Informasi tidak ditemukan pada bulan $bulanNama tahun $tahun.",
+            ], 404);
+        }
+
+        $urlLaporan = route('cetak.informasi', ['bulan' => $bulan, 'tahun' => $tahun]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Laporan berhasil dicetak.',
+            'url' => $urlLaporan,
+        ]);
+    }
+
+    public function cetakLaporanPDF(Request $request)
+    {
+        $bulan = $request->query('bulan');
+        $tahun = $request->query('tahun');
+
+        // Mengambil data sesuai kebutuhan
+        $pemohon = PemohonInformasi::query()
+            ->select([
+                'id', 'nama', 'whatsapp', 'jenis_perkara_gugatan',
+                'jenis_perkara_permohonan', 'pekerjaan_id',
+                'pendidikan', 'email', 'NIK', 'alamat', 'ubah_status', 'created_at'
+            ])
+            ->whereYear('created_at', $tahun)
+            ->whereMonth('created_at', $bulan)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Format data untuk ditampilkan di view
+            $data = $pemohon->map(function ($row) {
+            $pekerjaan = Pekerjaan::find($row->pekerjaan_id);
+            $pendidikan = Pendidikan::find($row->pendidikan);
+            $perkara_id = $row->jenis_perkara_gugatan ?? $row->jenis_perkara_permohonan;
+            $perkara = Perkara::find($perkara_id);
+
+            return [
+                'id' => $row->id,
+                'nama' => $row->nama,
+                'whatsapp' => $row->whatsapp,
+                'perkara' => $perkara ? $perkara->perkara_name : '-',
+                'pekerjaan' => $pekerjaan ? $pekerjaan->nama_pekerjaan : '-',
+                'pendidikan' => $pendidikan ? $pendidikan->name : '-',
+                'alamat' => $row->alamat,
+                'NIK' => $row->NIK,
+                'created_at' => $row->created_at,
+            ];
+        });
+
+        $bulanNama = \Carbon\Carbon::createFromFormat('!m', $bulan)->locale('id')->monthName;
+
+        // Data yang dikirimkan ke view
+        $viewData = [
+            'pemohon' => $data,
+            'bulanNama' => $bulanNama,
+            'tahun' => $tahun,
+        ];
+
+        // Render PDF
+        $pdf = PDF::loadView('Ptsp.Laporan.informasi', $viewData);
+
+        // Mengunduh file PDF
+        // return $pdf->download('Laporan_' . $bulanNama . '_' . $tahun . '.pdf');
+        return $pdf->stream('Laporan_' . $bulanNama . '_' . $tahun . '.pdf');
+    }
+
+    
     
     public function getPemohonInfo($id)
     {
