@@ -76,6 +76,18 @@
                 @endforeach
             </tbody>
         </table>
+        <br>
+        <br>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tbody>
+                <tr>
+                    <td width="33%"></td>
+                    <td width="33%"></td>
+                    <td width="33%">Lhokseumawe, {{$tanggal}} {{ $bulanNama }} {{ $tahun }}<br>Ketua Mahkamah Syar'iyah Lhokseumawe<br><br><br><br><br>{{$namaKetua}}
+                    </td>
+                </tr>
+            </tbody>
+        </table>        
     </div>
 </body>
 </html>

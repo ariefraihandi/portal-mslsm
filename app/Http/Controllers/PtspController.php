@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\UserDetail;
 use App\Models\Perkara;
 use App\Models\Role;
 use App\Models\SyaratPerkara;
@@ -1050,6 +1051,31 @@ class PtspController extends Controller
         $bulan = $request->query('bulan');
         $tahun = $request->query('tahun');
 
+        $Ketua = UserDetail::where('jabatan', 'Ketua')->first();
+
+        // Validasi jika data tidak ditemukan
+        if (!$Ketua) {
+            return redirect()->route('aplikasi.ptsp.informasi')->with([
+                'response' => [
+                    'success' => false,
+                    'title'   => 'Error..!',
+                    'message' => 'Data Ketua tidak ditemukan.',
+                ],
+            ]);
+        }
+        
+        // if ($Ketua->count() > 1) {
+        //     return redirect()->route('aplikasi.ptsp.informasi')->with([                
+        //         'response' => [
+        //             'success' => false,
+        //             'title'   => 'Eror..!',
+        //             'message' => 'Data Ketua lebih dari satu.',
+        //         ],
+        //     ]);
+        // }
+
+        $namaKetua = $Ketua->name;
+
         // Mengambil data sesuai kebutuhan
         $pemohon = PemohonInformasi::query()
             ->select([
@@ -1083,11 +1109,15 @@ class PtspController extends Controller
         });
 
         $bulanNama = \Carbon\Carbon::createFromFormat('!m', $bulan)->locale('id')->monthName;
+        $tanggal = Carbon::now()->format('d');
+
 
         // Data yang dikirimkan ke view
         $viewData = [
             'pemohon' => $data,
             'bulanNama' => $bulanNama,
+            'tanggal' => $tanggal,
+            'namaKetua' => $namaKetua,
             'tahun' => $tahun,
         ];
 

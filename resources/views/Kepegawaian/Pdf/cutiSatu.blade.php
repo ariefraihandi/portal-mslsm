@@ -22,7 +22,7 @@
         </tr>
         <tr>
             <td width="250"></td>
-            <td colspan="2" style="text-align: left;">Yth. {{ $data['jabatanpim'] }} Mahkamah Syar’iyah Lhokseumawe</td>
+            <td colspan="2" style="text-align: left;">Yth. {{ $data['jabatanpim'] }} Mahkamah Syar&rsquo;iyah Lhokseumawe</td>
         </tr>
         <tr>
             <td width="250"></td>

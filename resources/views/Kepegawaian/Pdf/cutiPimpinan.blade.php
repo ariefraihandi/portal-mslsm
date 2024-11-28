@@ -22,7 +22,7 @@
         </tr>
         <tr>
             <td width="250"></td>
-            <td colspan="2" style="text-align: left;">Yth. Ketua Mahkamah Syar’iyah Lhokseumawe</td>
+            <td colspan="2" style="text-align: left;">Yth. Ketua Mahkamah Syar&rsquo;iyah Lhokseumawe</td>
         </tr>
         <tr>
             <td width="250"></td>
@@ -56,7 +56,7 @@
         </tr>
         <tr>
             <td width="12%" style="border: 1px solid black;">&nbsp;Unit Kerja</td>
-            <td width="38%" style="border: 1px solid black;">&nbsp;Mahkamah Syar'iyah Lhokseumawe</td>
+            <td width="38%" style="border: 1px solid black;">&nbsp;Mahkamah Syar&rsquo;iyah Lhokseumawe</td>
             <td width="12%" style="border: 1px solid black;"></td>
             <td width="38%" style="border: 1px solid black;"></td>
         </tr>
